@@ -342,9 +342,21 @@ export class ChatService {
 			this.persistState();
 			return activeAssistantMessage.content;
 			
-		} catch (error: unknown) {
+		} catch (error: any) {
 			this.plugin.logger.log('LLM_API_ERROR', { error: error.message });
-			const errResponse = `Error connecting to ${this.plugin.settings.llmProvider}: ${error.message}`;
+			let errResponse = `Error connecting to ${this.plugin.settings.llmProvider}: ${error.message}`;
+			
+			if (error.message && (
+				error.message.toLowerCase().includes('key') || 
+				error.message.toLowerCase().includes('model') || 
+				error.message.toLowerCase().includes('unauthorized') || 
+				error.message.toLowerCase().includes('not found') ||
+				error.message.toLowerCase().includes('401') ||
+				error.message.toLowerCase().includes('404')
+			)) {
+				errResponse += `\n\n⚠️ **Troubleshooting:** It looks like your API key or selected model might be invalid. Please go to **Settings → Community plugins → Agentic Vault** and use the **Test Key & Load Models** button to verify your configuration.`;
+			}
+			
 			this.unifiedTimeline.push({ role: 'assistant', content: errResponse, persona: personaName });
 			history.push({ role: 'assistant', content: errResponse, persona: personaName });
 			this.persistState();

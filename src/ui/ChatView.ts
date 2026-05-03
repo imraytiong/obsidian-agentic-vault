@@ -281,6 +281,18 @@ export class AgenticVaultChatView extends ItemView {
 			const text = inputEl.value.trim();
 			if (!text) return;
 			
+			if (!this.plugin.settings.llmApiKey || this.plugin.settings.llmApiKey.trim() === '') {
+				this.plugin.chatService.unifiedTimeline.push({ role: 'assistant', content: '⚠️ **Missing API Key:** You must configure an API key before chatting. Please go to **Settings → Community plugins → Agentic Vault** to set it up.', persona: 'System' });
+				this.renderHistory();
+				return;
+			}
+			
+			if (!this.plugin.settings.llmModel || this.plugin.settings.llmModel.trim() === '') {
+				this.plugin.chatService.unifiedTimeline.push({ role: 'assistant', content: '⚠️ **Missing LLM Model:** You must select a model before chatting. Please go to **Settings → Community plugins → Agentic Vault** to set it up.', persona: 'System' });
+				this.renderHistory();
+				return;
+			}
+			
 			this.plugin.logger.log('USER_MESSAGE_SUBMITTED', { text, persona: this.activePersona });
 			
 			inputEl.value = '';

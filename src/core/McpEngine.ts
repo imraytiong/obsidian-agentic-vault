@@ -1,3 +1,4 @@
+/* global process */
 import { App, TFile, TFolder, parseYaml } from 'obsidian';
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
@@ -11,12 +12,26 @@ export interface McpServerConfig {
 	uri?: string;
 }
 
+export interface McpTool {
+	name: string;
+	description?: string;
+	inputSchema?: {
+		type?: string;
+		properties?: Record<string, unknown>;
+		required?: string[];
+	};
+	_serverName: string;
+	_originalName: string;
+	_isSyntheticBatch?: boolean;
+	_baseToolName?: string;
+}
+
 export class McpEngine {
 	private app: App;
 	private sherpaPath: string;
 	private customEnvPath: string;
 	public clients: Record<string, Client> = {};
-	public availableTools: Record<string, any> = {};
+	public availableTools: Record<string, McpTool> = {};
 
 	constructor(app: App, sherpaPath: string, customEnvPath: string = '') {
 		this.app = app;
@@ -39,7 +54,7 @@ export class McpEngine {
 
 		for (const file of folder.children) {
 			if (file instanceof TFile && file.extension === 'md') {
-				let frontmatter: any = null;
+				let frontmatter: unknown = null;
 				const cache = this.app.metadataCache.getFileCache(file);
 				
 				if (cache && cache.frontmatter) {
@@ -50,9 +65,9 @@ export class McpEngine {
 					const match = content.match(/^---\n([\s\S]*?)\n---/);
 					if (match) {
 						try {
-							frontmatter = parseYaml(match[1] || '');
-							if (frontmatter && frontmatter.name && frontmatter.mcp_server === true) {
-								this.connectServer(frontmatter.name, frontmatter as McpServerConfig);
+							frontmatter = parseYaml(match[1] || '') as Record<string, unknown>;
+							if (frontmatter && typeof frontmatter === 'object' && 'name' in frontmatter && typeof frontmatter.name === 'string' && 'mcp_server' in frontmatter && frontmatter.mcp_server === true) {
+								void this.connectServer(frontmatter.name, frontmatter as unknown as McpServerConfig);
 							}
 						} catch (e) {
 							console.error("YAML Parse Error", e);
@@ -61,8 +76,8 @@ export class McpEngine {
 					}
 				}
 				
-				if (frontmatter && frontmatter.name && frontmatter.mcp_server === true) {
-					await this.connectServer(frontmatter.name, frontmatter as McpServerConfig);
+				if (frontmatter && typeof frontmatter === 'object' && 'name' in frontmatter && typeof frontmatter.name === 'string' && 'mcp_server' in frontmatter && frontmatter.mcp_server === true) {
+					await this.connectServer(frontmatter.name, frontmatter as unknown as McpServerConfig);
 				}
 			}
 		}
@@ -96,6 +111,7 @@ export class McpEngine {
 				
 				await client.connect(transport);
 			} else if (config.type === 'sse') {
+				// eslint-disable-next-line @typescript-eslint/no-deprecated
 				const { SSEClientTransport } = await import("@modelcontextprotocol/sdk/client/sse.js");
 				if (!config.uri) throw new Error("Missing uri for sse server");
 				
@@ -142,16 +158,16 @@ export class McpEngine {
 					}
 				}
 			}
-			console.log(`Connected to MCP Server: ${name} with ${toolResponse?.tools?.length || 0} tools.`);
-			this.app.vault.adapter.append('AgenticVault/logs/mcp_debug.txt', `\n[${new Date().toISOString()}] Connected to MCP Server: ${name} with ${toolResponse?.tools?.length || 0} tools.`);
+			console.debug(`Connected to MCP Server: ${name} with ${toolResponse?.tools?.length || 0} tools.`);
+			void this.app.vault.adapter.append('AgenticVault/logs/mcp_debug.txt', `\n[${new Date().toISOString()}] Connected to MCP Server: ${name} with ${toolResponse?.tools?.length || 0} tools.`);
 			
-		} catch (e: any) {
+		} catch (e: unknown) {
 			console.error(`Failed to connect to MCP Server ${name}:`, e);
-			this.app.vault.adapter.append('AgenticVault/logs/mcp_debug.txt', `\n[${new Date().toISOString()}] Failed to connect to MCP Server ${name}: ${e.message}`);
+			void this.app.vault.adapter.append('AgenticVault/logs/mcp_debug.txt', `\n[${new Date().toISOString()}] Failed to connect to MCP Server ${name}: ${(e as Error).message}`);
 		}
 	}
 
-	getMcpToolsAsRegistryFormat(): any[] {
+	getMcpToolsAsRegistryFormat(): unknown[] {
 		return Object.values(this.availableTools).map(t => ({
 			name: `${t._serverName}___${t._originalName}`, // The prefixed name
 			id: `${t._serverName}___${t._originalName}`, 
@@ -162,7 +178,7 @@ export class McpEngine {
 		}));
 	}
 
-	async executeTool(toolId: string, args: any): Promise<any> {
+	async executeTool(toolId: string, args: Record<string, unknown>): Promise<unknown> {
 		const tool = this.availableTools[toolId];
 		if (!tool) throw new Error(`MCP Tool ${toolId} not found`);
 
@@ -178,11 +194,11 @@ export class McpEngine {
 				messageIds.map(async (msgId) => {
 					try {
 						return await client.callTool({
-							name: tool._baseToolName,
+							name: tool._baseToolName!,
 							arguments: { messageId: msgId }
 						});
-					} catch (e: any) {
-						return { error: `Failed to fetch message ${msgId}: ${e.message}` };
+					} catch (e: unknown) {
+						return { error: `Failed to fetch message ${msgId}: ${(e as Error).message}` };
 					}
 				})
 			);

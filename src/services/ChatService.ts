@@ -189,7 +189,7 @@ export class ChatService {
 			const toolCallHistory: Record<string, number> = {};
 
 			// Create a single active assistant message for the UI timeline
-			const activeAssistantMessage: any = { role: 'assistant', content: '', persona: personaName };
+			const activeAssistantMessage: unknown = { role: 'assistant', content: '', persona: personaName };
 			this.unifiedTimeline.push(activeAssistantMessage);
 			if (this.onTimelineUpdated) this.onTimelineUpdated();
 
@@ -229,7 +229,7 @@ export class ChatService {
 					this.plugin.logger.log('AUTONOMOUS_TOOL_EXECUTION', { tool: tc.name, args: tc.arguments });
 					
 					if (tc.name === 'transfer_session') {
-						const args = tc.arguments as any;
+						const args = tc.arguments;
 						const targetPersona = args.target_persona;
 						const handoffMsg = args.handoff_context;
 
@@ -246,7 +246,7 @@ export class ChatService {
 						return handoffNotice;
 
 					} else if (tc.name === 'load_skill') {
-						const args = tc.arguments as any;
+						const args = tc.arguments;
 						const skillId = args.skill_id;
 						const body = this.plugin.skillsEngine.getSkillBody(skillId);
 						
@@ -270,7 +270,7 @@ export class ChatService {
 						try {
 							const mcpRes = await this.plugin.mcpEngine.executeTool(tc.name, tc.arguments);
 							toolOutputStr = JSON.stringify(mcpRes, null, 2);
-						} catch (e: any) {
+						} catch (e: unknown) {
 							toolOutputStr = `ERROR: ${e.message}`;
 						}
 
@@ -342,7 +342,7 @@ export class ChatService {
 			this.persistState();
 			return activeAssistantMessage.content;
 			
-		} catch (error: any) {
+		} catch (error: unknown) {
 			this.plugin.logger.log('LLM_API_ERROR', { error: error.message });
 			const errResponse = `Error connecting to ${this.plugin.settings.llmProvider}: ${error.message}`;
 			this.unifiedTimeline.push({ role: 'assistant', content: errResponse, persona: personaName });

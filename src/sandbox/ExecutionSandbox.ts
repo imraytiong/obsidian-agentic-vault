@@ -18,7 +18,7 @@ export class ExecutionSandbox {
 		this.customEnvPath = customEnvPath;
 	}
 
-	async executeTool(toolName: string, payload: any): Promise<{ success: boolean, output: string }> {
+	async executeTool(toolName: string, payload: unknown): Promise<{ success: boolean, output: string }> {
 		const tool = this.toolRegistry.getTool(toolName);
 		if (!tool) {
 			return { success: false, output: `Tool not found: ${toolName}` };
@@ -71,17 +71,17 @@ export class ExecutionSandbox {
 					...process.env,
 					PATH: `${this.customEnvPath}:${process.env.PATH || ''}`
 				};
-				const vaultPath = (this.app.vault.adapter as any).getBasePath ? (this.app.vault.adapter as any).getBasePath() : process.cwd();
+				const vaultPath = (this.app.vault.adapter as unknown).getBasePath ? (this.app.vault.adapter as unknown).getBasePath() : process.cwd();
 				const child = spawn(exe, args, { env: augmentedEnv, cwd: vaultPath });
 				let stdout = '';
 				let stderr = '';
-				child.stdout.on('data', (d: any) => stdout += d.toString());
-				child.stderr.on('data', (d: any) => stderr += d.toString());
+				child.stdout.on('data', (d: unknown) => stdout += d.toString());
+				child.stderr.on('data', (d: unknown) => stderr += d.toString());
 				child.on('close', (code: number) => {
 					if (code === 0) resolve({stdout, stderr});
 					else reject(new Error(stdout || stderr || `Process exited with code ${code}`));
 				});
-				child.on('error', (err: any) => reject(err));
+				child.on('error', (err: unknown) => reject(err));
 			});
 			
 			if (output.stderr) {
@@ -90,7 +90,7 @@ export class ExecutionSandbox {
 
 			this.logger.log('SANDBOX_EXECUTION_SUCCESS', { tool: toolName, stdout: output.stdout.trim() });
 			return { success: true, output: output.stdout.trim() };
-		} catch (error: any) {
+		} catch (error: unknown) {
 			this.logger.log('SANDBOX_EXECUTION_ERROR', { tool: toolName, error: error.message });
 			return { success: false, output: `Execution failed: ${error.message}` };
 		}

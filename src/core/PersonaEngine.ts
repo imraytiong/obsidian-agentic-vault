@@ -31,9 +31,9 @@ export class PersonaEngine {
 		for (const file of folder.children) {
 			if (file instanceof TFile && file.extension === 'md') {
 				const cache = this.app.metadataCache.getFileCache(file);
-				const frontmatter = cache?.frontmatter;
+				const frontmatter = cache?.frontmatter as Record<string, unknown> | undefined;
 				
-				if (frontmatter && frontmatter.name && frontmatter.cmd) {
+				if (frontmatter && typeof frontmatter.name === 'string' && typeof frontmatter.cmd === 'string') {
 					const content = await this.app.vault.cachedRead(file);
 					
 					// Simple extraction: strip YAML frontmatter
@@ -47,16 +47,19 @@ export class PersonaEngine {
 
 					// Automatically prepend '/' if the user omitted it
 					let parsedCmd = frontmatter.cmd;
-					if (typeof parsedCmd === 'string' && !parsedCmd.startsWith('/')) {
+					if (!parsedCmd.startsWith('/')) {
 						parsedCmd = '/' + parsedCmd;
 					}
+
+					const description = typeof frontmatter.description === 'string' ? frontmatter.description : undefined;
+					const skills = Array.isArray(frontmatter.skills) ? frontmatter.skills.map(String) : [];
 
 					this.personas[frontmatter.name] = {
 						id: file.basename,
 						name: frontmatter.name,
 						cmd: parsedCmd,
-						description: frontmatter.description,
-						skills: frontmatter.skills || [],
+						description,
+						skills,
 						systemPrompt: systemPrompt
 					};
 				}

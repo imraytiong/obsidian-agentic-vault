@@ -320,7 +320,7 @@ export class AgenticVaultChatView extends ItemView {
 		this.messagesContainerEl.scrollTop = this.messagesContainerEl.scrollHeight;
 	}
 
-	appendMessage(msg: ChatMessage | any) {
+	appendMessage(msg: ChatMessage | unknown) {
 		const msgEl = this.messagesContainerEl.createDiv({ cls: `chat-message ${msg.role}` });
 		msgEl.style.marginBottom = '15px';
 		msgEl.style.padding = '12px';
@@ -410,7 +410,7 @@ export class AgenticVaultChatView extends ItemView {
 
 					const inputs: { label: string, el: HTMLInputElement | HTMLTextAreaElement }[] = [];
 
-					(formData.fields || []).forEach((field: any) => {
+					(formData.fields || []).forEach((field: unknown) => {
 						const fieldContainer = formContainer.createDiv();
 						fieldContainer.style.marginBottom = '15px';
 

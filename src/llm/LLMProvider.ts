@@ -6,12 +6,12 @@ export interface LLMMessage {
 	persona?: string;
 	toolCallId?: string;
 	toolName?: string;
-	toolCalls?: { id: string, name: string, arguments: any, raw?: any }[];
+	toolCalls?: { id: string, name: string, arguments: unknown, raw?: unknown }[];
 }
 
 export interface LLMResponse {
 	content: string;
-	toolCalls?: { id: string, name: string, arguments: any, raw?: any }[];
+	toolCalls?: { id: string, name: string, arguments: unknown, raw?: unknown }[];
 }
 
 export interface LLMProvider {

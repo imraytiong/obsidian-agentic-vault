@@ -15,8 +15,8 @@ export interface AgenticVaultSettings {
 	llmBaseUrl: string;
 	availableModels: string[];
 	chatState?: {
-		unifiedTimeline: any[];
-		agentContexts: Record<string, any[]>;
+		unifiedTimeline: unknown[];
+		agentContexts: Record<string, unknown[]>;
 	};
 }
 
@@ -37,9 +37,9 @@ export const DEFAULT_SETTINGS: AgenticVaultSettings = {
 }
 
 export class AgenticVaultSettingTab extends PluginSettingTab {
-	plugin: any; // Using any to avoid circular import issues if needed, or import from main.ts
+	plugin: unknown; // Using any to avoid circular import issues if needed, or import from main.ts
 
-	constructor(app: App, plugin: any) {
+	constructor(app: App, plugin: unknown) {
 		super(app, plugin);
 		this.plugin = plugin;
 	}
@@ -48,7 +48,7 @@ export class AgenticVaultSettingTab extends PluginSettingTab {
 		const {containerEl} = this;
 
 		containerEl.empty();
-		containerEl.createEl('h2', {text: 'Agentic Vault Settings'});
+		new Setting(containerEl).setName("Agentic Vault Settings").setHeading();
 
 		new Setting(containerEl)
 			.setName('LLM API Key')
@@ -99,7 +99,7 @@ export class AgenticVaultSettingTab extends PluginSettingTab {
 						
 						// Force re-render
 						this.display();
-					} catch (e: any) {
+					} catch (e: unknown) {
 						new Notice(`API Error: ${e.message}`);
 					} finally {
 						button.setButtonText('Test Connection');

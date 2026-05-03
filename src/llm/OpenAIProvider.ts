@@ -25,7 +25,7 @@ export class OpenAIProvider implements LLMProvider {
 		const data = res.json;
 		if (!data.data) return [];
 		
-		return data.data.map((m: any) => m.id);
+		return data.data.map((m: unknown) => m.id);
 	}
 
 	async generateResponse(messages: LLMMessage[], tools: ToolDefinition[]): Promise<LLMResponse> {
@@ -33,7 +33,7 @@ export class OpenAIProvider implements LLMProvider {
 		const url = `${base}/chat/completions`;
 		
 		const openaiMessages = messages.map(msg => {
-			const m: any = { role: msg.role, content: msg.content };
+			const m: unknown = { role: msg.role, content: msg.content };
 			if (msg.role === 'assistant' && msg.toolCalls) {
 				m.tool_calls = msg.toolCalls.map(tc => ({
 					id: tc.id,
@@ -62,7 +62,7 @@ export class OpenAIProvider implements LLMProvider {
 			}
 
 			// Otherwise, it's our legacy local sandbox array format
-			const properties: Record<string, any> = {};
+			const properties: Record<string, unknown> = {};
 			const required: string[] = [];
 			for (const param of (t.parameters || [])) {
 				properties[param.name] = { type: param.type || 'string', description: param.description || '' };
@@ -78,7 +78,7 @@ export class OpenAIProvider implements LLMProvider {
 			};
 		}) : undefined;
 
-		const body: any = {
+		const body: unknown = {
 			model: this.model,
 			messages: openaiMessages
 		};
@@ -105,9 +105,9 @@ export class OpenAIProvider implements LLMProvider {
 			const message = data.choices?.[0]?.message;
 			if (!message) throw new Error('No message returned from OpenAI provider');
 
-			let toolCalls: any[] | undefined = undefined;
+			let toolCalls: unknown[] | undefined = undefined;
 			if (message.tool_calls) {
-				toolCalls = message.tool_calls.map((tc: any) => ({
+				toolCalls = message.tool_calls.map((tc: unknown) => ({
 					id: tc.id,
 					name: tc.function.name,
 					arguments: JSON.parse(tc.function.arguments)
@@ -115,7 +115,7 @@ export class OpenAIProvider implements LLMProvider {
 			}
 
 			return { content: message.content || '', toolCalls };
-		} catch (error: any) {
+		} catch (error: unknown) {
 			throw new Error(`OpenAI Provider Error: ${error.message}`);
 		}
 	}

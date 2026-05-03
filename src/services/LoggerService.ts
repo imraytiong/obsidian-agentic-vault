@@ -9,7 +9,7 @@ export class LoggerService {
 		this.sherpaPath = sherpaPath;
 	}
 
-	async log(action: string, context: Record<string, any> = {}) {
+	async log(action: string, context: Record<string, unknown> = {}) {
 		const timestamp = new Date().toISOString();
 		const logEntry = `\n### [${timestamp}] ${action}\n\`\`\`json\n${JSON.stringify(context, null, 2)}\n\`\`\`\n`;
 

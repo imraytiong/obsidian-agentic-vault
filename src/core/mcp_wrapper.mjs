@@ -1,3 +1,4 @@
+/* global process */
 import { spawn } from 'child_process';
 
 const command = process.argv[2];

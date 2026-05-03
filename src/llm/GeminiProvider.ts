@@ -21,15 +21,15 @@ export class GeminiProvider implements LLMProvider {
 		if (!data.models) return [];
 		
 		return data.models
-			.map((m: any) => m.name.replace('models/', ''))
+			.map((m: unknown) => m.name.replace('models/', ''))
 			.filter((name: string) => name.includes('gemini'));
 	}
 
 	async generateResponse(messages: LLMMessage[], tools: ToolDefinition[]): Promise<LLMResponse> {
 		const url = `https://generativelanguage.googleapis.com/v1beta/models/${this.model}:generateContent?key=${this.apiKey}`;
 		
-		let systemInstruction: any = undefined;
-		const contents: any[] = [];
+		let systemInstruction: unknown = undefined;
+		const contents: unknown[] = [];
 
 		for (const msg of messages) {
 			if (msg.role === 'system') {
@@ -44,7 +44,7 @@ export class GeminiProvider implements LLMProvider {
 							args: tc.arguments
 						}
 					});
-					if (msg.content) parts.unshift({ text: msg.content } as any);
+					if (msg.content) parts.unshift({ text: msg.content } as unknown);
 					contents.push({ role: 'model', parts });
 				} else {
 					contents.push({ role: 'model', parts: [{ text: msg.content || '' }] });
@@ -70,13 +70,13 @@ export class GeminiProvider implements LLMProvider {
 		}
 
 		// Tool Declarations
-		let geminiTools: any[] = [];
+		let geminiTools: unknown[] = [];
 		if (tools.length > 0) {
 			const functionDeclarations = tools.map(t => {
 				if (t.parameters && !Array.isArray(t.parameters) && typeof t.parameters === 'object') {
 					// It's already a JSON schema! (MCP format)
 					const geminiParams = JSON.parse(JSON.stringify(t.parameters));
-					const traverseAndSanitize = (obj: any) => {
+					const traverseAndSanitize = (obj: unknown) => {
 						if (!obj || typeof obj !== 'object') return;
 						if (obj.$schema !== undefined) delete obj.$schema;
 						if (obj.additionalProperties !== undefined) delete obj.additionalProperties;
@@ -95,7 +95,7 @@ export class GeminiProvider implements LLMProvider {
 				}
 
 				// Otherwise, it's our legacy local sandbox array format
-				const properties: Record<string, any> = {};
+				const properties: Record<string, unknown> = {};
 				const required: string[] = [];
 				for (const param of (t.parameters || [])) {
 					properties[param.name] = { type: (param.type || 'string').toUpperCase(), description: param.description || '' };
@@ -114,7 +114,7 @@ export class GeminiProvider implements LLMProvider {
 			geminiTools = [{ functionDeclarations }];
 		}
 
-		const body: any = { contents };
+		const body: unknown = { contents };
 		if (systemInstruction) body.systemInstruction = systemInstruction;
 		if (geminiTools.length > 0) body.tools = geminiTools;
 
@@ -138,7 +138,7 @@ export class GeminiProvider implements LLMProvider {
 			const parts = candidate.content?.parts || [];
 			
 			let text = '';
-			const toolCalls: any[] = [];
+			const toolCalls: unknown[] = [];
 
 			for (const part of parts) {
 				if (part.text) text += part.text;
@@ -153,7 +153,7 @@ export class GeminiProvider implements LLMProvider {
 			}
 
 			return { content: text, toolCalls: toolCalls.length > 0 ? toolCalls : undefined };
-		} catch (error: any) {
+		} catch (error: unknown) {
 			throw new Error(`Gemini Provider Error: ${error.message}`);
 		}
 	}

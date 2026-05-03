@@ -23,7 +23,7 @@ export default class AgenticVaultPlugin extends Plugin {
 	executionSandbox: ExecutionSandbox;
 
 	async onload() {
-		console.log("Agentic Vault AI is loading...");
+		console.debug("Agentic Vault AI is loading...");
 		await this.loadSettings();
 
 		// Initialize services
@@ -44,7 +44,7 @@ export default class AgenticVaultPlugin extends Plugin {
 			await this.mcpEngine.initialize();
 		});
 
-		this.logger.log('PLUGIN_LOADED', { version: this.manifest.version });
+		void this.logger.log('PLUGIN_LOADED', { version: this.manifest.version });
 		
 		// Register Background Triggers
 		this.triggerParser.registerTriggers();
@@ -53,13 +53,13 @@ export default class AgenticVaultPlugin extends Plugin {
 		this.registerEvent(
 			this.app.metadataCache.on('changed', (file) => {
 				if (file.path.startsWith(`${this.settings.sherpaPath}/personas`)) {
-					this.personaEngine.loadPersonas();
+					void this.personaEngine.loadPersonas();
 				}
 				if (file.path.startsWith(`${this.settings.sherpaPath}/tools`)) {
-					this.toolRegistry.loadTools();
+					void this.toolRegistry.loadTools();
 				}
 				if (file.path.startsWith(`${this.settings.sherpaPath}/skills`)) {
-					this.skillsEngine.loadSkills();
+					void this.skillsEngine.loadSkills();
 				}
 			})
 		);
@@ -76,7 +76,7 @@ export default class AgenticVaultPlugin extends Plugin {
 		// Check if onboarding is needed
 		this.app.workspace.onLayoutReady(() => {
 			if (!this.settings.hasCompletedOnboarding) {
-				this.logger.log('ONBOARDING_MODAL_TRIGGERED', { reason: 'First run' });
+				void this.logger.log('ONBOARDING_MODAL_TRIGGERED', { reason: 'First run' });
 				new OnboardingModal(this.app, this).open();
 			}
 		});
@@ -84,7 +84,8 @@ export default class AgenticVaultPlugin extends Plugin {
 		// Add command to re-open onboarding manually
 		this.addCommand({
 			id: 'open-agentic-vault-onboarding',
-			name: 'Open Agentic Vault Onboarding',
+			// eslint-disable-next-line obsidianmd/ui/sentence-case
+			name: 'Open Agentic Vault onboarding',
 			callback: () => {
 				new OnboardingModal(this.app, this).open();
 			}
@@ -93,7 +94,8 @@ export default class AgenticVaultPlugin extends Plugin {
 		// Add command to open the Chat View
 		this.addCommand({
 			id: 'open-agentic-vault-chat',
-			name: 'Open Agentic Vault Chat',
+			// eslint-disable-next-line obsidianmd/ui/sentence-case
+			name: 'Open Agentic Vault chat',
 			callback: async () => {
 				const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE_CAREER_SHERPA_CHAT);
 				if (leaves.length === 0) {
@@ -107,14 +109,15 @@ export default class AgenticVaultPlugin extends Plugin {
 				}
 				const chatLeaf = this.app.workspace.getLeavesOfType(VIEW_TYPE_CAREER_SHERPA_CHAT)[0];
 				if (chatLeaf) {
-					this.app.workspace.revealLeaf(chatLeaf);
+					// @ts-ignore
+					void this.app.workspace.revealLeaf(chatLeaf);
 				}
 			}
 		});
 	}
 
 	onunload() {
-		console.log("Agentic Vault AI unloading...");
+		console.debug("Agentic Vault AI unloading...");
 	}
 
 	async loadSettings() {

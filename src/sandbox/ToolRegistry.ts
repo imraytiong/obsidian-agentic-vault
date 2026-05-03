@@ -3,7 +3,7 @@ import { App, TFile, TFolder } from 'obsidian';
 export interface ToolDefinition {
 	name: string;
 	description: string;
-	parameters: any[];
+	parameters: unknown[];
 	language: string;
 	scriptContent: string;
 }

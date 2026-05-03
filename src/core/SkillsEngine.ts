@@ -29,11 +29,11 @@ export class SkillsEngine {
 		for (const child of folder.children) {
 			// A skill is a folder containing a SKILL.md
 			if (child instanceof TFolder) {
-				const skillFile = child.children.find(c => c instanceof TFile && c.name === 'SKILL.md') as TFile;
+				const skillFile = child.children.find((c): c is TFile => c instanceof TFile && c.name === 'SKILL.md');
 				if (skillFile) {
 					const cache = this.app.metadataCache.getFileCache(skillFile);
-					const frontmatter = cache?.frontmatter;
-					if (frontmatter && frontmatter.name) {
+					const frontmatter = cache?.frontmatter as Record<string, unknown> | undefined;
+					if (frontmatter && typeof frontmatter.name === 'string') {
 						let content = await this.app.vault.cachedRead(skillFile);
 						let body = content;
 						if (content.startsWith('---')) {
@@ -46,7 +46,7 @@ export class SkillsEngine {
 						this.skills[child.name] = {
 							id: child.name,
 							name: frontmatter.name,
-							description: frontmatter.description || '',
+							description: typeof frontmatter.description === 'string' ? frontmatter.description : '',
 							body: body
 						};
 					}

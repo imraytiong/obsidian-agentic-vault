@@ -11350,3 +11350,51 @@ This file is autonomously generated to provide a deterministic ReAct audit trail
   "bytes": 2148
 }
 ```
+
+### [2026-05-03T20:18:38.315Z] PLUGIN_LOADED
+```json
+{
+  "version": "0.0.1"
+}
+```
+
+### [2026-05-03T20:18:38.315Z] ONBOARDING_MODAL_TRIGGERED
+```json
+{
+  "reason": "First run"
+}
+```
+
+### [2026-05-03T20:18:43.317Z] BACKGROUND_JOB_STARTED
+```json
+{
+  "job": "map_vault"
+}
+```
+
+### [2026-05-03T20:18:43.317Z] SANDBOX_EXECUTION_STARTED
+```json
+{
+  "tool": "map_vault",
+  "engine": "local-node",
+  "payload": {
+    "targetPath": "."
+  }
+}
+```
+
+### [2026-05-03T20:18:43.369Z] SANDBOX_EXECUTION_SUCCESS
+```json
+{
+  "tool": "map_vault",
+  "stdout": "{\"scannedDirectory\":\".\",\"totalFiles\":26,\"topNodes\":[{\"path\":\"AgenticVault/logs/Trace_Log.md\",\"tags\":[\"1\",\"2\"],\"linkCount\":133},{\"path\":\"AgenticVault/logs/sessions/2026-05-02T19-06-44-753Z_Session.md\",\"tags\":[],\"linkCount\":6},{\"path\":\"1 - Projects/Test_Project/Central Hub.md\",\"tags\":[\"hub\",\"career\",\"test\"],\"linkCount\":2},{\"path\":\"1 - Projects/Test_Project/Node Alpha.md\",\"tags\":[\"node\",\"alpha\"],\"linkCount\":2},{\"path\":\"1 - Projects/Test_Project/Node Beta.md\",\"tags\":[\"node\",\"beta\"],\"linkCount\":2},{\"path\":\"4 - Archives/Test_Project/Central Hub.md\",\"tags\":[\"hub\",\"career\",\"test\"],\"linkCount\":2},{\"path\":\"4 - Archives/Test_Project/Node Alpha.md\",\"tags\":[\"node\",\"alpha\"],\"linkCount\":2},{\"path\":\"4 - Archives/Test_Project/Node Beta.md\",\"tags\":[\"node\",\"beta\"],\"linkCount\":2},{\"path\":\"AgenticVault/logs/sessions/2026-05-02T15-00-31-855Z_Session.md\",\"tags\":[],\"linkCount\":1},{\"path\":\"1 - Projects/Career Strategy/Career Strategy Draft.md\",\"tags\":[],\"linkCount\":0},{\"path\":\"1 - Projects/Ice Cream Shop/Business_Proposal.md\",\"tags\":[],\"linkCount\":0},{\"path\":\"3 - Resources/Ice Cream Shop/Business_Proposal.md\",\"tags\":[],\"linkCount\":0},{\"path\":\"AgenticVault/memory/personas/career_mentor_memory.md\",\"tags\":[],\"linkCount\":0},{\"path\":\"AgenticVault/memory/shared_memory.md\",\"tags\":[],\"linkCount\":0},{\"path\":\"AgenticVault/personas/ai_recruiter.md\",\"tags\":[],\"linkCount\":0},{\"path\":\"AgenticVault/personas/career_mentor.md\",\"tags\":[],\"linkCount\":0},{\"path\":\"AgenticVault/personas/chief_of_staff.md\",\"tags\":[],\"linkCount\":0},{\"path\":\"AgenticVault/personas/pager.md\",\"tags\":[],\"linkCount\":0},{\"path\":\"AgenticVault/personas/technical_writer.md\",\"tags\":[],\"linkCount\":0},{\"path\":\"AgenticVault/skills/audit_legacy_vault/SKILL.md\",\"tags\":[],\"linkCount\":0},{\"path\":\"AgenticVault/tools/echo.md\",\"tags\":[],\"linkCount\":0},{\"path\":\"AgenticVault/tools/file_manager.md\",\"tags\":[],\"linkCount\":0},{\"path\":\"AgenticVault/tools/google_workspace.md\",\"tags\":[],\"linkCount\":0},{\"path\":\"AgenticVault/tools/map_vault.md\",\"tags\":[],\"linkCount\":0},{\"path\":\"AgenticVault/tools/update_memory.md\",\"tags\":[],\"linkCount\":0},{\"path\":\"AgenticVault/tools/web_search.md\",\"tags\":[],\"linkCount\":0}]}"
+}
+```
+
+### [2026-05-03T20:18:43.369Z] BACKGROUND_JOB_COMPLETED
+```json
+{
+  "job": "map_vault",
+  "bytes": 2148
+}
+```

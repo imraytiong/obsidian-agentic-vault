@@ -1,0 +1,204 @@
+import { App, TFile, TFolder, parseYaml } from 'obsidian';
+import { Client } from "@modelcontextprotocol/sdk/client/index.js";
+import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
+
+export interface McpServerConfig {
+	name?: string;
+	command?: string;
+	args?: string[];
+	env?: Record<string, string>;
+	type?: 'stdio' | 'sse';
+	uri?: string;
+}
+
+export class McpEngine {
+	private app: App;
+	private sherpaPath: string;
+	private customEnvPath: string;
+	public clients: Record<string, Client> = {};
+	public availableTools: Record<string, any> = {};
+
+	constructor(app: App, sherpaPath: string, customEnvPath: string = '') {
+		this.app = app;
+		this.sherpaPath = sherpaPath;
+		this.customEnvPath = customEnvPath;
+	}
+
+	async initialize() {
+		// Clean up existing connections
+		this.clients = {};
+		this.availableTools = {};
+
+		const serversPath = `${this.sherpaPath}/tools`;
+		const folder = this.app.vault.getAbstractFileByPath(serversPath);
+		
+		if (!folder || !(folder instanceof TFolder)) {
+			console.error(`Tools folder not found at ${serversPath}`);
+			return;
+		}
+
+		for (const file of folder.children) {
+			if (file instanceof TFile && file.extension === 'md') {
+				let frontmatter: any = null;
+				const cache = this.app.metadataCache.getFileCache(file);
+				
+				if (cache && cache.frontmatter) {
+					frontmatter = cache.frontmatter;
+				} else {
+					// Fallback to manual parse if cache is empty on startup
+					const content = await this.app.vault.read(file);
+					const match = content.match(/^---\n([\s\S]*?)\n---/);
+					if (match) {
+						try {
+							frontmatter = parseYaml(match[1] || '');
+							if (frontmatter && frontmatter.name && frontmatter.mcp_server === true) {
+								this.connectServer(frontmatter.name, frontmatter as McpServerConfig);
+							}
+						} catch (e) {
+							console.error("YAML Parse Error", e);
+						}
+						continue; // Handle async parseYaml
+					}
+				}
+				
+				if (frontmatter && frontmatter.name && frontmatter.mcp_server === true) {
+					await this.connectServer(frontmatter.name, frontmatter as McpServerConfig);
+				}
+			}
+		}
+	}
+
+	private async connectServer(name: string, config: McpServerConfig) {
+		try {
+			const client = new Client(
+				{ name: `agentic-vault-${name}`, version: "1.0.0" },
+				{ capabilities: {} }
+			);
+
+			if (!config.type || config.type === 'stdio') {
+				if (!config.command) throw new Error("Missing command for stdio server");
+				
+				const mergedEnv = { ...process.env, ...(config.env || {}) };
+				if (this.customEnvPath) {
+					mergedEnv.PATH = `${this.customEnvPath}:${mergedEnv.PATH || ''}`;
+				}
+				
+				const cleanEnv: Record<string, string> = {};
+				for (const [k, v] of Object.entries(mergedEnv)) {
+					if (v !== undefined) cleanEnv[k] = String(v);
+				}
+
+				const transport = new StdioClientTransport({
+					command: config.command,
+					args: config.args || [],
+					env: cleanEnv
+				});
+				
+				await client.connect(transport);
+			} else if (config.type === 'sse') {
+				const { SSEClientTransport } = await import("@modelcontextprotocol/sdk/client/sse.js");
+				if (!config.uri) throw new Error("Missing uri for sse server");
+				
+				const transport = new SSEClientTransport(new URL(config.uri));
+				await client.connect(transport);
+			}
+
+			this.clients[name] = client;
+			
+			// Fetch tools
+			const toolResponse = await client.listTools();
+			
+			if (toolResponse && toolResponse.tools) {
+				for (const tool of toolResponse.tools) {
+					const toolId = `${name}___${tool.name}`;
+					this.availableTools[toolId] = {
+						...tool,
+						_serverName: name,
+						_originalName: tool.name
+					};
+
+					// Inject Synthetic Batch Tools
+					if (tool.name === 'gmail.get') {
+						const batchToolId = `${name}___gmail.get_batch`;
+						this.availableTools[batchToolId] = {
+							name: 'gmail.get_batch',
+							description: 'Batch fetch multiple emails at once to save LLM turns. Provide an array of message IDs.',
+							inputSchema: {
+								type: "object",
+								properties: {
+									messageIds: {
+										type: "array",
+										items: { type: "string" },
+										description: "An array of email message IDs to fetch."
+									}
+								},
+								required: ["messageIds"]
+							},
+							_serverName: name,
+							_originalName: 'gmail.get_batch',
+							_isSyntheticBatch: true,
+							_baseToolName: 'gmail.get'
+						};
+					}
+				}
+			}
+			console.log(`Connected to MCP Server: ${name} with ${toolResponse?.tools?.length || 0} tools.`);
+			this.app.vault.adapter.append('AgenticVault/logs/mcp_debug.txt', `\n[${new Date().toISOString()}] Connected to MCP Server: ${name} with ${toolResponse?.tools?.length || 0} tools.`);
+			
+		} catch (e: any) {
+			console.error(`Failed to connect to MCP Server ${name}:`, e);
+			this.app.vault.adapter.append('AgenticVault/logs/mcp_debug.txt', `\n[${new Date().toISOString()}] Failed to connect to MCP Server ${name}: ${e.message}`);
+		}
+	}
+
+	getMcpToolsAsRegistryFormat(): any[] {
+		return Object.values(this.availableTools).map(t => ({
+			name: `${t._serverName}___${t._originalName}`, // The prefixed name
+			id: `${t._serverName}___${t._originalName}`, 
+			description: t.description || `Provided by MCP Server: ${t._serverName}`,
+			language: 'mcp',
+			scriptContent: '',
+			parameters: t.inputSchema || [] 
+		}));
+	}
+
+	async executeTool(toolId: string, args: any): Promise<any> {
+		const tool = this.availableTools[toolId];
+		if (!tool) throw new Error(`MCP Tool ${toolId} not found`);
+
+		const client = this.clients[tool._serverName];
+		if (!client) throw new Error(`MCP Client ${tool._serverName} not connected`);
+
+		// Handle Synthetic Batch Tools
+		if (tool._isSyntheticBatch && tool._baseToolName === 'gmail.get') {
+			const messageIds = args.messageIds || [];
+			if (!Array.isArray(messageIds)) throw new Error("messageIds must be an array");
+
+			const results = await Promise.all(
+				messageIds.map(async (msgId) => {
+					try {
+						return await client.callTool({
+							name: tool._baseToolName,
+							arguments: { messageId: msgId }
+						});
+					} catch (e: any) {
+						return { error: `Failed to fetch message ${msgId}: ${e.message}` };
+					}
+				})
+			);
+			
+			return {
+				_note: `Batch fetch returned ${results.length} emails.`,
+				results
+			};
+		}
+
+		// Standard Execution
+		const result = await client.callTool({
+			name: tool._originalName,
+			arguments: args
+		});
+
+		return result;
+	}
+}

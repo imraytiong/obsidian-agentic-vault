@@ -1,99 +1,127 @@
-import {App, Editor, MarkdownView, Modal, Notice, Plugin} from 'obsidian';
-import {DEFAULT_SETTINGS, MyPluginSettings, SampleSettingTab} from "./settings";
+import { Plugin } from 'obsidian';
+import { AgenticVaultSettings, DEFAULT_SETTINGS, AgenticVaultSettingTab } from "./settings";
+import { OnboardingModal } from "./ui/OnboardingModal";
+import { ChatService } from "./services/ChatService";
+import { LoggerService } from "./services/LoggerService";
+import { AgenticVaultChatView, VIEW_TYPE_CAREER_SHERPA_CHAT } from "./ui/ChatView";
+import { PersonaEngine } from "./core/PersonaEngine";
+import { SkillsEngine } from "./core/SkillsEngine";
+import { TriggerParser } from "./core/TriggerParser";
+import { ToolRegistry } from "./sandbox/ToolRegistry";
+import { ExecutionSandbox } from "./sandbox/ExecutionSandbox";
+import { McpEngine } from "./core/McpEngine";
 
-// Remember to rename these classes and interfaces!
-
-export default class MyPlugin extends Plugin {
-	settings: MyPluginSettings;
+export default class AgenticVaultPlugin extends Plugin {
+	settings: AgenticVaultSettings;
+	chatService: ChatService;
+	logger: LoggerService;
+	personaEngine: PersonaEngine;
+	skillsEngine: SkillsEngine;
+	mcpEngine: McpEngine;
+	triggerParser: TriggerParser;
+	toolRegistry: ToolRegistry;
+	executionSandbox: ExecutionSandbox;
 
 	async onload() {
+		console.log("Agentic Vault AI is loading...");
 		await this.loadSettings();
 
-		// This creates an icon in the left ribbon.
-		this.addRibbonIcon('dice', 'Sample', (evt: MouseEvent) => {
-			// Called when the user clicks the icon.
-			new Notice('This is a notice!');
+		// Initialize services
+		this.logger = new LoggerService(this.app, this.settings.sherpaPath);
+		this.personaEngine = new PersonaEngine(this.app, this.settings.sherpaPath);
+		this.toolRegistry = new ToolRegistry(this.app, this.settings.sherpaPath);
+		this.executionSandbox = new ExecutionSandbox(this.app, this.logger, this.toolRegistry, this.settings.sandboxEngine, this.settings.customEnvPath);
+		this.skillsEngine = new SkillsEngine(this.app, this.settings.sherpaPath);
+		this.mcpEngine = new McpEngine(this.app, this.settings.sherpaPath, this.settings.customEnvPath);
+		this.chatService = new ChatService(this);
+		this.triggerParser = new TriggerParser(this.app, this.logger, this.executionSandbox);
+
+		// Initialize dynamic content
+		this.app.workspace.onLayoutReady(async () => {
+			await this.personaEngine.loadPersonas();
+			await this.toolRegistry.loadTools();
+			await this.skillsEngine.loadSkills();
+			await this.mcpEngine.initialize();
 		});
 
-		// This adds a status bar item to the bottom of the app. Does not work on mobile apps.
-		const statusBarItemEl = this.addStatusBarItem();
-		statusBarItemEl.setText('Status bar text');
+		this.logger.log('PLUGIN_LOADED', { version: this.manifest.version });
+		
+		// Register Background Triggers
+		this.triggerParser.registerTriggers();
 
-		// This adds a simple command that can be triggered anywhere
-		this.addCommand({
-			id: 'open-modal-simple',
-			name: 'Open modal (simple)',
-			callback: () => {
-				new SampleModal(this.app).open();
-			}
-		});
-		// This adds an editor command that can perform some operation on the current editor instance
-		this.addCommand({
-			id: 'replace-selected',
-			name: 'Replace selected content',
-			editorCallback: (editor: Editor, view: MarkdownView) => {
-				editor.replaceSelection('Sample editor command');
-			}
-		});
-		// This adds a complex command that can check whether the current state of the app allows execution of the command
-		this.addCommand({
-			id: 'open-modal-complex',
-			name: 'Open modal (complex)',
-			checkCallback: (checking: boolean) => {
-				// Conditions to check
-				const markdownView = this.app.workspace.getActiveViewOfType(MarkdownView);
-				if (markdownView) {
-					// If checking is true, we're simply "checking" if the command can be run.
-					// If checking is false, then we want to actually perform the operation.
-					if (!checking) {
-						new SampleModal(this.app).open();
-					}
-
-					// This command will only show up in Command Palette when the check function returns true
-					return true;
+		// Watch for Persona & Tool edits
+		this.registerEvent(
+			this.app.metadataCache.on('changed', (file) => {
+				if (file.path.startsWith(`${this.settings.sherpaPath}/personas`)) {
+					this.personaEngine.loadPersonas();
 				}
-				return false;
+				if (file.path.startsWith(`${this.settings.sherpaPath}/tools`)) {
+					this.toolRegistry.loadTools();
+				}
+				if (file.path.startsWith(`${this.settings.sherpaPath}/skills`)) {
+					this.skillsEngine.loadSkills();
+				}
+			})
+		);
+
+		// Register Chat View
+		this.registerView(
+			VIEW_TYPE_CAREER_SHERPA_CHAT,
+			(leaf) => new AgenticVaultChatView(leaf, this)
+		);
+
+		// Add settings tab
+		this.addSettingTab(new AgenticVaultSettingTab(this.app, this));
+
+		// Check if onboarding is needed
+		this.app.workspace.onLayoutReady(() => {
+			if (!this.settings.hasCompletedOnboarding) {
+				this.logger.log('ONBOARDING_MODAL_TRIGGERED', { reason: 'First run' });
+				new OnboardingModal(this.app, this).open();
 			}
 		});
 
-		// This adds a settings tab so the user can configure various aspects of the plugin
-		this.addSettingTab(new SampleSettingTab(this.app, this));
-
-		// If the plugin hooks up any global DOM events (on parts of the app that doesn't belong to this plugin)
-		// Using this function will automatically remove the event listener when this plugin is disabled.
-		this.registerDomEvent(document, 'click', (evt: MouseEvent) => {
-			new Notice("Click");
+		// Add command to re-open onboarding manually
+		this.addCommand({
+			id: 'open-agentic-vault-onboarding',
+			name: 'Open Agentic Vault Onboarding',
+			callback: () => {
+				new OnboardingModal(this.app, this).open();
+			}
 		});
 
-		// When registering intervals, this function will automatically clear the interval when the plugin is disabled.
-		this.registerInterval(window.setInterval(() => console.log('setInterval'), 5 * 60 * 1000));
-
+		// Add command to open the Chat View
+		this.addCommand({
+			id: 'open-agentic-vault-chat',
+			name: 'Open Agentic Vault Chat',
+			callback: async () => {
+				const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE_CAREER_SHERPA_CHAT);
+				if (leaves.length === 0) {
+					const rightLeaf = this.app.workspace.getRightLeaf(false);
+					if (rightLeaf) {
+						await rightLeaf.setViewState({
+							type: VIEW_TYPE_CAREER_SHERPA_CHAT,
+							active: true,
+						});
+					}
+				}
+				const chatLeaf = this.app.workspace.getLeavesOfType(VIEW_TYPE_CAREER_SHERPA_CHAT)[0];
+				if (chatLeaf) {
+					this.app.workspace.revealLeaf(chatLeaf);
+				}
+			}
+		});
 	}
 
 	onunload() {
+		console.log("Agentic Vault AI unloading...");
 	}
 
 	async loadSettings() {
-		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData() as Partial<MyPluginSettings>);
+		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData() as Partial<AgenticVaultSettings>);
 	}
 
 	async saveSettings() {
 		await this.saveData(this.settings);
-	}
-}
-
-class SampleModal extends Modal {
-	constructor(app: App) {
-		super(app);
-	}
-
-	onOpen() {
-		let {contentEl} = this;
-		contentEl.setText('Woah!');
-	}
-
-	onClose() {
-		const {contentEl} = this;
-		contentEl.empty();
 	}
 }

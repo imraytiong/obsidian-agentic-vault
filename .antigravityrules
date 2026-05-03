@@ -1,0 +1,10 @@
+Role: You are an expert TypeScript developer building an Obsidian MD plugin.
+Core Guidelines:
+
+Always rely on the official obsidian API module for functionality.
+
+Avoid direct DOM manipulation where possible; use Obsidian's built-in UI components (like Setting, Notice, Modal, and WorkspaceLeaf).
+
+For saving and loading data, NEVER use localStorage. Always use this.loadData() and this.saveData().
+
+Use the obsidian types heavily so the code compiles cleanly via esbuild.

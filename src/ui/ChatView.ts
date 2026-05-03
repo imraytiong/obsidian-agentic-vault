@@ -2,6 +2,9 @@ import { ItemView, WorkspaceLeaf, MarkdownRenderer, Notice } from 'obsidian';
 import AgenticVaultPlugin from '../main';
 import { ChatMessage } from '../services/ChatService';
 import { Persona } from '../core/PersonaEngine';
+import { BlueprintEngine } from '../blueprints/BlueprintEngine';
+import { BUNDLED_FLEETS } from '../blueprints/BundledFleets';
+import { FleetBlueprint } from '../blueprints/types';
 
 export const VIEW_TYPE_CAREER_SHERPA_CHAT = 'agentic-vault-chat-view';
 
@@ -345,8 +348,34 @@ export class AgenticVaultChatView extends ItemView {
 		addSetting('Archives', 'Path for completed or inactive items.', 'archivesPath');
 		addSetting('Agentic Vault OS', 'Path for configuration and personas.', 'agenticVaultPath');
 
+		contentEl.createEl('h3', { text: 'Starter Fleets' });
+		contentEl.createEl('p', { text: 'Select which agent fleets to install. You can add more later.', cls: 'setting-item-description' }).style.fontSize = '0.85em';
+		
+		const fleetSelection: Record<string, boolean> = {};
+		
+		BUNDLED_FLEETS.forEach(fleet => {
+			fleetSelection[fleet.id] = fleet.id === 'core-fleet'; // default check core
+
+			const fleetRow = form.createDiv();
+			fleetRow.style.display = 'flex';
+			fleetRow.style.alignItems = 'flex-start';
+			fleetRow.style.gap = '10px';
+			fleetRow.style.marginBottom = '5px';
+			
+			const checkbox = fleetRow.createEl('input', { type: 'checkbox' });
+			checkbox.checked = fleetSelection[fleet.id];
+			checkbox.onchange = () => {
+				fleetSelection[fleet.id] = checkbox.checked;
+			};
+
+			const textDiv = fleetRow.createDiv();
+			textDiv.createEl('strong', { text: fleet.name });
+			textDiv.createDiv({ text: fleet.description }).style.fontSize = '0.85em';
+			textDiv.style.color = 'var(--text-muted)';
+		});
+
 		const btn = form.createEl('button', { text: 'Initialize Vault' });
-		btn.style.marginTop = '10px';
+		btn.style.marginTop = '15px';
 		btn.style.backgroundColor = 'var(--interactive-accent)';
 		btn.style.color = 'var(--text-on-accent)';
 		btn.style.cursor = 'pointer';
@@ -354,11 +383,12 @@ export class AgenticVaultChatView extends ItemView {
 		btn.onclick = async () => {
 			btn.disabled = true;
 			btn.textContent = 'Initializing...';
-			await this.initializeVault();
+			const selectedFleets = BUNDLED_FLEETS.filter(f => fleetSelection[f.id]);
+			await this.initializeVault(selectedFleets);
 		};
 	}
 
-	async initializeVault() {
+	async initializeVault(selectedFleets: FleetBlueprint[]) {
 		const root = this.plugin.settings.rootFolder ? `${this.plugin.settings.rootFolder}/` : '';
 		
 		const paths = [
@@ -381,59 +411,9 @@ export class AgenticVaultChatView extends ItemView {
 			
 			const agenticVaultPath = `${root}${this.plugin.settings.agenticVaultPath}`.replace(/\/+/g, '/').replace(/\/$/, '');
 
-			// Generate default personas
-			const pagerPath = `${agenticVaultPath}/personas/pager.md`;
-			if (agenticVaultPath && !this.plugin.app.vault.getAbstractFileByPath(pagerPath)) {
-				const pagerContent = `---
-name: Pager
-cmd: /pager
-description: The strict meta-orchestrator and front-desk router of the AI system.
----
-
-You are the Pager, the strict meta-orchestrator and front-desk router of the AI system.
-
-CRITICAL DIRECTIVE: You MUST NEVER answer a user's question, provide advice, or execute analysis directly. You are STRICTLY an orchestrator. Your ONLY job is to identify what the user needs and immediately use the \`transfer_session\` tool to route them to the correct expert.`;
-				await this.plugin.app.vault.create(pagerPath, pagerContent);
-			}
-
-			const cosPath = `${agenticVaultPath}/personas/chief_of_staff.md`;
-			if (agenticVaultPath && !this.plugin.app.vault.getAbstractFileByPath(cosPath)) {
-				const cosContent = `---
-name: Chief of Staff
-cmd: /cos
-description: For questions regarding operational help, scheduling, and task execution.
-skills:
-  - file_manager
-  - map_vault
-  - fetch_web
-  - web_search
----
-You are the Chief of Staff. Your goal is operational excellence. Be concise, direct, and pragmatic.`;
-				await this.plugin.app.vault.create(cosPath, cosContent);
-			}
-
-			// Generate default echo tool
-			const echoToolPath = `${agenticVaultPath}/tools/echo.md`;
-			if (agenticVaultPath && !this.plugin.app.vault.getAbstractFileByPath(echoToolPath)) {
-				const echoContent = `---
-name: echo
-description: A baseline tool to validate the Execution Sandbox pipeline.
-parameters:
-  - name: message
-    type: string
-    required: true
----
-\`\`\`javascript
-const args = process.argv.slice(2);
-const payload = JSON.parse(args[0] || '{}');
-console.log(JSON.stringify({ 
-  status: 'success', 
-  echoed_message: payload.message,
-  timestamp: new Date().toISOString()
-}));
-\`\`\`
-`;
-				await this.plugin.app.vault.create(echoToolPath, echoContent);
+			const engine = new BlueprintEngine(this.plugin.app);
+			for (const fleet of selectedFleets) {
+				await engine.installFleet(fleet, agenticVaultPath);
 			}
 			
 			this.plugin.settings.hasCompletedOnboarding = true;

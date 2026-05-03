@@ -339,7 +339,7 @@ export class AgenticVaultChatView extends ItemView {
 		form.style.marginTop = '20px';
 
 		// --- 1. LLM CONFIGURATION ---
-		contentEl.createEl('h3', { text: '1. Connect Your LLM', cls: 'setting-item-heading' });
+		form.createEl('h3', { text: '1. Connect Your LLM', cls: 'setting-item-heading' });
 		
 		const llmSection = form.createDiv();
 		llmSection.style.display = 'flex';
@@ -438,7 +438,7 @@ export class AgenticVaultChatView extends ItemView {
 		};
 
 		// --- 2. VAULT CONFIGURATION ---
-		contentEl.createEl('h3', { text: '2. Vault Structure', cls: 'setting-item-heading' });
+		form.createEl('h3', { text: '2. Vault Structure', cls: 'setting-item-heading' });
 
 		const addSetting = (name: string, desc: string, key: keyof typeof this.plugin.settings) => {
 			const row = form.createDiv();
@@ -463,8 +463,8 @@ export class AgenticVaultChatView extends ItemView {
 		addSetting('Agentic Vault OS', 'Path for configuration and personas.', 'agenticVaultPath');
 
 		// --- 3. STARTER FLEETS ---
-		contentEl.createEl('h3', { text: '3. Starter Fleets', cls: 'setting-item-heading' });
-		contentEl.createEl('p', { text: 'Select which agent fleets to install. You can add more later.', cls: 'setting-item-description' }).style.fontSize = '0.85em';
+		form.createEl('h3', { text: '3. Starter Fleets', cls: 'setting-item-heading' });
+		form.createEl('p', { text: 'Select which agent fleets to install. You can add more later.', cls: 'setting-item-description' }).style.fontSize = '0.85em';
 		
 		const fleetSelection: Record<string, boolean> = {};
 		

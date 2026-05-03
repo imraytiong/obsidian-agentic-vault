@@ -2,12 +2,13 @@ import { App, PluginSettingTab, Setting, Notice } from 'obsidian';
 
 export interface AgenticVaultSettings {
 	hasCompletedOnboarding: boolean;
+	rootFolder: string;
 	llmApiKey: string;
 	projectsPath: string;
 	areasPath: string;
 	resourcesPath: string;
 	archivesPath: string;
-	sherpaPath: string;
+	agenticVaultPath: string;
 	sandboxEngine: string;
 	customEnvPath: string;
 	llmProvider: string;
@@ -22,12 +23,13 @@ export interface AgenticVaultSettings {
 
 export const DEFAULT_SETTINGS: AgenticVaultSettings = {
 	hasCompletedOnboarding: false,
+	rootFolder: '',
 	llmApiKey: '',
-	projectsPath: '1 - Projects',
-	areasPath: '2 - Areas',
-	resourcesPath: '3 - Resources',
-	archivesPath: '4 - Archives',
-	sherpaPath: 'AgenticVault',
+	projectsPath: '10_projects',
+	areasPath: '20_areas',
+	resourcesPath: '30_resources',
+	archivesPath: '40_archives',
+	agenticVaultPath: '90_agentic_vault',
 	sandboxEngine: 'local-node',
 	customEnvPath: '/Users/raytiong/.nvm/versions/node/v24.11.0/bin:/usr/local/bin:/opt/homebrew/bin',
 	llmProvider: 'gemini',
@@ -136,10 +138,21 @@ export class AgenticVaultSettingTab extends PluginSettingTab {
 				}));
 
 		new Setting(containerEl)
+			.setName('Root Folder')
+			.setDesc('Optional root folder to place the PARA structure under (leave empty for vault root).')
+			.addText(text => text
+				.setPlaceholder('')
+				.setValue(this.plugin.settings.rootFolder)
+				.onChange(async (value) => {
+					this.plugin.settings.rootFolder = value;
+					await this.plugin.saveSettings();
+				}));
+
+		new Setting(containerEl)
 			.setName('Projects Folder')
 			.setDesc('Path for active projects.')
 			.addText(text => text
-				.setPlaceholder('1 - Projects')
+				.setPlaceholder('10_projects')
 				.setValue(this.plugin.settings.projectsPath)
 				.onChange(async (value) => {
 					this.plugin.settings.projectsPath = value;
@@ -150,7 +163,7 @@ export class AgenticVaultSettingTab extends PluginSettingTab {
 			.setName('Areas Folder')
 			.setDesc('Path for active areas of responsibility.')
 			.addText(text => text
-				.setPlaceholder('2 - Areas')
+				.setPlaceholder('20_areas')
 				.setValue(this.plugin.settings.areasPath)
 				.onChange(async (value) => {
 					this.plugin.settings.areasPath = value;
@@ -161,7 +174,7 @@ export class AgenticVaultSettingTab extends PluginSettingTab {
 			.setName('Resources Folder')
 			.setDesc('Path for resources and reference material.')
 			.addText(text => text
-				.setPlaceholder('3 - Resources')
+				.setPlaceholder('30_resources')
 				.setValue(this.plugin.settings.resourcesPath)
 				.onChange(async (value) => {
 					this.plugin.settings.resourcesPath = value;
@@ -172,7 +185,7 @@ export class AgenticVaultSettingTab extends PluginSettingTab {
 			.setName('Archives Folder')
 			.setDesc('Path for completed or inactive items.')
 			.addText(text => text
-				.setPlaceholder('4 - Archives')
+				.setPlaceholder('40_archives')
 				.setValue(this.plugin.settings.archivesPath)
 				.onChange(async (value) => {
 					this.plugin.settings.archivesPath = value;
@@ -180,13 +193,13 @@ export class AgenticVaultSettingTab extends PluginSettingTab {
 				}));
 
 		new Setting(containerEl)
-			.setName('Sherpa Folder')
-			.setDesc('Path for storing your Markdown persona definitions.')
+			.setName('Agentic Vault Folder')
+			.setDesc('Path for storing your Agentic Vault configuration, personas, and tools.')
 			.addText(text => text
-				.setPlaceholder('AgenticVault')
-				.setValue(this.plugin.settings.sherpaPath)
+				.setPlaceholder('90_agentic_vault')
+				.setValue(this.plugin.settings.agenticVaultPath)
 				.onChange(async (value) => {
-					this.plugin.settings.sherpaPath = value;
+					this.plugin.settings.agenticVaultPath = value;
 					await this.plugin.saveSettings();
 				}));
 

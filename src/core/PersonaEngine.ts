@@ -11,20 +11,20 @@ export interface Persona {
 
 export class PersonaEngine {
 	private app: App;
-	private sherpaPath: string;
+	private agenticVaultPath: string;
 	private personas: Record<string, Persona> = {};
 
-	constructor(app: App, sherpaPath: string) {
+	constructor(app: App, agenticVaultPath: string) {
 		this.app = app;
-		this.sherpaPath = sherpaPath;
+		this.agenticVaultPath = agenticVaultPath;
 	}
 
 	async loadPersonas() {
 		this.personas = {}; // Clear existing
 
-		if (!this.sherpaPath) return;
+		if (!this.agenticVaultPath) return;
 
-		const personasPath = `${this.sherpaPath}/personas`;
+		const personasPath = `${this.agenticVaultPath}/personas`;
 		const folder = this.app.vault.getAbstractFileByPath(personasPath);
 		if (!folder || !(folder instanceof TFolder)) return;
 

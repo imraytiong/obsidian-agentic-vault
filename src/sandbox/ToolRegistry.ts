@@ -10,19 +10,19 @@ export interface ToolDefinition {
 
 export class ToolRegistry {
 	private app: App;
-	private sherpaPath: string;
+	private agenticVaultPath: string;
 	private tools: Record<string, ToolDefinition> = {};
 
-	constructor(app: App, sherpaPath: string) {
+	constructor(app: App, agenticVaultPath: string) {
 		this.app = app;
-		this.sherpaPath = sherpaPath;
+		this.agenticVaultPath = agenticVaultPath;
 	}
 
 	async loadTools() {
 		this.tools = {};
-		if (!this.sherpaPath) return;
+		if (!this.agenticVaultPath) return;
 
-		const toolsPath = `${this.sherpaPath}/tools`;
+		const toolsPath = `${this.agenticVaultPath}/tools`;
 		const folder = this.app.vault.getAbstractFileByPath(toolsPath);
 		
 		if (!folder || !(folder instanceof TFolder)) return;

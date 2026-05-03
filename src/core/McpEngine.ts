@@ -28,14 +28,14 @@ export interface McpTool {
 
 export class McpEngine {
 	private app: App;
-	private sherpaPath: string;
+	private agenticVaultPath: string;
 	private customEnvPath: string;
 	public clients: Record<string, Client> = {};
 	public availableTools: Record<string, McpTool> = {};
 
-	constructor(app: App, sherpaPath: string, customEnvPath: string = '') {
+	constructor(app: App, agenticVaultPath: string, customEnvPath: string = '') {
 		this.app = app;
-		this.sherpaPath = sherpaPath;
+		this.agenticVaultPath = agenticVaultPath;
 		this.customEnvPath = customEnvPath;
 	}
 
@@ -44,7 +44,7 @@ export class McpEngine {
 		this.clients = {};
 		this.availableTools = {};
 
-		const serversPath = `${this.sherpaPath}/tools`;
+		const serversPath = `${this.agenticVaultPath}/tools`;
 		const folder = this.app.vault.getAbstractFileByPath(serversPath);
 		
 		if (!folder || !(folder instanceof TFolder)) {

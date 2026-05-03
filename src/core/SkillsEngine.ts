@@ -9,19 +9,19 @@ export interface SkillDefinition {
 
 export class SkillsEngine {
 	private app: App;
-	private sherpaPath: string;
+	private agenticVaultPath: string;
 	private skills: Record<string, SkillDefinition> = {};
 
-	constructor(app: App, sherpaPath: string) {
+	constructor(app: App, agenticVaultPath: string) {
 		this.app = app;
-		this.sherpaPath = sherpaPath;
+		this.agenticVaultPath = agenticVaultPath;
 	}
 
 	async loadSkills() {
 		this.skills = {};
-		if (!this.sherpaPath) return;
+		if (!this.agenticVaultPath) return;
 
-		const skillsPath = `${this.sherpaPath}/skills`;
+		const skillsPath = `${this.agenticVaultPath}/skills`;
 		const folder = this.app.vault.getAbstractFileByPath(skillsPath);
 		
 		if (!folder || !(folder instanceof TFolder)) return;

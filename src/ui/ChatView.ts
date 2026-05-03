@@ -1,4 +1,4 @@
-import { ItemView, WorkspaceLeaf, MarkdownRenderer } from 'obsidian';
+import { ItemView, WorkspaceLeaf, MarkdownRenderer, Notice } from 'obsidian';
 import AgenticVaultPlugin from '../main';
 import { ChatMessage } from '../services/ChatService';
 import { Persona } from '../core/PersonaEngine';
@@ -29,7 +29,16 @@ export class AgenticVaultChatView extends ItemView {
 		const { contentEl } = this;
 		contentEl.empty();
 		contentEl.addClass('agentic-vault-chat-container');
+
+		if (!this.plugin.settings.hasCompletedOnboarding) {
+			void this.renderOnboarding(contentEl);
+			return;
+		}
 		
+		this.renderChatInterface(contentEl);
+	}
+
+	renderChatInterface(contentEl: HTMLElement) {
 		contentEl.style.display = 'flex';
 		contentEl.style.flexDirection = 'column';
 		contentEl.style.height = '100%';
@@ -296,6 +305,150 @@ export class AgenticVaultChatView extends ItemView {
 		};
 
 		sendBtn.addEventListener('click', handleSend);
+	}
+
+	async renderOnboarding(contentEl: HTMLElement) {
+		contentEl.style.display = 'block';
+		contentEl.style.padding = '20px';
+		contentEl.style.overflowY = 'auto';
+
+		contentEl.createEl("h2", { text: "Welcome to Agentic Vault" });
+		contentEl.createEl("p", { 
+			text: "Agentic Vault uses the PARA method (Projects, Areas, Resources, Archives) to organize your vault. Let's set up your default folders."
+		});
+
+		const form = contentEl.createDiv();
+		form.style.display = 'flex';
+		form.style.flexDirection = 'column';
+		form.style.gap = '15px';
+		form.style.marginTop = '20px';
+
+		const addSetting = (name: string, desc: string, key: keyof typeof this.plugin.settings) => {
+			const row = form.createDiv();
+			row.createEl('strong', { text: name });
+			row.createEl('div', { text: desc }).style.fontSize = '0.85em';
+			const input = row.createEl('input', { type: 'text' });
+			input.value = this.plugin.settings[key] as string || '';
+			input.style.width = '100%';
+			input.style.marginTop = '5px';
+			input.onchange = async () => {
+				// @ts-ignore
+				this.plugin.settings[key] = input.value;
+				await this.plugin.saveSettings();
+			};
+		};
+
+		addSetting('Root Folder', 'Optional root folder (leave empty for vault root)', 'rootFolder');
+		addSetting('Projects', 'Path for active projects.', 'projectsPath');
+		addSetting('Areas', 'Path for active areas of responsibility.', 'areasPath');
+		addSetting('Resources', 'Path for resources and reference material.', 'resourcesPath');
+		addSetting('Archives', 'Path for completed or inactive items.', 'archivesPath');
+		addSetting('Agentic Vault OS', 'Path for configuration and personas.', 'agenticVaultPath');
+
+		const btn = form.createEl('button', { text: 'Initialize Vault' });
+		btn.style.marginTop = '10px';
+		btn.style.backgroundColor = 'var(--interactive-accent)';
+		btn.style.color = 'var(--text-on-accent)';
+		btn.style.cursor = 'pointer';
+
+		btn.onclick = async () => {
+			btn.disabled = true;
+			btn.textContent = 'Initializing...';
+			await this.initializeVault();
+		};
+	}
+
+	async initializeVault() {
+		const root = this.plugin.settings.rootFolder ? `${this.plugin.settings.rootFolder}/` : '';
+		
+		const paths = [
+			`${root}${this.plugin.settings.projectsPath}`,
+			`${root}${this.plugin.settings.areasPath}`,
+			`${root}${this.plugin.settings.resourcesPath}`,
+			`${root}${this.plugin.settings.archivesPath}`,
+			`${root}${this.plugin.settings.agenticVaultPath}`,
+			`${root}${this.plugin.settings.agenticVaultPath}/personas`,
+			`${root}${this.plugin.settings.agenticVaultPath}/tools`
+		];
+
+		try {
+			for (const p of paths) {
+				const path = p.replace(/\/+/g, '/').replace(/\/$/, '');
+				if (path && !this.plugin.app.vault.getAbstractFileByPath(path)) {
+					await this.plugin.app.vault.createFolder(path);
+				}
+			}
+			
+			const agenticVaultPath = `${root}${this.plugin.settings.agenticVaultPath}`.replace(/\/+/g, '/').replace(/\/$/, '');
+
+			// Generate default personas
+			const pagerPath = `${agenticVaultPath}/personas/pager.md`;
+			if (agenticVaultPath && !this.plugin.app.vault.getAbstractFileByPath(pagerPath)) {
+				const pagerContent = `---
+name: Pager
+cmd: /pager
+description: The strict meta-orchestrator and front-desk router of the AI system.
+---
+
+You are the Pager, the strict meta-orchestrator and front-desk router of the AI system.
+
+CRITICAL DIRECTIVE: You MUST NEVER answer a user's question, provide advice, or execute analysis directly. You are STRICTLY an orchestrator. Your ONLY job is to identify what the user needs and immediately use the \`transfer_session\` tool to route them to the correct expert.`;
+				await this.plugin.app.vault.create(pagerPath, pagerContent);
+			}
+
+			const cosPath = `${agenticVaultPath}/personas/chief_of_staff.md`;
+			if (agenticVaultPath && !this.plugin.app.vault.getAbstractFileByPath(cosPath)) {
+				const cosContent = `---
+name: Chief of Staff
+cmd: /cos
+description: For questions regarding operational help, scheduling, and task execution.
+skills:
+  - file_manager
+  - map_vault
+  - fetch_web
+  - web_search
+---
+You are the Chief of Staff. Your goal is operational excellence. Be concise, direct, and pragmatic.`;
+				await this.plugin.app.vault.create(cosPath, cosContent);
+			}
+
+			// Generate default echo tool
+			const echoToolPath = `${agenticVaultPath}/tools/echo.md`;
+			if (agenticVaultPath && !this.plugin.app.vault.getAbstractFileByPath(echoToolPath)) {
+				const echoContent = `---
+name: echo
+description: A baseline tool to validate the Execution Sandbox pipeline.
+parameters:
+  - name: message
+    type: string
+    required: true
+---
+\`\`\`javascript
+const args = process.argv.slice(2);
+const payload = JSON.parse(args[0] || '{}');
+console.log(JSON.stringify({ 
+  status: 'success', 
+  echoed_message: payload.message,
+  timestamp: new Date().toISOString()
+}));
+\`\`\`
+`;
+				await this.plugin.app.vault.create(echoToolPath, echoContent);
+			}
+			
+			this.plugin.settings.hasCompletedOnboarding = true;
+			await this.plugin.saveSettings();
+			
+			// Re-render chat
+			const { contentEl } = this;
+			contentEl.empty();
+			this.renderChatInterface(contentEl);
+			
+			new Notice("Agentic Vault initialized!");
+		} catch (e: unknown) {
+			new Notice("Error initializing vault folders. See console.");
+			console.error(e);
+		}
 	}
 
 	renderHistory() {

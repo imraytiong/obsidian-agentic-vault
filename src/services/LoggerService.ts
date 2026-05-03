@@ -2,20 +2,20 @@ import { App, TFile } from 'obsidian';
 
 export class LoggerService {
 	private app: App;
-	private sherpaPath: string;
+	private agenticVaultPath: string;
 
-	constructor(app: App, sherpaPath: string) {
+	constructor(app: App, agenticVaultPath: string) {
 		this.app = app;
-		this.sherpaPath = sherpaPath;
+		this.agenticVaultPath = agenticVaultPath;
 	}
 
 	async log(action: string, context: Record<string, unknown> = {}) {
 		const timestamp = new Date().toISOString();
 		const logEntry = `\n### [${timestamp}] ${action}\n\`\`\`json\n${JSON.stringify(context, null, 2)}\n\`\`\`\n`;
 
-		if (!this.sherpaPath) return;
+		if (!this.agenticVaultPath) return;
 
-		const logsDir = `${this.sherpaPath}/logs`;
+		const logsDir = `${this.agenticVaultPath}/logs`;
 		const logFilePath = `${logsDir}/Trace_Log.md`;
 
 		try {

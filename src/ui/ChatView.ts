@@ -317,7 +317,7 @@ export class AgenticVaultChatView extends ItemView {
 
 		contentEl.createEl("h2", { text: "Welcome to Agentic Vault" });
 		contentEl.createEl("p", { 
-			text: "Agentic Vault uses the PARA method (Projects, Areas, Resources, Archives) to organize your vault. Let's set up your default folders."
+			text: "Agentic Vault uses the PARA method (Projects, Areas, Resources, Archives) to organize your vault. Let's set up your agents and folders."
 		});
 
 		const form = contentEl.createDiv();
@@ -325,6 +325,108 @@ export class AgenticVaultChatView extends ItemView {
 		form.style.flexDirection = 'column';
 		form.style.gap = '15px';
 		form.style.marginTop = '20px';
+
+		// --- 1. LLM CONFIGURATION ---
+		contentEl.createEl('h3', { text: '1. Connect Your LLM', cls: 'setting-item-heading' });
+		
+		const llmSection = form.createDiv();
+		llmSection.style.display = 'flex';
+		llmSection.style.flexDirection = 'column';
+		llmSection.style.gap = '10px';
+		llmSection.style.padding = '15px';
+		llmSection.style.border = '1px solid var(--background-modifier-border)';
+		llmSection.style.borderRadius = '8px';
+		llmSection.style.backgroundColor = 'var(--background-secondary)';
+
+		// Provider
+		const providerRow = llmSection.createDiv();
+		providerRow.createEl('strong', { text: 'LLM Provider' });
+		const providerSelect = providerRow.createEl('select');
+		providerSelect.style.width = '100%';
+		providerSelect.style.marginTop = '5px';
+		providerSelect.createEl('option', { value: 'gemini', text: 'Google Gemini (Native)' });
+		providerSelect.createEl('option', { value: 'openai', text: 'OpenAI Compatible (Ollama, LM Studio, etc)' });
+		providerSelect.value = this.plugin.settings.llmProvider || 'gemini';
+		providerSelect.onchange = async () => {
+			this.plugin.settings.llmProvider = providerSelect.value;
+			await this.plugin.saveSettings();
+		};
+
+		// API Key
+		const keyRow = llmSection.createDiv();
+		keyRow.createEl('strong', { text: 'API Key' });
+		const keyInput = keyRow.createEl('input', { type: 'password', placeholder: 'Enter your API key...' });
+		keyInput.style.width = '100%';
+		keyInput.style.marginTop = '5px';
+		keyInput.value = this.plugin.settings.llmApiKey || '';
+		keyInput.onchange = async () => {
+			this.plugin.settings.llmApiKey = keyInput.value;
+			await this.plugin.saveSettings();
+		};
+		const helperText = keyRow.createEl('div', { text: "Don't have a Gemini key? " }).style.fontSize = '0.85em';
+		const link = document.createElement('a');
+		link.href = 'https://aistudio.google.com/app/apikey';
+		link.textContent = 'Get one here for free.';
+		link.target = '_blank';
+		keyRow.appendChild(link);
+
+		// Models
+		const modelRow = llmSection.createDiv();
+		modelRow.createEl('strong', { text: 'Selected Model' });
+		const modelSelect = modelRow.createEl('select');
+		modelSelect.style.width = '100%';
+		modelSelect.style.marginTop = '5px';
+		
+		const populateModels = () => {
+			modelSelect.empty();
+			const models = this.plugin.settings.availableModels || [];
+			if (models.length === 0) {
+				modelSelect.createEl('option', { value: this.plugin.settings.llmModel, text: this.plugin.settings.llmModel });
+			} else {
+				models.forEach((m: string) => modelSelect.createEl('option', { value: m, text: m }));
+			}
+			modelSelect.value = this.plugin.settings.llmModel;
+		};
+		populateModels();
+
+		modelSelect.onchange = async () => {
+			this.plugin.settings.llmModel = modelSelect.value;
+			await this.plugin.saveSettings();
+		};
+
+		// Test Button
+		const testBtn = llmSection.createEl('button', { text: 'Test Key & Load Models' });
+		testBtn.style.marginTop = '5px';
+		testBtn.onclick = async () => {
+			testBtn.disabled = true;
+			testBtn.textContent = 'Testing...';
+			try {
+				let models: string[] = [];
+				if (this.plugin.settings.llmProvider === 'openai') {
+					const { OpenAIProvider } = await import('../llm/OpenAIProvider');
+					models = await OpenAIProvider.fetchAvailableModels(this.plugin.settings.llmApiKey, this.plugin.settings.llmBaseUrl);
+				} else {
+					const { GeminiProvider } = await import('../llm/GeminiProvider');
+					models = await GeminiProvider.fetchAvailableModels(this.plugin.settings.llmApiKey);
+				}
+				
+				this.plugin.settings.availableModels = models;
+				if (!models.includes(this.plugin.settings.llmModel) && models.length > 0) {
+					this.plugin.settings.llmModel = models[0];
+				}
+				await this.plugin.saveSettings();
+				new Notice(`Success! Found ${models.length} models.`);
+				populateModels();
+			} catch (e: any) {
+				new Notice(`API Error: ${e.message}`);
+			} finally {
+				testBtn.disabled = false;
+				testBtn.textContent = 'Test Key & Load Models';
+			}
+		};
+
+		// --- 2. VAULT CONFIGURATION ---
+		contentEl.createEl('h3', { text: '2. Vault Structure', cls: 'setting-item-heading' });
 
 		const addSetting = (name: string, desc: string, key: keyof typeof this.plugin.settings) => {
 			const row = form.createDiv();
@@ -348,7 +450,8 @@ export class AgenticVaultChatView extends ItemView {
 		addSetting('Archives', 'Path for completed or inactive items.', 'archivesPath');
 		addSetting('Agentic Vault OS', 'Path for configuration and personas.', 'agenticVaultPath');
 
-		contentEl.createEl('h3', { text: 'Starter Fleets' });
+		// --- 3. STARTER FLEETS ---
+		contentEl.createEl('h3', { text: '3. Starter Fleets', cls: 'setting-item-heading' });
 		contentEl.createEl('p', { text: 'Select which agent fleets to install. You can add more later.', cls: 'setting-item-description' }).style.fontSize = '0.85em';
 		
 		const fleetSelection: Record<string, boolean> = {};
@@ -381,6 +484,11 @@ export class AgenticVaultChatView extends ItemView {
 		btn.style.cursor = 'pointer';
 
 		btn.onclick = async () => {
+			if (!this.plugin.settings.llmApiKey || this.plugin.settings.llmApiKey.trim() === '') {
+				new Notice('⚠️ Please enter an API key to continue.');
+				return;
+			}
+
 			btn.disabled = true;
 			btn.textContent = 'Initializing...';
 			const selectedFleets = BUNDLED_FLEETS.filter(f => fleetSelection[f.id]);

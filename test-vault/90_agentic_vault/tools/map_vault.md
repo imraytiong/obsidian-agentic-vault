@@ -24,7 +24,7 @@ try {
     }
 
     const extractLinks = (content) => {
-        const regex = /\[\[(.*?)\]\]/g;
+        const regex = /[[(.*?)]]/g;
         const links = [];
         let match;
         while ((match = regex.exec(content)) !== null) {
@@ -37,19 +37,24 @@ try {
         const tags = new Set();
         
         // Extract inline tags
-        const inlineRegex = /#([a-zA-Z0-9_\-]+)/g;
+        const inlineRegex = /#([a-zA-Z0-9_-]+)/g;
         let match;
         while ((match = inlineRegex.exec(content)) !== null) {
             tags.add(match[1]);
         }
         
         // Extract YAML tags
-        const yamlMatch = content.match(/^---\n([\s\S]*?)\n---/);
+        const yamlMatch = content.match(/^---
+([sS]*?)
+---/);
         if (yamlMatch) {
             const yamlStr = yamlMatch[1];
-            const tagsMatch = yamlStr.match(/tags:\s*\n((?:\s*-\s*.*\n?)*)/);
+            const tagsMatch = yamlStr.match(/tags:s*
+((?:s*-s*.*
+?)*)/);
             if (tagsMatch) {
-                const list = tagsMatch[1].split('\n');
+                const list = tagsMatch[1].split('
+');
                 for (let item of list) {
                     item = item.replace('-', '').trim();
                     if (item) tags.add(item);

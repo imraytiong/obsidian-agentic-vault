@@ -16,7 +16,7 @@ This tool executes a local Node.js scraper that queries DuckDuckGo HTML and retu
 const { execSync } = require('child_process');
 
 module.exports = async function(args) {
-    const query = args.query.replace(/"/g, '\\"');
+    const query = args.query.replace(/"/g, '\"');
     try {
         const stdout = execSync(`node "${__dirname}/web_search.js" "${query}"`, { encoding: 'utf8' });
         return stdout;

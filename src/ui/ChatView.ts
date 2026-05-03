@@ -539,6 +539,16 @@ export class AgenticVaultChatView extends ItemView {
 			this.plugin.settings.hasCompletedOnboarding = true;
 			await this.plugin.saveSettings();
 			
+			// Give Obsidian's internal metadata cache 500ms to index the newly created TFiles
+			// otherwise folder.children in the engines will be empty
+			await new Promise(resolve => window.setTimeout(resolve, 500));
+
+			// Force re-initialize all engines to pick up newly scaffolded blueprints
+			await this.plugin.personaEngine.loadPersonas();
+			await this.plugin.toolRegistry.loadTools();
+			await this.plugin.skillsEngine.loadSkills();
+			await this.plugin.mcpEngine.initialize();
+			
 			// Re-render chat
 			const { contentEl } = this;
 			contentEl.empty();

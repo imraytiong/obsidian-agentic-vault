@@ -61,9 +61,11 @@ try {
     const dir = path.dirname(targetFile);
     if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
 
-    let content = fs.existsSync(targetFile) ? fs.readFileSync(targetFile, 'utf8') : `# ${scope === 'global' ? 'Shared Memory' : persona_name + ' Memory'}\n`;
+    let content = fs.existsSync(targetFile) ? fs.readFileSync(targetFile, 'utf8') : `# ${scope === 'global' ? 'Shared Memory' : persona_name + ' Memory'}
+`;
 
-    const lines = content.split('\n');
+    const lines = content.split('
+');
     let categoryIdx = -1;
     let nextCategoryIdx = -1;
 
@@ -81,7 +83,8 @@ try {
         const newFactLine = `- ${fact}`;
         
         if (categoryIdx === -1) {
-            lines.push(`\n## ${category}`);
+            lines.push(`
+## ${category}`);
             lines.push(newFactLine);
         } else {
             const insertIdx = nextCategoryIdx === -1 ? lines.length : nextCategoryIdx;
@@ -111,7 +114,8 @@ try {
         throw new Error(`Unknown action: ${action}`);
     }
 
-    fs.writeFileSync(targetFile, lines.join('\n'), 'utf8');
+    fs.writeFileSync(targetFile, lines.join('
+'), 'utf8');
     console.log(JSON.stringify({ status: "success", message: `Memory updated successfully in ${scope} scope.` }));
 
 } catch (e) {

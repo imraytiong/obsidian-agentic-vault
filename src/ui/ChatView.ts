@@ -473,7 +473,7 @@ console.log(JSON.stringify({
 		this.messagesContainerEl.scrollTop = this.messagesContainerEl.scrollHeight;
 	}
 
-	appendMessage(msg: ChatMessage | unknown) {
+	appendMessage(msg: ChatMessage) {
 		const msgEl = this.messagesContainerEl.createDiv({ cls: `chat-message ${msg.role}` });
 		msgEl.style.marginBottom = '15px';
 		msgEl.style.padding = '12px';
@@ -563,7 +563,7 @@ console.log(JSON.stringify({
 
 					const inputs: { label: string, el: HTMLInputElement | HTMLTextAreaElement }[] = [];
 
-					(formData.fields || []).forEach((field: unknown) => {
+					(formData.fields || []).forEach((field: any) => {
 						const fieldContainer = formContainer.createDiv();
 						fieldContainer.style.marginBottom = '15px';
 

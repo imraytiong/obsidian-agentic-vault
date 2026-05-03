@@ -16,8 +16,8 @@ export interface AgenticVaultSettings {
 	llmBaseUrl: string;
 	availableModels: string[];
 	chatState?: {
-		unifiedTimeline: unknown[];
-		agentContexts: Record<string, unknown[]>;
+		unifiedTimeline: any[];
+		agentContexts: Record<string, any[]>;
 	};
 }
 
@@ -38,10 +38,12 @@ export const DEFAULT_SETTINGS: AgenticVaultSettings = {
 	availableModels: ['gemini-2.5-flash', 'gemini-1.5-pro']
 }
 
-export class AgenticVaultSettingTab extends PluginSettingTab {
-	plugin: unknown; // Using any to avoid circular import issues if needed, or import from main.ts
+import AgenticVaultPlugin from './main';
 
-	constructor(app: App, plugin: unknown) {
+export class AgenticVaultSettingTab extends PluginSettingTab {
+	plugin: AgenticVaultPlugin;
+
+	constructor(app: App, plugin: AgenticVaultPlugin) {
 		super(app, plugin);
 		this.plugin = plugin;
 	}

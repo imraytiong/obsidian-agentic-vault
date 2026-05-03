@@ -11,6 +11,24 @@ if you want to view the source, please visit the github repository of this plugi
 
 const prod = (process.argv[2] === "production");
 
+import fs from "fs";
+import path from "path";
+
+const outdir = "test-vault/.obsidian/plugins/obsidian-agentic-vault";
+const copyPlugin = {
+	name: "copy-plugin",
+	setup(build) {
+		build.onEnd(() => {
+			fs.mkdirSync(outdir, { recursive: true });
+			fs.copyFileSync("main.js", path.join(outdir, "main.js"));
+			fs.copyFileSync("manifest.json", path.join(outdir, "manifest.json"));
+			if (fs.existsSync("styles.css")) {
+				fs.copyFileSync("styles.css", path.join(outdir, "styles.css"));
+			}
+		});
+	},
+};
+
 const context = await esbuild.context({
 	banner: {
 		js: banner,
@@ -41,6 +59,7 @@ const context = await esbuild.context({
 	treeShaking: true,
 	outfile: "main.js",
 	minify: prod,
+	plugins: [copyPlugin],
 });
 
 if (prod) {

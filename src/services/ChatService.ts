@@ -79,7 +79,7 @@ export class ChatService {
 			systemPrompt += `\n\n[Persona-Specific Context]\n${personaMemoryContent}`;
 		}
 
-		systemPrompt += `\n\n[System Rules]\n- When referring to files in the vault, ALWAYS use Obsidian wiki-link syntax: [[File Name]].\n- When asking the user a structured list of questions, DO NOT ask them in plain text. Instead, output a JSON block tagged with \`\`\`json-form\`\`\` that defines the form. The JSON must follow this exact schema: { "title": "Form Title", "fields": [ { "id": "field_id", "label": "Question Text", "type": "textarea", "placeholder": "Example answer..." } ] }\n- You have access to a permanent memory system via the \`update_memory\` tool. If the user explicitly states a preference, makes a major decision, or reveals a long-term goal, you MUST use the \`update_memory\` tool to permanently record it.\n- Hierarchy of Truth: The [Global User Profile (Core Identity)] block represents the user's current true identity. Vault documents represent Project State. If a Vault document contradicts the Core Identity, the Core Identity takes precedence. You MUST explicitly ask the user if the Vault document needs to be updated to match their new identity.`;
+		systemPrompt += `\n\n[System Rules]\n- When referring to files in the vault, ALWAYS use Obsidian wiki-link syntax: [[File Name]].\n- When asking the user a structured list of questions, DO NOT ask them in plain text. Instead, output a JSON block tagged with \`\`\`json-form\`\`\` that defines the form. The JSON must follow this exact schema: { "title": "Form Title", "fields": [ { "id": "field_id", "label": "Question Text", "type": "textarea", "placeholder": "Example answer..." } ] }\n- You have access to a permanent memory system via the \`update_memory\` tool. If the user explicitly states a preference, makes a major decision, or reveals a long-term goal, you MUST use the \`update_memory\` tool to permanently record it.\n- Hierarchy of Truth: The [Global User Profile (Core Identity)] block represents the user's current true identity. Vault documents represent Project State. If a Vault document contradicts the Core Identity, the Core Identity takes precedence. You MUST explicitly ask the user if the Vault document needs to be updated to match their new identity.\n- [VERIFICATION RULE]: You are strictly prohibited from confirming a task is complete based solely on your intent. You MUST receive a successful output receipt from a tool before telling the user it is done.`;
 
 		// Dynamically inject the registry of available personas so agents can route properly
 		const allPersonas = this.plugin.personaEngine.getAllPersonas();
@@ -154,12 +154,12 @@ export class ChatService {
 			// Inject Native Tool for Handoff
 			tools.push({
 				name: 'transfer_session',
-				description: 'Transfer the user to a different persona/agent. Use this when the user needs help from a specific expert. The target agent will receive your handoff message to understand the context.',
+				description: 'Transfer the user to a different persona/agent. Use this when the user needs help from a specific expert. CRITICAL: The target agent CANNOT see the conversation history. You MUST include all relevant requirements, code, and context explicitly in the handoff_context.',
 				language: 'native',
 				scriptContent: '',
 				parameters: [
-					{ name: 'target_persona', type: 'string', description: 'The exact name of the persona to transfer to (e.g. "Career Mentor", "Chief of Staff", "Sherpa").', required: true },
-					{ name: 'handoff_context', type: 'string', description: 'A detailed summary of the conversation so far, what the user needs, and what you want the target agent to do.', required: true }
+					{ name: 'target_persona', type: 'string', description: 'The exact name of the persona to transfer to.', required: true },
+					{ name: 'handoff_context', type: 'string', description: 'A highly detailed summary of the conversation, all requirements, and exactly what the target agent needs to do.', required: true }
 				]
 			});
 
@@ -171,6 +171,18 @@ export class ChatService {
 				scriptContent: '',
 				parameters: [
 					{ name: 'skill_id', type: 'string', description: 'The exact ID (folder name) of the skill to load.', required: true }
+				]
+			});
+
+			// Inject Native Tool for HITL
+			tools.push({
+				name: 'request_approval',
+				description: 'Request human approval before performing a high-stakes or destructive action. The system will pause and wait for the user to approve or reject the request.',
+				language: 'native',
+				scriptContent: '',
+				parameters: [
+					{ name: 'action_summary', type: 'string', description: 'A short summary of what you are about to do.', required: true },
+					{ name: 'reason', type: 'string', description: 'Why you are requesting approval for this action.', required: true }
 				]
 			});
 			
@@ -238,7 +250,10 @@ export class ChatService {
 						history.push({ role: 'tool', content: `Session successfully transferred to ${targetPersona}.`, toolCallId: tc.id, toolName: tc.name });
 
 						const targetHistory = this.getAgentHistory(targetPersona);
-						targetHistory.push({ role: 'user', content: `[SYSTEM HANDOFF from ${personaName}]: ${handoffMsg}\n\nPlease take over the conversation and assist the user immediately based on this context.`, persona: 'System' });
+						const recentContext = this.unifiedTimeline.slice(-6).map((m: any) => `[${m.persona || m.role}]: ${m.content}`).join('\n\n');
+						const fullHandoffMessage = `[SYSTEM HANDOFF from ${personaName}]: ${handoffMsg}\n\n### Recent Conversation Context:\n${recentContext}\n\nPlease take over the conversation and assist the user immediately based on this context.`;
+						
+						targetHistory.push({ role: 'user', content: fullHandoffMessage, persona: 'System' });
 
 						if (this.onPersonaChanged) this.onPersonaChanged(targetPersona);
 						this.persistState();
@@ -259,6 +274,26 @@ export class ChatService {
 						history.push({ role: 'tool', content: toolOutputStr, toolCallId: tc.id, toolName: tc.name });
 						this.persistState();
 						continue; 
+					} else if (tc.name === 'request_approval') {
+						const args = tc.arguments;
+						const summary = args.action_summary || 'Unknown Action';
+						const reason = args.reason || 'No reason provided';
+						
+						const msg = `⚠️ **Approval Requested:**\n- **Action:** ${summary}\n- **Reason:** ${reason}\n\n*The system has paused and added this request to the HITL queue.*`;
+						activeAssistantMessage.content += (activeAssistantMessage.content ? '\n\n' : '') + msg;
+						history.push({ role: 'tool', content: "Approval requested. Loop paused until user responds.", toolCallId: tc.id, toolName: tc.name });
+						
+						await this.plugin.approvalQueue.addRequest({
+							persona: personaName,
+							summary,
+							reason,
+							historyPayload: JSON.parse(JSON.stringify(history)),
+							timestamp: new Date().toISOString()
+						});
+
+						if (this.onTimelineUpdated) this.onTimelineUpdated();
+						this.persistState();
+						return msg; // Returning early completely stops the ReAct loop!
 					}
 
 					if (this.plugin.mcpEngine.availableTools[tc.name]) {
@@ -271,7 +306,7 @@ export class ChatService {
 							const mcpRes = await this.plugin.mcpEngine.executeTool(tc.name, tc.arguments);
 							toolOutputStr = JSON.stringify(mcpRes, null, 2);
 						} catch (e: unknown) {
-							toolOutputStr = `ERROR: ${e.message}`;
+							toolOutputStr = `ERROR: ${(e as Error).message}\n\n[SYSTEM DIRECTIVE]: Tool execution failed. Do NOT report this failure to the user yet. You must autonomously analyze the error, correct your arguments or approach, and retry.`;
 						}
 
 						const finishedToken = `\n\n<details><summary>⚙️ Executed MCP tool: ${tc.name}</summary>\n\n\`\`\`text\n${toolOutputStr}\n\`\`\`\n</details>`;
@@ -296,7 +331,7 @@ export class ChatService {
 					const sandboxRes = await this.plugin.executionSandbox.executeTool(tc.name, tc.arguments);
 					
 					// Replace in-progress token with details block
-					const toolOutputStr = sandboxRes.success ? sandboxRes.output : `ERROR: ${sandboxRes.output}`;
+					const toolOutputStr = sandboxRes.success ? sandboxRes.output : `ERROR: ${sandboxRes.output}\n\n[SYSTEM DIRECTIVE]: Tool execution failed. Do NOT report this failure to the user yet. You must autonomously analyze the error, correct your arguments or approach, and retry.`;
 					const finishedToken = `\n\n<details><summary>⚙️ Executed tool: ${tc.name}</summary>\n\n\`\`\`text\n${toolOutputStr}\n\`\`\`\n</details>`;
 					activeAssistantMessage.content = activeAssistantMessage.content.replace(executingToken, finishedToken);
 					if (this.onTimelineUpdated) this.onTimelineUpdated();

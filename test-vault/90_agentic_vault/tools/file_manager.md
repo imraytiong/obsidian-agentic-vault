@@ -38,7 +38,7 @@ try {
     if (action === 'create_folder') {
         if (!fs.existsSync(fullPath)) {
             fs.mkdirSync(fullPath, { recursive: true });
-            console.log(JSON.stringify({ status: "success", message: `Folder created: ${targetPath}` }));
+            console.log(JSON.stringify({ status: "success", message: `Folder created: ${targetPath}`, side_effects: [{ type: 'mkdir', path: targetPath }] }));
         } else {
             console.log(JSON.stringify({ status: "skipped", message: `Folder already exists: ${targetPath}` }));
         }
@@ -49,7 +49,7 @@ try {
             fs.mkdirSync(dir, { recursive: true });
         }
         fs.writeFileSync(fullPath, content, 'utf8');
-        console.log(JSON.stringify({ status: "success", message: `File written: ${targetPath}` }));
+        console.log(JSON.stringify({ status: "success", message: `File written: ${targetPath}`, side_effects: [{ type: 'write', path: targetPath }] }));
     }
     else if (action === 'read_file') {
         if (fs.existsSync(fullPath)) {

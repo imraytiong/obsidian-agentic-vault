@@ -27,6 +27,7 @@
 	"dependencies": {
 		"@modelcontextprotocol/sdk": "^1.29.0",
 		"cheerio": "^1.2.0",
+		"cron-parser": "^5.5.0",
 		"duckduckgo-search": "^1.0.7",
 		"googlethis": "^1.8.0",
 		"obsidian": "latest",

@@ -50,9 +50,14 @@ export class GeminiProvider implements LLMProvider {
 					contents.push({ role: 'model', parts: [{ text: msg.content || '' }] });
 				}
 			} else if (msg.role === 'tool') {
-				let parsedOutput = {};
+				let parsedOutput: Record<string, unknown> = { output: msg.content };
 				try {
-					parsedOutput = JSON.parse(msg.content);
+					const parsed = JSON.parse(msg.content);
+					if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+						parsedOutput = parsed;
+					} else {
+						parsedOutput = { output: parsed };
+					}
 				} catch {
 					parsedOutput = { output: msg.content };
 				}

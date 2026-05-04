@@ -53,7 +53,7 @@ try {
         process.exit(1);
     }
 
-    const basePath = path.resolve(process.cwd(), '5 - Sherpa/memory');
+    const basePath = path.resolve(process.cwd(), 'AgenticVault/memory');
     const targetFile = scope === 'global' ? 
         path.join(basePath, 'shared_memory.md') : 
         path.join(basePath, 'personas', `${persona_name.toLowerCase().replace(/ /g, '_')}_memory.md`);
@@ -116,7 +116,8 @@ try {
 
     fs.writeFileSync(targetFile, lines.join('
 '), 'utf8');
-    console.log(JSON.stringify({ status: "success", message: `Memory updated successfully in ${scope} scope.` }));
+    const relPath = targetFile.replace(process.cwd() + '/', '');
+    console.log(JSON.stringify({ status: "success", message: `Memory updated successfully in ${scope} scope.`, side_effects: [{ type: 'write', path: relPath }] }));
 
 } catch (e) {
     console.log(JSON.stringify({ error: e.message }));

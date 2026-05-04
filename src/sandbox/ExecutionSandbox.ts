@@ -88,6 +88,34 @@ export class ExecutionSandbox {
 				this.logger.log('SANDBOX_EXECUTION_STDERR', { tool: toolName, stderr: output.stderr });
 			}
 
+			// Side-Effect Verification Middleware
+			let parsedOutput: any;
+			try {
+				parsedOutput = JSON.parse(output.stdout.trim());
+			} catch (e) {
+				// Not JSON, just skip
+			}
+			
+			if (parsedOutput && Array.isArray(parsedOutput.side_effects)) {
+				for (const effect of parsedOutput.side_effects) {
+					if (!effect.path) continue;
+					const exists = await this.app.vault.adapter.exists(effect.path);
+					if (effect.type === 'write' || effect.type === 'mkdir') {
+						if (!exists) {
+							const errorMsg = `VERIFICATION_FAILED: The tool reported success, but the file system verification failed. The path '${effect.path}' does not exist on disk.`;
+							this.logger.log('SANDBOX_VERIFICATION_FAILED', { tool: toolName, effect, errorMsg });
+							return { success: false, output: errorMsg };
+						}
+					} else if (effect.type === 'delete') {
+						if (exists) {
+							const errorMsg = `VERIFICATION_FAILED: The tool reported success, but the file system verification failed. The path '${effect.path}' still exists on disk.`;
+							this.logger.log('SANDBOX_VERIFICATION_FAILED', { tool: toolName, effect, errorMsg });
+							return { success: false, output: errorMsg };
+						}
+					}
+				}
+			}
+
 			this.logger.log('SANDBOX_EXECUTION_SUCCESS', { tool: toolName, stdout: output.stdout.trim() });
 			return { success: true, output: output.stdout.trim() };
 		} catch (error: unknown) {

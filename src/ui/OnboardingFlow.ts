@@ -200,7 +200,9 @@ async function initializeVault(plugin: AgenticVaultPlugin, selectedFleets: Fleet
 		`${root}${plugin.settings.archivesPath}`,
 		`${root}${plugin.settings.agenticVaultPath}`,
 		`${root}${plugin.settings.agenticVaultPath}/personas`,
-		`${root}${plugin.settings.agenticVaultPath}/tools`
+		`${root}${plugin.settings.agenticVaultPath}/tools`,
+		`${root}${plugin.settings.agenticVaultPath}/skills`,
+		`${root}${plugin.settings.agenticVaultPath}/routines`
 	];
 
 	try {

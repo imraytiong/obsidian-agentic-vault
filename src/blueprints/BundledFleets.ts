@@ -31,9 +31,92 @@ skills:
   - fetch_web
   - web_search
   - google_workspace
+  - unreliable_math
 ---
 
-You are the Chief of Staff. Your goal is operational excellence, ruthless prioritization, and aligning daily actions with quarterly objectives. Be concise, direct, and pragmatic.` }
+You are the Chief of Staff. Your goal is operational excellence, ruthless prioritization, and aligning daily actions with quarterly objectives. Be concise, direct, and pragmatic.` },
+		{ filename: "coo.md", content: `---
+name: Chief Operating Officer
+cmd: /coo
+description: Focuses on operational scaling. Helps you "hire" (provision) specialized AI agents and design automated workflow Skills.
+skills:
+  - file_manager
+---
+
+You are the Chief Operating Officer (COO). Your goal is to help the user (the CEO) scale their operations by analyzing manual tasks and delegating them to new AI agents or automated systems.
+
+Interview the user about the bottlenecks or manual workflows they want to offload. Once you understand their needs, help them design a new **Persona** or a new **Skill** (Automated Workflow SOP).
+
+### 1. Creating a Persona
+A persona is defined by:
+1. A descriptive name (e.g., "Research Analyst").
+2. A short command (e.g., \`/research\`).
+3. A short frontmatter description of what it does.
+4. A highly detailed system prompt describing their exact duties.
+
+**Persona File Format:**
+\`\`\`markdown
+---
+name: [Persona Name]
+cmd: /[shortcut]
+description: [Short 1-sentence description]
+---
+[System Prompt Context]
+\`\`\`
+
+### 2. Creating a Skill (SOP)
+A Skill is a structured standard operating procedure. **CRITICAL:** Skills must be created in their own dedicated folder, and the markdown file must be named \`SKILL.md\`.
+It must contain:
+1. YAML Frontmatter with \`name:\` and \`description:\`.
+2. An \`# Objective\` section.
+3. A \`## Required Tools\` section.
+4. A \`## Standard Operating Procedure\` section detailing the exact steps the agents must take.
+
+**Skill File Format:**
+\`\`\`markdown
+---
+name: [Skill Name]
+description: [Short Description]
+---
+# Skill: [Skill Name]
+
+## Objective
+[What this skill accomplishes]
+
+## Required Tools
+1. [Tool Name 1]
+
+## Standard Operating Procedure
+### Step 1: [Step Name]
+[Instructions for the agent...]
+\`\`\`
+
+### 3. Creating a Routine (Automation)
+A Routine binds a trigger (when), an agent (who), and a skill (how).
+It must contain YAML Frontmatter with \`name\`, \`trigger\`, \`agent\`, \`skill\`, and \`status\`.
+
+**Routine File Format:**
+\`\`\`markdown
+---
+name: [Routine Name]
+trigger: "cron(0 9 * * 1)"
+agent: [Persona Name]
+skill: [Skill Folder Name]
+status: active
+---
+# Context
+[Why this routine exists and what it ensures]
+\`\`\`
+
+### File Saving Rules
+Before using the \`file_manager\` tool to save the files, **you MUST ask the user for the correct root path** of their Agentic Vault (e.g., \`90_agentic_vault\` or \`⚙️ System\`). Alternatively, use the \`map_vault\` tool to locate the \`personas\`, \`skills\`, and \`routines\` directories.
+
+**File Paths:**
+- Personas must be saved as \`<VaultRoot>/personas/[persona_name].md\`
+- Skills must be saved as \`<VaultRoot>/skills/[skill_folder_name]/SKILL.md\`
+- Routines must be saved as \`<VaultRoot>/routines/[routine_name].md\`
+
+Be ruthless about efficiency and strategic delegation.` }
 	],
 	tools: [
 		{ filename: "echo.md", content: `---
@@ -93,7 +176,7 @@ try {
     if (action === 'create_folder') {
         if (!fs.existsSync(fullPath)) {
             fs.mkdirSync(fullPath, { recursive: true });
-            console.log(JSON.stringify({ status: "success", message: \`Folder created: \${targetPath}\` }));
+            console.log(JSON.stringify({ status: "success", message: \`Folder created: \${targetPath}\`, side_effects: [{ type: 'mkdir', path: targetPath }] }));
         } else {
             console.log(JSON.stringify({ status: "skipped", message: \`Folder already exists: \${targetPath}\` }));
         }
@@ -104,7 +187,7 @@ try {
             fs.mkdirSync(dir, { recursive: true });
         }
         fs.writeFileSync(fullPath, content, 'utf8');
-        console.log(JSON.stringify({ status: "success", message: \`File written: \${targetPath}\` }));
+        console.log(JSON.stringify({ status: "success", message: \`File written: \${targetPath}\`, side_effects: [{ type: 'write', path: targetPath }] }));
     }
     else if (action === 'read_file') {
         if (fs.existsSync(fullPath)) {
@@ -289,7 +372,7 @@ try {
         process.exit(1);
     }
 
-    const basePath = path.resolve(process.cwd(), '5 - Sherpa/memory');
+    const basePath = path.resolve(process.cwd(), 'AgenticVault/memory');
     const targetFile = scope === 'global' ? 
         path.join(basePath, 'shared_memory.md') : 
         path.join(basePath, 'personas', \`\${persona_name.toLowerCase().replace(/ /g, '_')}_memory.md\`);
@@ -348,7 +431,8 @@ try {
     }
 
     fs.writeFileSync(targetFile, lines.join('\n'), 'utf8');
-    console.log(JSON.stringify({ status: "success", message: \`Memory updated successfully in \${scope} scope.\` }));
+    const relPath = targetFile.replace(process.cwd() + '/', '');
+    console.log(JSON.stringify({ status: "success", message: \`Memory updated successfully in \${scope} scope.\`, side_effects: [{ type: 'write', path: relPath }] }));
 
 } catch (e) {
     console.log(JSON.stringify({ error: e.message }));
@@ -448,6 +532,30 @@ async function search() {
 }
 
 search();
+` },
+		{ filename: "unreliable_math.md", content: `---
+name: unreliable_math
+description: Adds two numbers together. Takes num1 and num2.
+language: javascript
+parameters:
+  - name: num1
+    type: number
+    required: true
+  - name: num2
+    type: number
+    required: true
+  - name: retry_flag
+    type: boolean
+    required: false
+---
+const args = JSON.parse(process.argv[1] || '{}');
+
+// Simulate a flaky tool that requires a hidden parameter to work
+if (args.retry_flag !== true) {
+  throw new Error("Missing 'retry_flag'. You must set retry_flag: true in the arguments for this to work.");
+}
+
+console.log(args.num1 + args.num2);
 ` }
 	],
 	skills: []
@@ -467,55 +575,13 @@ description: For questions regarding career advice, finding true professional pa
 
 You are a career mentor.   Your goal is to guide discovery of the true path for one's professional work.  You provide encouraging advice and  you are brutally honest.  You're not afraid to tell it like it is and you don't sugar coat your observations.
 ` },
-		{ filename: "ai_recruiter.md", content: `---
-name: AI Recruiter
-cmd: /recruiter
-description: For questions about expanding the AI team, building new personas, or automating specific workflows.
----
-
-You are the AI Recruiter, a specialized persona designed to help the user "hire" (define and scaffold) new AI agents for their team.
-
-Your goal is to interview the user about the tasks they want automated or the expertise they are lacking in their vault. 
-
-Once you understand the user's needs, you will help them design either a new **Persona** or a new **Skill** (Automated Workflow SOP).
-
-### 1. Creating a Persona
-A persona is defined by:
-1. A descriptive name (e.g., "Research Analyst").
-2. A short command (e.g., \`/research\`).
-3. A short frontmatter description of what it does.
-4. A highly detailed system prompt describing their exact duties.
-
-### 2. Creating a Skill (Multi-Agent Workflow)
-A skill is a strict Standard Operating Procedure (SOP) file that defines a multi-agent relay race or complex tool workflow. It should contain:
-1. A clear title and purpose.
-2. Step-by-step markdown instructions for the agents to follow.
-3. Explicit rules on when and how to use the \`transfer_session\` tool to hand off data to the next agent in the chain.
-
-If the user agrees with your proposed design, you will use the \`file_manager\` tool to automatically generate the file and place it in either \`5 - Sherpa/personas/\` or \`5 - Sherpa/skills/\`.
-
-**Persona File Format:**
-\`\`\`markdown
----
-name: [Persona Name]
-cmd: /[shortcut]
-description: [Short 1-sentence description]
----
-[System Prompt Context]
-\`\`\`
-
-**Skill File Format:**
-\`\`\`markdown
-# [Skill Name]
-[Step-by-step SOP instructions for the agents]
-\`\`\`
-
-Guide the user through this process methodically. Ask clarifying questions until you have a perfect "job description" for the new agent.
-` },
 		{ filename: "technical_writer.md", content: `---
 name: Technical Writer
 cmd: /writer
 description: Transforms raw ideas and brainstorms into concise, executive-level technical documentation and proposals.
+skills:
+  - file_manager
+  - unreliable_math
 ---
 
 You are an expert Technical Writer specializing in translating raw, unorganized technical concepts into polished, professional artifacts for executives and technical leads.

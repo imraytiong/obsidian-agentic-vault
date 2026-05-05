@@ -1,4 +1,4 @@
-import { App, PluginSettingTab, Setting, Notice } from 'obsidian';
+import { App, PluginSettingTab, Setting, Notice, debounce, DropdownComponent, ButtonComponent } from 'obsidian';
 
 export interface ZoneDefinition {
 	path: string;
@@ -48,10 +48,79 @@ import type AgenticVaultPlugin from './main';
 
 export class AgenticVaultSettingTab extends PluginSettingTab {
 	plugin: AgenticVaultPlugin;
+	private modelDropdown: DropdownComponent | null = null;
+	private debouncedFetch: Function;
 
 	constructor(app: App, plugin: AgenticVaultPlugin) {
 		super(app, plugin);
 		this.plugin = plugin;
+		this.debouncedFetch = debounce(async (apiKey: string) => {
+			await this.performModelFetch(apiKey, false);
+		}, 1500, true);
+	}
+
+	private async performModelFetch(apiKey: string, showNotice: boolean = false, buttonComponent?: ButtonComponent) {
+		if (!apiKey) return;
+		try {
+			if (buttonComponent) buttonComponent.setButtonText('Testing...');
+			let models: string[] = [];
+			if (this.plugin.settings.llmProvider === 'openai') {
+				const { OpenAIProvider } = await import('./llm/OpenAIProvider');
+				models = await OpenAIProvider.fetchAvailableModels(apiKey, this.plugin.settings.llmBaseUrl);
+			} else {
+				const { GeminiProvider } = await import('./llm/GeminiProvider');
+				models = await GeminiProvider.fetchAvailableModels(apiKey);
+			}
+			
+			this.plugin.settings.availableModels = models;
+			
+			if (models.length > 0) {
+				const getBestModel = (models: string[]) => {
+					// Dynamic sorting logic to automatically bubble up the latest, most capable model
+					return [...models].sort((a, b) => {
+						// 1. Extract semantic version (e.g., "2.5" from "gemini-2.5-pro", "4" from "gpt-4")
+						const getV = (str: string) => parseFloat(str.match(/[\d]+(?:\.[\d]+)?/)?.[0] || '0');
+						const vA = getV(a);
+						const vB = getV(b);
+						if (vA !== vB) return vB - vA; // Higher version wins
+						
+						// 2. Capability Tiering
+						const tierWeight = (m: string) => {
+							const lower = m.toLowerCase();
+							if (lower.includes('pro') || lower.includes('plus') || lower.includes('opus') || lower.includes('gpt-4o') || lower.includes('o1') || lower.includes('o3')) return 3;
+							if (lower.includes('flash') || lower.includes('sonnet') || lower.includes('turbo')) return 2;
+							if (lower.includes('haiku') || lower.includes('mini')) return 1;
+							return 0;
+						};
+						const wA = tierWeight(a);
+						const wB = tierWeight(b);
+						if (wA !== wB) return wB - wA; // Higher tier wins
+						
+						// 3. Prefer Stable over Experimental/Preview
+						const isExpA = a.toLowerCase().includes('exp') || a.toLowerCase().includes('preview');
+						const isExpB = b.toLowerCase().includes('exp') || b.toLowerCase().includes('preview');
+						if (isExpA !== isExpB) return isExpA ? 1 : -1;
+						
+						// 4. Shorter string length wins (prefers base aliases like "gemini-2.0-flash" over "gemini-2.0-flash-001")
+						return a.length - b.length;
+					})[0] || models[0];
+				};
+				this.plugin.settings.llmModel = getBestModel(models);
+			}
+			
+			await this.plugin.saveSettings();
+			if (showNotice) new Notice(`Success: Found ${models.length} models.`);
+			
+			if (this.modelDropdown) {
+				this.modelDropdown.selectEl.empty();
+				models.forEach(m => this.modelDropdown?.addOption(m, m));
+				this.modelDropdown.setValue(this.plugin.settings.llmModel);
+			}
+		} catch (e: any) {
+			if (showNotice) new Notice(`API Error: ${e.message}`);
+		} finally {
+			if (buttonComponent) buttonComponent.setButtonText('Test Connection');
+		}
 	}
 
 	display(): void {
@@ -69,6 +138,7 @@ export class AgenticVaultSettingTab extends PluginSettingTab {
 				.onChange(async (value) => {
 					this.plugin.settings.llmApiKey = value;
 					await this.plugin.saveSettings();
+					this.debouncedFetch(value);
 				}));
 
 		new Setting(containerEl)
@@ -81,6 +151,7 @@ export class AgenticVaultSettingTab extends PluginSettingTab {
 				.onChange(async (value) => {
 					this.plugin.settings.llmProvider = value;
 					await this.plugin.saveSettings();
+					this.debouncedFetch(this.plugin.settings.llmApiKey);
 				}));
 
 		new Setting(containerEl)
@@ -89,37 +160,14 @@ export class AgenticVaultSettingTab extends PluginSettingTab {
 			.addButton(button => button
 				.setButtonText('Test Connection')
 				.onClick(async () => {
-					button.setButtonText('Testing...');
-					try {
-						let models: string[] = [];
-						if (this.plugin.settings.llmProvider === 'openai') {
-							const { OpenAIProvider } = await import('./llm/OpenAIProvider');
-							models = await OpenAIProvider.fetchAvailableModels(this.plugin.settings.llmApiKey, this.plugin.settings.llmBaseUrl);
-						} else {
-							const { GeminiProvider } = await import('./llm/GeminiProvider');
-							models = await GeminiProvider.fetchAvailableModels(this.plugin.settings.llmApiKey);
-						}
-						
-						this.plugin.settings.availableModels = models;
-						if (!models.includes(this.plugin.settings.llmModel) && models.length > 0) {
-							this.plugin.settings.llmModel = models[0];
-						}
-						await this.plugin.saveSettings();
-						new Notice(`Success: Found ${models.length} models.`);
-						
-						// Force re-render
-						this.display();
-					} catch (e: unknown) {
-						new Notice(`API Error: ${e.message}`);
-					} finally {
-						button.setButtonText('Test Connection');
-					}
+					await this.performModelFetch(this.plugin.settings.llmApiKey, true, button);
 				}));
 
 		new Setting(containerEl)
 			.setName('LLM Model')
 			.setDesc('Select the model to use for inference.')
 			.addDropdown(dropdown => {
+				this.modelDropdown = dropdown;
 				const models = this.plugin.settings.availableModels || [];
 				if (models.length === 0) {
 					dropdown.addOption(this.plugin.settings.llmModel, this.plugin.settings.llmModel);

@@ -173,7 +173,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 841.5
+    "width": 810.5
   },
   "left-ribbon": {
     "hiddenItems": {
@@ -191,8 +191,7 @@
   },
   "active": "c39ff7c257c7ed90",
   "lastOpenFiles": [
-    "agentic_vault/logs/debug/debug_dump_1778014343197.json",
-    "agentic_vault/logs/debug/debug_dump_1778014219430.json",
+    "agentic_vault/logs/debug/debug_dump_1778020425973.json",
     "agentic_vault/logs/debug",
     "agentic_vault/logs/Trace_Log.md",
     "agentic_vault/logs/routine_queue.json",
@@ -200,6 +199,7 @@
     "agentic_vault/fleets/core/tools/file_manager.md",
     "agentic_vault/fleets/core/tools/echo.md",
     "agentic_vault/fleets/core/tools/allocate_zone.md",
+    "agentic_vault/fleets/core/tools/install_fleet.md",
     "agentic_vault/fleets/core/personas/pager.md",
     "agentic_vault/fleets/core/personas/concierge.md",
     "agentic_vault/fleets/core/fleet.md",
@@ -210,6 +210,7 @@
     "agentic_vault/fleets/core",
     "agentic_vault/logs",
     "agentic_vault/memory",
+    "agentic_vault/fleets",
     "agentic_vault/fleets/para_career/tools/web_search.md",
     "agentic_vault/fleets/para_career/tools/update_memory.md",
     "agentic_vault/fleets/para_career/tools/unreliable_math.md",
@@ -225,7 +226,6 @@
     "99_agentic_vault/fleets/para_career/tools/unreliable_math.md",
     "99_agentic_vault/fleets/para_career/tools/map_vault.md",
     "99_agentic_vault/fleets/para_career/tools/google_workspace.md",
-    "99_agentic_vault/fleets/para_career/tools/file_manager.md",
-    "99_agentic_vault/fleets/para_career/personas/coo.md"
+    "99_agentic_vault/fleets/para_career/tools/file_manager.md"
   ]
 }

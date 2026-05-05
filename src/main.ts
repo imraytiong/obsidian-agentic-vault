@@ -40,7 +40,7 @@ export default class AgenticVaultPlugin extends Plugin {
 		this.logger = new LoggerService(this.app, agenticVaultPath);
 		this.personaEngine = new PersonaEngine(this.app, agenticVaultPath);
 		this.toolRegistry = new ToolRegistry(this.app, this.settings);
-		this.executionSandbox = new ExecutionSandbox(this.app, this.logger, this.toolRegistry, this.settings.sandboxEngine, this.settings.customEnvPath);
+		this.executionSandbox = new ExecutionSandbox(this.app, this.logger, this.toolRegistry, this.settings);
 		this.skillsEngine = new SkillsEngine(this.app, agenticVaultPath);
 		this.mcpEngine = new McpEngine(this.app, agenticVaultPath, this.settings.customEnvPath);
 		this.chatService = new ChatService(this);

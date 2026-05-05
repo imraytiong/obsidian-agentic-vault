@@ -173,7 +173,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 810.5
+    "width": 796.5
   },
   "left-ribbon": {
     "hiddenItems": {
@@ -191,11 +191,14 @@
   },
   "active": "c39ff7c257c7ed90",
   "lastOpenFiles": [
-    "40_archives",
-    "30_resources",
-    "20_areas",
-    "10_projects",
-    "Inbox",
+    "90_agentic_vault",
+    "80_templates",
+    "60_archives",
+    "50_resources",
+    "40_areas",
+    "30_projects",
+    "10_inbox",
+    "10_daily_notes",
     "agentic_vault/fleets/para_career/tools/web_search.md",
     "agentic_vault/fleets/para_career/tools/update_memory.md",
     "agentic_vault/fleets/para_career/tools/unreliable_math.md",
@@ -207,10 +210,7 @@
     "agentic_vault/fleets/para_career/routines",
     "agentic_vault/fleets/para_career/skills",
     "agentic_vault/fleets/para_career/tools",
-    "agentic_vault/fleets/para_career/personas",
-    "agentic_vault/fleets/para_career",
     "agentic_vault/logs/Trace_Log.md",
-    "agentic_vault/logs/routine_queue.json",
     "agentic_vault/fleets/core/tools/system_diagnostic.md",
     "agentic_vault/fleets/core/tools/file_manager.md",
     "agentic_vault/fleets/core/tools/echo.md",

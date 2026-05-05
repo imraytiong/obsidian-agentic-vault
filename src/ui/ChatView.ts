@@ -13,6 +13,8 @@ export class AgenticVaultChatView extends ItemView {
 	activePersona: string = 'Pager';
 	isTimelineMode: boolean = true; // false = Agentic View
 	activeTab: 'chat' | 'approvals' = 'chat';
+	inputRow: HTMLDivElement;
+	optionsContainerEl: HTMLDivElement;
 
 	constructor(leaf: WorkspaceLeaf, plugin: AgenticVaultPlugin) {
 		super(leaf);
@@ -378,13 +380,24 @@ export class AgenticVaultChatView extends ItemView {
 		suggestionBoxEl.style.marginBottom = '5px';
 		suggestionBoxEl.style.padding = '5px';
 		
-		// Input Box Row
-		const inputRow = bottomWrapper.createDiv();
-		inputRow.style.position = 'relative';
-		inputRow.style.display = 'flex';
-		inputRow.style.width = '100%';
+		// Options Container (Dynamic Multiple Choice)
+		this.optionsContainerEl = bottomWrapper.createDiv();
+		this.optionsContainerEl.style.display = 'none'; // Hidden by default
+		this.optionsContainerEl.style.flexDirection = 'column';
+		this.optionsContainerEl.style.gap = '8px';
+		this.optionsContainerEl.style.width = '100%';
+		this.optionsContainerEl.style.padding = '10px';
+		this.optionsContainerEl.style.border = '1px dashed var(--background-modifier-border)';
+		this.optionsContainerEl.style.borderRadius = '5px';
+		this.optionsContainerEl.style.backgroundColor = 'var(--background-secondary)';
 
-		const inputEl = inputRow.createEl('textarea', { 
+		// Input Box Row
+		this.inputRow = bottomWrapper.createDiv();
+		this.inputRow.style.position = 'relative';
+		this.inputRow.style.display = 'flex';
+		this.inputRow.style.width = '100%';
+
+		const inputEl = this.inputRow.createEl('textarea', { 
 			cls: 'chat-input',
 			placeholder: 'Type a message... (try /)'
 		});
@@ -639,6 +652,15 @@ export class AgenticVaultChatView extends ItemView {
 
 	renderHistory() {
 		this.messagesContainerEl.empty();
+		
+		if (this.optionsContainerEl) {
+			this.optionsContainerEl.empty();
+			this.optionsContainerEl.style.display = 'none';
+		}
+		if (this.inputRow) {
+			this.inputRow.style.display = 'flex';
+		}
+
 		for (const msg of this.plugin.chatService.unifiedTimeline) {
 			this.appendMessage(msg);
 		}
@@ -866,6 +888,9 @@ export class AgenticVaultChatView extends ItemView {
 					nodesToReplace.push(node);
 				}
 			}
+			const isLatest = msg === this.plugin.chatService.unifiedTimeline[this.plugin.chatService.unifiedTimeline.length - 1];
+			let hasAddedOptionsToBottom = false;
+
 			nodesToReplace.forEach(n => {
 				const parent = n.parentNode;
 				if (!parent) return;
@@ -881,42 +906,58 @@ export class AgenticVaultChatView extends ItemView {
 					}
 					
 					const btnText = match[1].trim();
-					const btn = document.createElement('button');
-					btn.className = 'chat-action-btn';
-					btn.textContent = btnText;
-					btn.style.margin = '4px';
-					btn.style.padding = '6px 12px';
-					btn.style.borderRadius = '16px';
-					btn.style.backgroundColor = 'var(--interactive-accent)';
-					btn.style.color = 'var(--text-on-accent)';
-					btn.style.border = 'none';
-					btn.style.cursor = 'pointer';
-					btn.style.fontSize = '0.9em';
 					
-					const isLatest = msg === this.plugin.chatService.unifiedTimeline[this.plugin.chatService.unifiedTimeline.length - 1];
 					if (!isLatest) {
+						const btn = document.createElement('button');
+						btn.className = 'chat-action-btn';
+						btn.textContent = btnText;
+						btn.style.margin = '4px';
+						btn.style.padding = '6px 12px';
+						btn.style.borderRadius = '16px';
+						btn.style.backgroundColor = 'var(--interactive-accent)';
+						btn.style.color = 'var(--text-on-accent)';
+						btn.style.border = 'none';
+						btn.style.cursor = 'not-allowed';
+						btn.style.fontSize = '0.9em';
 						btn.disabled = true;
 						btn.style.opacity = '0.5';
-						btn.style.cursor = 'not-allowed';
+						fragment.appendChild(btn);
 					} else {
-						btn.onclick = () => {
-							const inputEl = this.containerEl.querySelector('textarea.chat-input') as HTMLTextAreaElement;
-							if (inputEl) {
-								inputEl.value = btnText;
-								inputEl.dispatchEvent(new Event('input'));
-								inputEl.focus();
-								
-								const enterEvent = new KeyboardEvent('keydown', {
-									key: 'Enter',
-									code: 'Enter',
-									bubbles: true
-								});
-								inputEl.dispatchEvent(enterEvent);
-							}
-						};
+						hasAddedOptionsToBottom = true;
+						if (this.optionsContainerEl) {
+							const optBtn = document.createElement('button');
+							optBtn.textContent = btnText;
+							optBtn.style.padding = '10px 15px';
+							optBtn.style.borderRadius = '8px';
+							optBtn.style.backgroundColor = 'var(--interactive-accent)';
+							optBtn.style.color = 'var(--text-on-accent)';
+							optBtn.style.border = 'none';
+							optBtn.style.cursor = 'pointer';
+							optBtn.style.fontSize = '1em';
+							optBtn.style.textAlign = 'center';
+							optBtn.style.transition = 'background-color 0.2s';
+							optBtn.onmouseenter = () => optBtn.style.backgroundColor = 'var(--interactive-accent-hover)';
+							optBtn.onmouseleave = () => optBtn.style.backgroundColor = 'var(--interactive-accent)';
+							
+							optBtn.onclick = () => {
+								const inputEl = this.containerEl.querySelector('textarea.chat-input') as HTMLTextAreaElement;
+								if (inputEl) {
+									inputEl.value = btnText;
+									inputEl.dispatchEvent(new Event('input'));
+									inputEl.focus();
+									
+									const enterEvent = new KeyboardEvent('keydown', {
+										key: 'Enter',
+										code: 'Enter',
+										bubbles: true
+									});
+									inputEl.dispatchEvent(enterEvent);
+								}
+							};
+							this.optionsContainerEl.appendChild(optBtn);
+						}
 					}
 					
-					fragment.appendChild(btn);
 					lastIndex = regex.lastIndex;
 				}
 				
@@ -928,6 +969,30 @@ export class AgenticVaultChatView extends ItemView {
 					parent.replaceChild(fragment, n);
 				}
 			});
+
+			if (isLatest && hasAddedOptionsToBottom && this.optionsContainerEl && this.inputRow) {
+				this.optionsContainerEl.style.display = 'flex';
+				this.inputRow.style.display = 'none';
+				
+				const escapeBtn = document.createElement('button');
+				escapeBtn.textContent = 'Switch to text input...';
+				escapeBtn.style.padding = '8px';
+				escapeBtn.style.marginTop = '4px';
+				escapeBtn.style.borderRadius = '8px';
+				escapeBtn.style.backgroundColor = 'transparent';
+				escapeBtn.style.color = 'var(--text-muted)';
+				escapeBtn.style.border = '1px solid var(--background-modifier-border)';
+				escapeBtn.style.cursor = 'pointer';
+				escapeBtn.style.fontSize = '0.85em';
+				
+				escapeBtn.onclick = () => {
+					this.optionsContainerEl.style.display = 'none';
+					this.inputRow.style.display = 'flex';
+					const inputEl = this.containerEl.querySelector('textarea.chat-input') as HTMLTextAreaElement;
+					if (inputEl) inputEl.focus();
+				};
+				this.optionsContainerEl.appendChild(escapeBtn);
+			}
 
 			// Handle file links
 			contentDiv.querySelectorAll('a.internal-link').forEach((el) => {

@@ -159,7 +159,7 @@
             }
           },
           {
-            "id": "c39ff7c257c7ed90",
+            "id": "62b60857b788470a",
             "type": "leaf",
             "state": {
               "type": "agentic-vault-chat-view",
@@ -189,7 +189,7 @@
       "bases:Create new base": false
     }
   },
-  "active": "c39ff7c257c7ed90",
+  "active": "62b60857b788470a",
   "lastOpenFiles": [
     "90_agentic_vault",
     "80_templates",

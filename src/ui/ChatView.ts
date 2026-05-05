@@ -893,21 +893,28 @@ export class AgenticVaultChatView extends ItemView {
 					btn.style.cursor = 'pointer';
 					btn.style.fontSize = '0.9em';
 					
-					btn.onclick = () => {
-						const inputEl = this.containerEl.querySelector('textarea.chat-input') as HTMLTextAreaElement;
-						if (inputEl) {
-							inputEl.value = btnText;
-							inputEl.dispatchEvent(new Event('input'));
-							inputEl.focus();
-							
-							const enterEvent = new KeyboardEvent('keydown', {
-								key: 'Enter',
-								code: 'Enter',
-								bubbles: true
-							});
-							inputEl.dispatchEvent(enterEvent);
-						}
-					};
+					const isLatest = msg === this.plugin.chatService.unifiedTimeline[this.plugin.chatService.unifiedTimeline.length - 1];
+					if (!isLatest) {
+						btn.disabled = true;
+						btn.style.opacity = '0.5';
+						btn.style.cursor = 'not-allowed';
+					} else {
+						btn.onclick = () => {
+							const inputEl = this.containerEl.querySelector('textarea.chat-input') as HTMLTextAreaElement;
+							if (inputEl) {
+								inputEl.value = btnText;
+								inputEl.dispatchEvent(new Event('input'));
+								inputEl.focus();
+								
+								const enterEvent = new KeyboardEvent('keydown', {
+									key: 'Enter',
+									code: 'Enter',
+									bubbles: true
+								});
+								inputEl.dispatchEvent(enterEvent);
+							}
+						};
+					}
 					
 					fragment.appendChild(btn);
 					lastIndex = regex.lastIndex;

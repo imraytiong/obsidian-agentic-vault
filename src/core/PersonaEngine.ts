@@ -7,6 +7,7 @@ export interface Persona {
 	description?: string;
 	skills?: string[];
 	systemPrompt: string;
+	fleet: string;
 }
 
 export class PersonaEngine {
@@ -24,12 +25,28 @@ export class PersonaEngine {
 
 		if (!this.agenticVaultPath) return;
 
-		const personasPath = `${this.agenticVaultPath}/personas`;
-		const folder = this.app.vault.getAbstractFileByPath(personasPath);
-		if (!folder || !(folder instanceof TFolder)) return;
+		const fleetsPath = `${this.agenticVaultPath}/fleets`;
+		const fleetsFolder = this.app.vault.getAbstractFileByPath(fleetsPath);
+		if (!fleetsFolder || !(fleetsFolder instanceof TFolder)) return;
 
-		for (const file of folder.children) {
-			if (file instanceof TFile && file.extension === 'md') {
+		for (const fleetDir of fleetsFolder.children) {
+			if (!(fleetDir instanceof TFolder)) continue;
+			
+			const fleetName = fleetDir.name;
+			
+			// Optional: check fleet.md for status: active?
+			const fleetMd = this.app.vault.getAbstractFileByPath(`${fleetDir.path}/fleet.md`);
+			if (fleetMd && fleetMd instanceof TFile) {
+				const cache = this.app.metadataCache.getFileCache(fleetMd);
+				if (cache?.frontmatter?.status === 'disabled') continue;
+			}
+
+			const personasPath = `${fleetDir.path}/personas`;
+			const folder = this.app.vault.getAbstractFileByPath(personasPath);
+			if (!folder || !(folder instanceof TFolder)) continue;
+
+			for (const file of folder.children) {
+				if (file instanceof TFile && file.extension === 'md') {
 				const cache = this.app.metadataCache.getFileCache(file);
 				const frontmatter = cache?.frontmatter as Record<string, unknown> | undefined;
 				
@@ -60,8 +77,10 @@ export class PersonaEngine {
 						cmd: parsedCmd,
 						description,
 						skills,
-						systemPrompt: systemPrompt
+						systemPrompt: systemPrompt,
+						fleet: fleetName
 					};
+				}
 				}
 			}
 		}

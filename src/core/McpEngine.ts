@@ -44,40 +44,50 @@ export class McpEngine {
 		this.clients = {};
 		this.availableTools = {};
 
-		const serversPath = `${this.agenticVaultPath}/tools`;
-		const folder = this.app.vault.getAbstractFileByPath(serversPath);
-		
-		if (!folder || !(folder instanceof TFolder)) {
-			console.error(`Tools folder not found at ${serversPath}`);
-			return;
-		}
+		const fleetsPath = `${this.agenticVaultPath}/fleets`;
+		const fleetsFolder = this.app.vault.getAbstractFileByPath(fleetsPath);
+		if (!fleetsFolder || !(fleetsFolder instanceof TFolder)) return;
 
-		for (const file of folder.children) {
-			if (file instanceof TFile && file.extension === 'md') {
-				let frontmatter: unknown = null;
-				const cache = this.app.metadataCache.getFileCache(file);
-				
-				if (cache && cache.frontmatter) {
-					frontmatter = cache.frontmatter;
-				} else {
-					// Fallback to manual parse if cache is empty on startup
-					const content = await this.app.vault.read(file);
-					const match = content.match(/^---\n([\s\S]*?)\n---/);
-					if (match) {
-						try {
-							frontmatter = parseYaml(match[1] || '') as Record<string, unknown>;
-							if (frontmatter && typeof frontmatter === 'object' && 'name' in frontmatter && typeof frontmatter.name === 'string' && 'mcp_server' in frontmatter && frontmatter.mcp_server === true) {
-								void this.connectServer(frontmatter.name, frontmatter as unknown as McpServerConfig);
+		for (const fleetDir of fleetsFolder.children) {
+			if (!(fleetDir instanceof TFolder)) continue;
+			
+			const fleetMd = this.app.vault.getAbstractFileByPath(`${fleetDir.path}/fleet.md`);
+			if (fleetMd && fleetMd instanceof TFile) {
+				const cache = this.app.metadataCache.getFileCache(fleetMd);
+				if (cache?.frontmatter?.status === 'disabled') continue;
+			}
+
+			const serversPath = `${fleetDir.path}/tools`;
+			const folder = this.app.vault.getAbstractFileByPath(serversPath);
+			if (!folder || !(folder instanceof TFolder)) continue;
+
+			for (const file of folder.children) {
+				if (file instanceof TFile && file.extension === 'md') {
+					let frontmatter: unknown = null;
+					const cache = this.app.metadataCache.getFileCache(file);
+					
+					if (cache && cache.frontmatter) {
+						frontmatter = cache.frontmatter;
+					} else {
+						// Fallback to manual parse if cache is empty on startup
+						const content = await this.app.vault.read(file);
+						const match = content.match(/^---\n([\s\S]*?)\n---/);
+						if (match) {
+							try {
+								frontmatter = parseYaml(match[1] || '') as Record<string, unknown>;
+								if (frontmatter && typeof frontmatter === 'object' && 'name' in frontmatter && typeof frontmatter.name === 'string' && 'mcp_server' in frontmatter && frontmatter.mcp_server === true) {
+									void this.connectServer(frontmatter.name, frontmatter as unknown as McpServerConfig);
+								}
+							} catch (e) {
+								console.error("YAML Parse Error", e);
 							}
-						} catch (e) {
-							console.error("YAML Parse Error", e);
+							continue; // Handle async parseYaml
 						}
-						continue; // Handle async parseYaml
 					}
-				}
-				
-				if (frontmatter && typeof frontmatter === 'object' && 'name' in frontmatter && typeof frontmatter.name === 'string' && 'mcp_server' in frontmatter && frontmatter.mcp_server === true) {
-					await this.connectServer(frontmatter.name, frontmatter as unknown as McpServerConfig);
+					
+					if (frontmatter && typeof frontmatter === 'object' && 'name' in frontmatter && typeof frontmatter.name === 'string' && 'mcp_server' in frontmatter && frontmatter.mcp_server === true) {
+						await this.connectServer(frontmatter.name, frontmatter as unknown as McpServerConfig);
+					}
 				}
 			}
 		}

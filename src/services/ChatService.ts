@@ -1,7 +1,10 @@
-import AgenticVaultPlugin from "../main";
+import type AgenticVaultPlugin from '../main';
 import { LLMMessage, LLMProvider } from "../llm/LLMProvider";
 import { GeminiProvider } from "../llm/GeminiProvider";
 import { OpenAIProvider } from "../llm/OpenAIProvider";
+
+import { PromptCompiler } from "../core/PromptCompiler";
+import { NativeToolHandler } from "../core/NativeToolHandler";
 
 export type { LLMMessage as ChatMessage } from "../llm/LLMProvider";
 
@@ -11,9 +14,14 @@ export class ChatService {
 	agentContexts: Record<string, LLMMessage[]> = {};
 	onPersonaChanged?: (newPersona: string) => void;
 	onTimelineUpdated?: () => void;
+	isProcessing: boolean = false;
+	backgroundTasks: Set<string> = new Set();
+	currentStatus: string = '';
+	private nativeToolHandler: NativeToolHandler;
 
 	constructor(plugin: AgenticVaultPlugin) {
 		this.plugin = plugin;
+		this.nativeToolHandler = new NativeToolHandler(this.plugin);
 		if (this.plugin.settings.chatState) {
 			this.unifiedTimeline = this.plugin.settings.chatState.unifiedTimeline || [];
 			this.agentContexts = this.plugin.settings.chatState.agentContexts || {};
@@ -35,6 +43,14 @@ export class ChatService {
 		return this.agentContexts[personaName];
 	}
 
+	isPersonaBusy(personaName: string): boolean {
+		const activeTasks = this.plugin.routineManager.getTasks().filter(t => t.status === 'running');
+		return activeTasks.some(t => {
+			const routine = this.plugin.routineManager.getRoutines().find(r => r.id === t.routineId);
+			return routine && routine.agent === personaName;
+		});
+	}
+
 	private getProvider(): LLMProvider {
 		if (this.plugin.settings.llmProvider === 'openai') {
 			return new OpenAIProvider(
@@ -49,51 +65,58 @@ export class ChatService {
 		);
 	}
 
-	async sendMessage(message: string, personaName: string): Promise<string> {
-		const history = this.getAgentHistory(personaName);
-		
-		if (message) {
-			this.unifiedTimeline.push({ role: 'user', content: message, persona: personaName });
-			history.push({ role: 'user', content: message, persona: personaName });
-			this.plugin.logger.log('USER_MESSAGE_SUBMITTED', { text: message, persona: personaName });
-			this.persistState();
-		}
-		
-		const persona = this.plugin.personaEngine.getPersonaByName(personaName);
-		let systemPrompt = persona ? persona.systemPrompt : 'You are a helpful assistant.';
+	abortBackgroundTask(taskId: string) {
+		this.backgroundTasks.delete(taskId);
+	}
 
-		// Inject contextual metadata into the system prompt
-		const now = new Date();
-		systemPrompt += `\n\n[System Context]\nThe current date and time is: ${now.toLocaleString()}.`;
-
-		// Inject Memory Context
-		const sharedMemoryPath = 'AgenticVault/memory/shared_memory.md';
-		if (await this.plugin.app.vault.adapter.exists(sharedMemoryPath)) {
-			const sharedMemoryContent = await this.plugin.app.vault.adapter.read(sharedMemoryPath);
-			systemPrompt += `\n\n[Global User Profile (Core Identity)]\n${sharedMemoryContent}`;
+	async sendMessage(message: string, personaName: string, senderOverride?: string, taskId?: string, isInternalHandoff: boolean = false): Promise<string> {
+		if (taskId) {
+			this.backgroundTasks.add(taskId);
+		} else {
+			if (!isInternalHandoff && this.isProcessing) {
+				throw new Error("ChatService is already processing a request.");
+			}
+			this.isProcessing = true;
+			if (this.onTimelineUpdated) this.onTimelineUpdated();
 		}
 
-		const personaMemoryPath = `AgenticVault/memory/personas/${personaName.toLowerCase().replace(/ /g, '_')}_memory.md`;
-		if (await this.plugin.app.vault.adapter.exists(personaMemoryPath)) {
-			const personaMemoryContent = await this.plugin.app.vault.adapter.read(personaMemoryPath);
-			systemPrompt += `\n\n[Persona-Specific Context]\n${personaMemoryContent}`;
-		}
+		const isStillActive = () => {
+			if (taskId) return this.backgroundTasks.has(taskId);
+			return this.isProcessing;
+		};
 
-		systemPrompt += `\n\n[System Rules]\n- When referring to files in the vault, ALWAYS use Obsidian wiki-link syntax: [[File Name]].\n- When asking the user a structured list of questions, DO NOT ask them in plain text. Instead, output a JSON block tagged with \`\`\`json-form\`\`\` that defines the form. The JSON must follow this exact schema: { "title": "Form Title", "fields": [ { "id": "field_id", "label": "Question Text", "type": "textarea", "placeholder": "Example answer..." } ] }\n- You have access to a permanent memory system via the \`update_memory\` tool. If the user explicitly states a preference, makes a major decision, or reveals a long-term goal, you MUST use the \`update_memory\` tool to permanently record it.\n- Hierarchy of Truth: The [Global User Profile (Core Identity)] block represents the user's current true identity. Vault documents represent Project State. If a Vault document contradicts the Core Identity, the Core Identity takes precedence. You MUST explicitly ask the user if the Vault document needs to be updated to match their new identity.\n- [VERIFICATION RULE]: You are strictly prohibited from confirming a task is complete based solely on your intent. You MUST receive a successful output receipt from a tool before telling the user it is done.`;
+		try {
+			let history: LLMMessage[] = [];
+			
+			if (taskId) {
+				// Isolate history for background spawn
+				history = [...this.getAgentHistory(personaName)];
+			} else {
+				history = this.getAgentHistory(personaName);
+			}
+			
+			if (message) {
+				const msgPersona = senderOverride || personaName;
+				const newMsg: LLMMessage = { role: 'user', content: message, persona: msgPersona };
+				history.push(newMsg);
+				
+				if (!taskId) {
+					this.unifiedTimeline.push(newMsg);
+					this.plugin.logger.log('USER_MESSAGE_SUBMITTED', { text: message, persona: msgPersona });
+					this.persistState();
+				}
+			}
+			
+			if (!taskId) {
+				this.currentStatus = `Compiling context for ${personaName}...`;
+				if (this.onTimelineUpdated) this.onTimelineUpdated();
+			}
 
-		// Dynamically inject the registry of available personas so agents can route properly
-		const allPersonas = this.plugin.personaEngine.getAllPersonas();
-		const personaRegistry = allPersonas.map(p => `- **${p.name}**: ${p.description || 'A helpful specialized agent.'}`).join('\n');
-		systemPrompt += `\n\n[Available Expert Personas for Handoff]\n${personaRegistry}\nIf you believe another agent is better suited to help the user, use the transfer_session tool to hand them off.`;
+			const systemPrompt = await PromptCompiler.compileSystemPrompt(this.plugin, personaName);
 
-		// Inject Skill Catalog
-		const skills = this.plugin.skillsEngine.getSkillCatalog();
-		if (skills.length > 0) {
-			const catalog = skills.map(s => `- **${s.id}** (${s.name}): ${s.description}`).join('\n');
-			systemPrompt += `\n\n[Available Skills Catalog]\n${catalog}\nUse the \`load_skill\` tool to read the full instructions for any of these skills if they are relevant to your current task.`;
-		}
-
-		this.plugin.logger.log('LLM_REQUEST_INITIATED', { message, persona: personaName, systemPrompt });
+			if (!taskId) {
+				this.plugin.logger.log('LLM_REQUEST_INITIATED', { message, persona: personaName, systemPrompt });
+			}
 		
 		const apiKey = this.plugin.settings.llmApiKey;
 		if (!apiKey) {
@@ -111,7 +134,8 @@ export class ChatService {
 			let payload = {};
 			try { payload = JSON.parse(payloadString); } catch (e) { payload = { raw: payloadString }; }
 			let response = `[${personaName}] Initiating local sandbox execution for tool: **${toolName}**...\n\n`;
-			const result = await this.plugin.executionSandbox.executeTool(toolName, payload);
+			const executionFleet = this.plugin.personaEngine.getPersonaByName(personaName)?.fleet;
+			const result = await this.plugin.executionSandbox.executeTool(toolName, payload, executionFleet);
 			if (result.success) response += `**Sandbox Output:**\n\`\`\`json\n${result.output}\n\`\`\``;
 			else response += `**Sandbox Error:**\n\`\`\`text\n${result.output}\n\`\`\``;
 			
@@ -122,14 +146,13 @@ export class ChatService {
 		} 
 
 		// Full ReAct Loop
-		try {
-			const provider = this.getProvider();
+		const provider = this.getProvider();
+			const persona = this.plugin.personaEngine.getPersonaByName(personaName);
 			const allTools = [
-				...this.plugin.toolRegistry.getAllTools(),
+				...this.plugin.toolRegistry.getAllTools(persona?.fleet),
 				...this.plugin.mcpEngine.getMcpToolsAsRegistryFormat()
 			];
 			
-			const persona = this.plugin.personaEngine.getPersonaByName(personaName);
 			let tools = [];
 			
 			if (persona && persona.skills) {
@@ -185,6 +208,18 @@ export class ChatService {
 					{ name: 'reason', type: 'string', description: 'Why you are requesting approval for this action.', required: true }
 				]
 			});
+
+			// Inject Native Tool for Managing Routines
+			tools.push({
+				name: 'manage_routines',
+				description: 'View the status of the background task queue, list available routines, or manually trigger a routine.',
+				language: 'native',
+				scriptContent: '',
+				parameters: [
+					{ name: 'action', type: 'string', description: 'What to do: "list_routines" (to see all configured routines), "view_queue" (to see the recent tasks), or "trigger" (to spawn a new task).', required: true },
+					{ name: 'routine_id', type: 'string', description: 'Required only if action is "trigger". The ID of the routine to spawn.', required: false }
+				]
+			});
 			
 			// Build payload with system prompt
 			const payload: LLMMessage[] = [
@@ -192,20 +227,31 @@ export class ChatService {
 				...history
 			];
 
+			if (!taskId) {
+				this.currentStatus = `Awaiting AI reasoning from ${personaName}...`;
+				if (this.onTimelineUpdated) this.onTimelineUpdated();
+			}
+
 			let llmResponse = await provider.generateResponse(payload, tools);
 			this.plugin.logger.log('LLM_RAW_RESPONSE', llmResponse);
+
+			if (!isStillActive()) return 'Aborted.';
 
 			// Handle Tool Calling Loop
 			let iterations = 0;
 			const maxIterations = 15;
 			const toolCallHistory: Record<string, number> = {};
 
-			// Create a single active assistant message for the UI timeline
-			const activeAssistantMessage: unknown = { role: 'assistant', content: '', persona: personaName };
-			this.unifiedTimeline.push(activeAssistantMessage);
-			if (this.onTimelineUpdated) this.onTimelineUpdated();
+			// Create a single active assistant message
+			const activeAssistantMessage: any = { role: 'assistant', content: '', persona: personaName };
+			
+			if (!taskId) {
+				this.unifiedTimeline.push(activeAssistantMessage);
+				if (this.onTimelineUpdated) this.onTimelineUpdated();
+			}
 
 			while (llmResponse.toolCalls && llmResponse.toolCalls.length > 0 && iterations < maxIterations) {
+				if (!isStillActive()) break;
 				iterations++;
 
 				// Loop Detection
@@ -228,7 +274,7 @@ export class ChatService {
 				// Show intermediate reasoning if provided
 				if (llmResponse.content) {
 					activeAssistantMessage.content += (activeAssistantMessage.content ? '\n\n' : '') + llmResponse.content;
-					if (this.onTimelineUpdated) this.onTimelineUpdated();
+					if (!taskId && this.onTimelineUpdated) this.onTimelineUpdated();
 				}
 
 				history.push({ 
@@ -240,66 +286,21 @@ export class ChatService {
 				for (const tc of llmResponse.toolCalls) {
 					this.plugin.logger.log('AUTONOMOUS_TOOL_EXECUTION', { tool: tc.name, args: tc.arguments });
 					
-					if (tc.name === 'transfer_session') {
-						const args = tc.arguments;
-						const targetPersona = args.target_persona;
-						const handoffMsg = args.handoff_context;
-
-						const handoffNotice = `*Transferred session to **${targetPersona}**.*\n\n> ${handoffMsg}`;
-						activeAssistantMessage.content += (activeAssistantMessage.content ? '\n\n' : '') + handoffNotice;
-						history.push({ role: 'tool', content: `Session successfully transferred to ${targetPersona}.`, toolCallId: tc.id, toolName: tc.name });
-
-						const targetHistory = this.getAgentHistory(targetPersona);
-						const recentContext = this.unifiedTimeline.slice(-6).map((m: any) => `[${m.persona || m.role}]: ${m.content}`).join('\n\n');
-						const fullHandoffMessage = `[SYSTEM HANDOFF from ${personaName}]: ${handoffMsg}\n\n### Recent Conversation Context:\n${recentContext}\n\nPlease take over the conversation and assist the user immediately based on this context.`;
-						
-						targetHistory.push({ role: 'user', content: fullHandoffMessage, persona: 'System' });
-
-						if (this.onPersonaChanged) this.onPersonaChanged(targetPersona);
-						this.persistState();
-						await this.sendMessage("", targetPersona);
-						return handoffNotice;
-
-					} else if (tc.name === 'load_skill') {
-						const args = tc.arguments;
-						const skillId = args.skill_id;
-						const body = this.plugin.skillsEngine.getSkillBody(skillId);
-						
-						let toolOutputStr = body ? `[Skill Instructions Loaded: ${skillId}]\n\n${body}` : `Error: Skill '${skillId}' not found.`;
-
-						// Show visually in the UI box
-						activeAssistantMessage.content += (activeAssistantMessage.content ? '\n\n' : '') + `<details><summary>🧠 Loaded Skill: ${skillId}</summary>\n\n\`\`\`text\n${toolOutputStr}\n\`\`\`\n</details>`;
-						if (this.onTimelineUpdated) this.onTimelineUpdated();
-
-						history.push({ role: 'tool', content: toolOutputStr, toolCallId: tc.id, toolName: tc.name });
-						this.persistState();
-						continue; 
-					} else if (tc.name === 'request_approval') {
-						const args = tc.arguments;
-						const summary = args.action_summary || 'Unknown Action';
-						const reason = args.reason || 'No reason provided';
-						
-						const msg = `⚠️ **Approval Requested:**\n- **Action:** ${summary}\n- **Reason:** ${reason}\n\n*The system has paused and added this request to the HITL queue.*`;
-						activeAssistantMessage.content += (activeAssistantMessage.content ? '\n\n' : '') + msg;
-						history.push({ role: 'tool', content: "Approval requested. Loop paused until user responds.", toolCallId: tc.id, toolName: tc.name });
-						
-						await this.plugin.approvalQueue.addRequest({
-							persona: personaName,
-							summary,
-							reason,
-							historyPayload: JSON.parse(JSON.stringify(history)),
-							timestamp: new Date().toISOString()
-						});
-
-						if (this.onTimelineUpdated) this.onTimelineUpdated();
-						this.persistState();
-						return msg; // Returning early completely stops the ReAct loop!
+					const nativeRes = await this.nativeToolHandler.handle(tc, personaName, activeAssistantMessage, history);
+					if (nativeRes.handled) {
+						if (nativeRes.haltReAct) {
+							return nativeRes.responseMessage || '';
+						}
+						continue;
 					}
 
 					if (this.plugin.mcpEngine.availableTools[tc.name]) {
+						if (!taskId) {
+							this.currentStatus = `Executing MCP tool: ${tc.name}...`;
+						}
 						const executingToken = `\n\n> ⚙️ **Executing MCP tool: ${tc.name}**...`;
 						activeAssistantMessage.content += executingToken;
-						if (this.onTimelineUpdated) this.onTimelineUpdated();
+						if (!taskId && this.onTimelineUpdated) this.onTimelineUpdated();
 
 						let toolOutputStr = '';
 						try {
@@ -311,7 +312,7 @@ export class ChatService {
 
 						const finishedToken = `\n\n<details><summary>⚙️ Executed MCP tool: ${tc.name}</summary>\n\n\`\`\`text\n${toolOutputStr}\n\`\`\`\n</details>`;
 						activeAssistantMessage.content = activeAssistantMessage.content.replace(executingToken, finishedToken);
-						if (this.onTimelineUpdated) this.onTimelineUpdated();
+						if (!taskId && this.onTimelineUpdated) this.onTimelineUpdated();
 
 						history.push({
 							role: 'tool',
@@ -322,13 +323,17 @@ export class ChatService {
 						continue;
 					}
 
+					if (!taskId) {
+						this.currentStatus = `Executing local tool: ${tc.name}...`;
+					}
 					// Inject in-progress tool message visually
 					const executingToken = `\n\n> ⚙️ **Executing tool: ${tc.name}**...`;
 					activeAssistantMessage.content += executingToken;
-					if (this.onTimelineUpdated) this.onTimelineUpdated();
+					if (!taskId && this.onTimelineUpdated) this.onTimelineUpdated();
 
 					// Execute Sandbox for standard tools
-					const sandboxRes = await this.plugin.executionSandbox.executeTool(tc.name, tc.arguments);
+					const executionFleet = persona?.fleet;
+					const sandboxRes = await this.plugin.executionSandbox.executeTool(tc.name, tc.arguments, executionFleet);
 					
 					// Replace in-progress token with details block
 					const toolOutputStr = sandboxRes.success ? sandboxRes.output : `ERROR: ${sandboxRes.output}\n\n[SYSTEM DIRECTIVE]: Tool execution failed. Do NOT report this failure to the user yet. You must autonomously analyze the error, correct your arguments or approach, and retry.`;
@@ -351,6 +356,9 @@ export class ChatService {
 					...history
 				];
 				
+				this.currentStatus = `Analyzing tool execution results...`;
+				if (this.onTimelineUpdated) this.onTimelineUpdated();
+
 				llmResponse = await provider.generateResponse(followupPayload, tools);
 				this.plugin.logger.log('LLM_FOLLOWUP_RESPONSE', llmResponse);
 			}
@@ -358,9 +366,11 @@ export class ChatService {
 			if (llmResponse.toolCalls && llmResponse.toolCalls.length > 0 && iterations >= maxIterations) {
 				const errResponse = `[${personaName}] I reached the maximum tool execution depth and had to stop.`;
 				activeAssistantMessage.content += (activeAssistantMessage.content ? '\n\n' : '') + errResponse;
-				history.push({ role: 'assistant', content: errResponse, persona: personaName });
-				this.persistState();
-				return errResponse;
+				if (!taskId) {
+					history.push({ role: 'assistant', content: errResponse, persona: personaName });
+					this.persistState();
+				}
+				// The handoff will handle pushing to unifiedTimeline for background tasks
 			}
 
 			const finalContent = llmResponse.content || '';
@@ -373,8 +383,23 @@ export class ChatService {
 				activeAssistantMessage.content = '[Empty response]';
 			}
 
-			if (this.onTimelineUpdated) this.onTimelineUpdated();
-			this.persistState();
+			if (taskId) {
+				// Inject the final summary into the main timelines
+				const task = this.plugin.routineManager.getTasks().find(t => t.id === taskId);
+				const routineName = task ? task.routineId : taskId;
+				const routine = this.plugin.routineManager.getRoutines().find(r => r.id === routineName);
+				const header = `> ⚙️ **[Background Routine Completed: ${routine ? routine.name : routineName}]**\n\n`;
+				
+				const finalMsg: LLMMessage = { role: 'assistant', content: header + activeAssistantMessage.content, persona: personaName };
+				this.unifiedTimeline.push(finalMsg);
+				this.getAgentHistory(personaName).push(finalMsg);
+				this.persistState();
+				if (this.onTimelineUpdated) this.onTimelineUpdated();
+			} else {
+				if (this.onTimelineUpdated) this.onTimelineUpdated();
+				this.persistState();
+			}
+			
 			return activeAssistantMessage.content;
 			
 		} catch (error: any) {
@@ -392,10 +417,29 @@ export class ChatService {
 				errResponse += `\n\n⚠️ **Troubleshooting:** It looks like your API key or selected model might be invalid. Please go to **Settings → Community plugins → Agentic Vault** and use the **Test Key & Load Models** button to verify your configuration.`;
 			}
 			
-			this.unifiedTimeline.push({ role: 'assistant', content: errResponse, persona: personaName });
-			history.push({ role: 'assistant', content: errResponse, persona: personaName });
+			if (taskId) {
+				const task = this.plugin.routineManager.getTasks().find(t => t.id === taskId);
+				const routineName = task ? task.routineId : taskId;
+				const routine = this.plugin.routineManager.getRoutines().find(r => r.id === routineName);
+				const header = `> ⚠️ **[Background Routine Failed: ${routine ? routine.name : routineName}]**\n\n`;
+				const finalMsg: LLMMessage = { role: 'assistant', content: header + errResponse, persona: personaName };
+				this.unifiedTimeline.push(finalMsg);
+				this.getAgentHistory(personaName).push(finalMsg);
+			} else {
+				this.unifiedTimeline.push({ role: 'assistant', content: errResponse, persona: personaName });
+				this.getAgentHistory(personaName).push({ role: 'assistant', content: errResponse, persona: personaName });
+			}
+			
 			this.persistState();
 			return errResponse;
+		} finally {
+			if (taskId) {
+				this.backgroundTasks.delete(taskId);
+			} else if (!isInternalHandoff) {
+				this.isProcessing = false;
+				this.currentStatus = '';
+				if (this.onTimelineUpdated) this.onTimelineUpdated();
+			}
 		}
 	}
 	
@@ -421,6 +465,12 @@ export class ChatService {
 		this.unifiedTimeline = [];
 		this.agentContexts = {};
 		this.persistState();
+		if (this.onTimelineUpdated) this.onTimelineUpdated();
+	}
+
+	public abortProcessing() {
+		this.isProcessing = false;
+		this.currentStatus = 'Aborted by user.';
 		if (this.onTimelineUpdated) this.onTimelineUpdated();
 	}
 }

@@ -14,4 +14,5 @@ export interface FleetBlueprint {
 	personas: FleetItem[];
 	tools: FleetItem[];
 	skills: FleetItem[];
+	routines: FleetItem[];
 }

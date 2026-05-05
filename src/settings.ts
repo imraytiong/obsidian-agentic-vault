@@ -29,7 +29,7 @@ export const DEFAULT_SETTINGS: AgenticVaultSettings = {
 	areasPath: '20_areas',
 	resourcesPath: '30_resources',
 	archivesPath: '40_archives',
-	agenticVaultPath: '90_agentic_vault',
+	agenticVaultPath: 'agentic_vault',
 	sandboxEngine: 'local-node',
 	customEnvPath: '/Users/raytiong/.nvm/versions/node/v24.11.0/bin:/usr/local/bin:/opt/homebrew/bin',
 	llmProvider: 'gemini',
@@ -38,7 +38,7 @@ export const DEFAULT_SETTINGS: AgenticVaultSettings = {
 	availableModels: ['gemini-2.5-flash', 'gemini-1.5-pro']
 }
 
-import AgenticVaultPlugin from './main';
+import type AgenticVaultPlugin from './main';
 
 export class AgenticVaultSettingTab extends PluginSettingTab {
 	plugin: AgenticVaultPlugin;

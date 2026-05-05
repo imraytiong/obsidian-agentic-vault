@@ -18,8 +18,8 @@ export class ExecutionSandbox {
 		this.customEnvPath = customEnvPath;
 	}
 
-	async executeTool(toolName: string, payload: unknown): Promise<{ success: boolean, output: string }> {
-		const tool = this.toolRegistry.getTool(toolName);
+	async executeTool(toolName: string, payload: unknown, executionFleet?: string): Promise<{ success: boolean, output: string }> {
+		const tool = this.toolRegistry.getTool(toolName, executionFleet);
 		if (!tool) {
 			return { success: false, output: `Tool not found: ${toolName}` };
 		}

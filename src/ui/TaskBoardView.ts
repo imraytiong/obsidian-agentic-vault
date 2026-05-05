@@ -1,5 +1,5 @@
 import { ItemView, WorkspaceLeaf } from 'obsidian';
-import AgenticVaultPlugin from '../main';
+import type AgenticVaultPlugin from '../main';
 
 export const VIEW_TYPE_AGENTIC_KANBAN = 'agentic-kanban-view';
 

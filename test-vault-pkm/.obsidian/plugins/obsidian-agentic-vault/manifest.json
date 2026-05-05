@@ -1,0 +1,11 @@
+{
+	"id": "obsidian-agentic-vault",
+	"name": "Agentic Vault AI",
+	"version": "0.0.1",
+	"minAppVersion": "0.15.0",
+	"description": "Run a team of agents in Obisidian",
+	"author": "Raymond Tiong",
+	"authorUrl": "https://github.com/imraytiong/obsidian-agentic-vault",
+	"fundingUrl": "",
+	"isDesktopOnly": false
+}

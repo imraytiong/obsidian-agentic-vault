@@ -32,8 +32,8 @@ export class TriggerParser {
 			}
 		});
 
-		// Cron-based triggers (Evaluates every 60 seconds)
-		window.setInterval(() => {
+		// Cron-based triggers
+		const evaluateCrons = () => {
 			const routines = this.routineManager.getRoutines();
 			for (const r of routines) {
 				if (r.status === 'active' && r.trigger.startsWith('cron(')) {
@@ -42,7 +42,13 @@ export class TriggerParser {
 					}
 				}
 			}
-		}, 60000);
+		};
+
+		// Evaluate immediately to catch any missed triggers during offline
+		evaluateCrons();
+		
+		// Then evaluate every 60 seconds
+		window.setInterval(evaluateCrons, 60000);
 	}
 
 	private isCronDue(routine: RoutineDefinition): boolean {
@@ -51,8 +57,7 @@ export class TriggerParser {
 			const interval = CronExpressionParser.parse(exp);
 			const prevTime = interval.prev().getTime();
 			
-			const state = this.routineManager.getQueueState()[routine.id];
-			const lastRunTime = state?.lastRunTime || 0;
+			const lastRunTime = this.routineManager.getLastRunTime(routine.id);
 
 			// If the previous scheduled run is newer than our last execution timestamp, we missed it.
 			// Add a 5-second buffer to prevent double triggers.
@@ -66,27 +71,63 @@ export class TriggerParser {
 	}
 
 	async executeRoutine(routine: RoutineDefinition, contextMsg: string) {
-		const state = this.routineManager.getQueueState()[routine.id];
-		if (state && state.status === 'running') {
+		const activeTask = this.routineManager.getActiveTaskForRoutine(routine.id);
+		if (activeTask) {
 			this.logger.log('ROUTINE_SKIPPED_ALREADY_RUNNING', { routine: routine.id });
 			return; // Prevent concurrent runs
 		}
+		const now = Date.now();
+		routine.last_run = now;
+		await this.routineManager.updateRoutineField(routine.id, 'last_run', now.toString());
 
-		await this.routineManager.updateRoutineState(routine.id, { status: 'running', lastRunTime: Date.now(), lastError: '' });
+		const task = this.routineManager.spawnTask(routine);
+		
+		const maxAttempts = (routine.retries !== undefined ? routine.retries : 3) + 1;
+		let success = false;
+		let lastError = '';
 
-		try {
-			void this.logger.log('ROUTINE_STARTED', { routine: routine.id, agent: routine.agent });
-			
-			const prompt = `[SYSTEM TRIGGER]: The routine "${routine.name}" has been triggered. \nContext: ${contextMsg}\n\nPlease execute the skill "${routine.skill}" immediately. Use your \`load_skill\` tool to read the SOP instructions, then execute the necessary steps.`;
-			
-			// Execute via ChatService (Simulated user message from System)
-			await this.chatService.sendMessage(prompt, routine.agent);
+		for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+			try {
+				await this.routineManager.updateTask(task.id, { status: 'running', attempts: attempt });
+				
+				if (attempt > 1) {
+					void this.logger.log('ROUTINE_RETRYING', { routine: routine.id, attempt });
+				} else {
+					void this.logger.log('ROUTINE_STARTED', { routine: routine.id, agent: routine.agent, taskId: task.id });
+				}
+				
+				const prompt = `[SYSTEM TRIGGER]: The routine "${routine.name}" has been triggered. \nContext: ${contextMsg}\n\nPlease execute the skill "${routine.skill}" immediately. Use your \`load_skill\` tool to read the SOP instructions, then execute the necessary steps.`;
+				
+				const timeoutMs = (routine.timeout || 5) * 60 * 1000;
+				
+				const executionPromise = this.chatService.sendMessage(prompt, routine.agent, "System", task.id);
+				const timeoutPromise = new Promise((_, reject) => {
+					setTimeout(() => reject(new Error(`Routine timed out after ${routine.timeout || 5} minutes`)), timeoutMs);
+				});
 
-			await this.routineManager.updateRoutineState(routine.id, { status: 'completed' });
-			void this.logger.log('ROUTINE_COMPLETED', { routine: routine.id });
-		} catch (e: any) {
-			await this.routineManager.updateRoutineState(routine.id, { status: 'failed', lastError: e.message });
-			void this.logger.log('ROUTINE_FAILED', { routine: routine.id, error: e.message });
+				await Promise.race([executionPromise, timeoutPromise]);
+
+				await this.routineManager.updateTask(task.id, { status: 'completed', endTime: Date.now() });
+				void this.logger.log('ROUTINE_COMPLETED', { routine: routine.id, taskId: task.id });
+				success = true;
+				break;
+			} catch (e: any) {
+				lastError = e.message;
+				if (e.message.includes('timed out')) {
+					this.chatService.abortBackgroundTask(task.id);
+				}
+				void this.logger.log('ROUTINE_ATTEMPT_FAILED', { routine: routine.id, attempt, error: lastError });
+				
+				// Small delay before retrying
+				if (attempt < maxAttempts) {
+					await new Promise(r => setTimeout(r, 2000));
+				}
+			}
+		}
+
+		if (!success) {
+			await this.routineManager.updateTask(task.id, { status: 'failed', error: lastError, endTime: Date.now() });
+			void this.logger.log('ROUTINE_FAILED', { routine: routine.id, error: lastError, taskId: task.id });
 		}
 	}
 }

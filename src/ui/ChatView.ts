@@ -1,19 +1,18 @@
-import { ItemView, WorkspaceLeaf, MarkdownRenderer, Notice } from 'obsidian';
-import AgenticVaultPlugin from '../main';
+import { ItemView, WorkspaceLeaf, MarkdownRenderer, Notice, ButtonComponent } from 'obsidian';
+import type AgenticVaultPlugin from '../main';
 import { ChatMessage } from '../services/ChatService';
 import { Persona } from '../core/PersonaEngine';
-import { BlueprintEngine } from '../blueprints/BlueprintEngine';
-import { BUNDLED_FLEETS } from '../blueprints/BundledFleets';
 import { FleetBlueprint } from '../blueprints/types';
 
-export const VIEW_TYPE_CAREER_SHERPA_CHAT = 'agentic-vault-chat-view';
+export const VIEW_TYPE_AGENTIC_CHAT = 'agentic-vault-chat-view';
 
 export class AgenticVaultChatView extends ItemView {
 	plugin: AgenticVaultPlugin;
-	activePersona: string = 'Pager'; // Default persona
-	messagesContainerEl: HTMLElement;
-	personaIndicatorEl: HTMLElement;
-	isThinking: boolean = false;
+	messagesContainerEl!: HTMLElement;
+	personaIndicatorEl!: HTMLElement;
+	activePersona: string = 'Pager';
+	isTimelineMode: boolean = true; // false = Agentic View
+	activeTab: 'chat' | 'approvals' = 'chat';
 
 	constructor(leaf: WorkspaceLeaf, plugin: AgenticVaultPlugin) {
 		super(leaf);
@@ -21,7 +20,7 @@ export class AgenticVaultChatView extends ItemView {
 	}
 
 	getViewType(): string {
-		return VIEW_TYPE_CAREER_SHERPA_CHAT;
+		return VIEW_TYPE_AGENTIC_CHAT;
 	}
 
 	getDisplayText(): string {
@@ -33,16 +32,71 @@ export class AgenticVaultChatView extends ItemView {
 		contentEl.empty();
 		contentEl.addClass('agentic-vault-chat-container');
 
-		if (!this.plugin.settings.hasCompletedOnboarding) {
-			const { renderOnboarding } = await import('./OnboardingFlow');
-			await renderOnboarding(contentEl, this.plugin, () => {
-				contentEl.empty();
-				this.renderChatInterface(contentEl);
-			});
+		if (!this.plugin.settings.llmApiKey) {
+			this.renderApiGateway(contentEl);
 			return;
 		}
 		
 		this.renderChatInterface(contentEl);
+	}
+
+	renderApiGateway(contentEl: HTMLElement) {
+		contentEl.empty();
+		const container = contentEl.createDiv({ attr: { style: 'padding: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; text-align: center;' } });
+		
+		container.createEl('h2', { text: 'Welcome to Agentic Vault' });
+		container.createEl('p', { text: 'To wake up the system and initialize your Concierge, please provide your LLM API key.', attr: { style: 'color: var(--text-muted); margin-bottom: 20px;' } });
+		
+		const providerSelect = container.createEl('select', { attr: { style: 'margin-bottom: 15px; padding: 5px; width: 100%; max-width: 300px;' } });
+		['gemini', 'openai', 'anthropic', 'openrouter'].forEach(p => {
+			providerSelect.createEl('option', { value: p, text: p.charAt(0).toUpperCase() + p.slice(1) });
+		});
+		providerSelect.value = 'gemini'; // default
+
+		const input = container.createEl('input', { type: 'password', placeholder: 'Enter API Key...', attr: { style: 'margin-bottom: 20px; padding: 10px; width: 100%; max-width: 300px;' } });
+		
+		container.createEl('p', { text: 'Installation Folder:', attr: { style: 'color: var(--text-muted); margin-bottom: 5px; font-size: 0.9em;' } });
+		const folderInput = container.createEl('input', { type: 'text', value: 'agentic_vault', placeholder: 'Installation Folder...', attr: { style: 'margin-bottom: 20px; padding: 10px; width: 100%; max-width: 300px;' } });
+		
+		const saveBtn = new ButtonComponent(container)
+			.setButtonText('Save & Wake Up')
+			.setCta()
+			.onClick(async () => {
+				const key = input.value.trim();
+				const folderName = folderInput.value.trim();
+				if (!key) {
+					new Notice('API Key is required.');
+					return;
+				}
+				if (!folderName) {
+					new Notice('Installation folder is required.');
+					return;
+				}
+				
+				this.plugin.settings.llmProvider = providerSelect.value as any;
+				this.plugin.settings.llmApiKey = key;
+				this.plugin.settings.agenticVaultPath = folderName;
+				await this.plugin.saveSettings();
+				
+				// Initialize the directories now that the user has opted in
+				await this.plugin.initializeFleetArchitecture();
+				
+				contentEl.empty();
+				this.renderChatInterface(contentEl);
+				
+				// Set active persona to Concierge
+				this.activePersona = 'Concierge';
+				if (this.personaIndicatorEl) {
+					this.personaIndicatorEl.setText(`Agent: ${this.activePersona}`);
+				}
+
+				// Trigger Concierge intro
+				this.plugin.chatService.sendMessage(
+					"The user has just connected the API for the first time. Introduce yourself and begin the interactive onboarding sequence.",
+					"Concierge",
+					"System"
+				);
+			});
 	}
 
 	renderChatInterface(contentEl: HTMLElement) {
@@ -50,6 +104,122 @@ export class AgenticVaultChatView extends ItemView {
 		contentEl.style.flexDirection = 'column';
 		contentEl.style.height = '100%';
 
+		const tabBar = contentEl.createDiv({ cls: 'chat-tab-bar' });
+		tabBar.style.display = 'flex';
+		tabBar.style.borderBottom = '1px solid var(--background-modifier-border)';
+		tabBar.style.marginBottom = '10px';
+		tabBar.style.flexShrink = '0';
+
+		const chatTab = tabBar.createEl('button', { text: 'Chat' });
+		const approvalsTab = tabBar.createEl('button');
+		
+		const updateTabStyles = () => {
+			const activeStyle = 'border-bottom: 2px solid var(--interactive-accent); color: var(--text-normal); background: transparent; border-top: none; border-left: none; border-right: none; box-shadow: none; border-radius: 0; padding: 5px 15px; font-weight: bold; cursor: pointer;';
+			const inactiveStyle = 'border-bottom: 2px solid transparent; color: var(--text-muted); background: transparent; border-top: none; border-left: none; border-right: none; box-shadow: none; border-radius: 0; padding: 5px 15px; cursor: pointer;';
+			chatTab.setAttribute('style', this.activeTab === 'chat' ? activeStyle : inactiveStyle);
+			approvalsTab.setAttribute('style', this.activeTab === 'approvals' ? activeStyle : inactiveStyle);
+			
+			const pendingCount = this.plugin.approvalQueue.getPendingRequests().length;
+			approvalsTab.setText(pendingCount > 0 ? `Approvals (${pendingCount})` : 'Approvals');
+		};
+
+		const contentContainer = contentEl.createDiv({ cls: 'chat-tab-content' });
+		contentContainer.style.display = 'flex';
+		contentContainer.style.flexDirection = 'column';
+		contentContainer.style.flexGrow = '1';
+		contentContainer.style.overflow = 'hidden';
+
+		chatTab.onclick = () => {
+			this.activeTab = 'chat';
+			updateTabStyles();
+			contentContainer.empty();
+			this.renderChatTab(contentContainer);
+		};
+
+		approvalsTab.onclick = () => {
+			this.activeTab = 'approvals';
+			updateTabStyles();
+			contentContainer.empty();
+			this.renderApprovalsTab(contentContainer);
+		};
+
+		updateTabStyles();
+		if (this.activeTab === 'chat') {
+			this.renderChatTab(contentContainer);
+		} else {
+			this.renderApprovalsTab(contentContainer);
+		}
+		
+		this.registerEvent(
+			this.plugin.app.vault.on('modify', (file) => {
+				const vaultPath = this.plugin.settings.agenticVaultPath;
+				if (file.path.endsWith('logs/approval_queue.json')) {
+					updateTabStyles();
+					if (this.activeTab === 'approvals') {
+						contentContainer.empty();
+						this.renderApprovalsTab(contentContainer);
+					}
+				}
+			})
+		);
+	}
+
+	renderApprovalsTab(contentEl: HTMLElement) {
+		contentEl.style.overflowY = 'auto';
+		const pendingRequests = this.plugin.approvalQueue.getPendingRequests();
+		
+		if (pendingRequests.length === 0) {
+			contentEl.createEl("p", { text: "No pending actions require human approval at this time.", cls: "text-muted" });
+		} else {
+			const reqList = contentEl.createDiv('approval-list');
+			reqList.style.display = 'flex';
+			reqList.style.flexDirection = 'column';
+			reqList.style.gap = '1rem';
+			
+			for (const req of pendingRequests) {
+				const card = reqList.createDiv('approval-card');
+				card.style.border = '1px solid var(--background-modifier-border)';
+				card.style.padding = '15px';
+				card.style.borderRadius = '8px';
+				card.style.backgroundColor = 'var(--background-primary-alt)';
+				
+				card.createEl("h4", { text: `[${req.persona}] requests permission:`, attr: { style: 'margin-top: 0; color: var(--text-accent);' } });
+				card.createEl("p", { text: req.summary, attr: { style: 'font-weight: bold; margin-bottom: 5px;' } });
+				card.createEl("p", { text: `Reason: ${req.reason}`, attr: { style: 'margin-top: 0; font-size: 0.9em;' } });
+				card.createEl("small", { text: `Requested: ${new Date(req.timestamp).toLocaleString()}`, cls: "text-muted" });
+				
+				const btnContainer = card.createDiv('approval-buttons');
+				btnContainer.style.display = 'flex';
+				btnContainer.style.gap = '10px';
+				btnContainer.style.marginTop = '15px';
+				
+				const approveBtn = new ButtonComponent(btnContainer)
+					.setButtonText("Approve & Resume")
+					.setCta()
+					.onClick(async () => {
+						approveBtn.setDisabled(true);
+						await this.plugin.approvalQueue.resolveRequest(req.id, 'approved');
+						new Notice(`Approved action for ${req.persona}. Agent is resuming...`);
+						await this.plugin.chatService.sendMessage("Approval GRANTED. You may proceed with the proposed action.", req.persona);
+						contentEl.empty();
+						this.renderApprovalsTab(contentEl);
+					});
+					
+				const rejectBtn = new ButtonComponent(btnContainer)
+					.setButtonText("Reject")
+					.onClick(async () => {
+						rejectBtn.setDisabled(true);
+						await this.plugin.approvalQueue.resolveRequest(req.id, 'rejected');
+						new Notice(`Rejected action for ${req.persona}.`);
+						await this.plugin.chatService.sendMessage("Approval REJECTED. Do NOT proceed. You must rethink your approach or stop the task.", req.persona);
+						contentEl.empty();
+						this.renderApprovalsTab(contentEl);
+					});
+			}
+		}
+	}
+
+	renderChatTab(contentEl: HTMLElement) {
 		// 1. Messages Area
 		this.messagesContainerEl = contentEl.createDiv({ cls: 'chat-messages' });
 		this.messagesContainerEl.style.flexGrow = '1';
@@ -140,7 +310,7 @@ export class AgenticVaultChatView extends ItemView {
 		inputEl.style.overflowY = 'auto';
 		inputEl.style.fontFamily = 'inherit';
 		inputEl.style.lineHeight = '1.5';
-		inputEl.style.padding = '8px 40px 8px 8px';
+		inputEl.style.padding = '8px 70px 8px 8px';
 		inputEl.style.borderRadius = '5px';
 		inputEl.style.border = '1px solid var(--background-modifier-border)';
 		inputEl.style.backgroundColor = 'var(--background-primary)';
@@ -151,11 +321,31 @@ export class AgenticVaultChatView extends ItemView {
 			inputEl.style.height = `${inputEl.scrollHeight}px`;
 		});
 
-		const sendBtn = inputRow.createEl('button');
+		const btnContainer = inputRow.createDiv();
+		btnContainer.style.position = 'absolute';
+		btnContainer.style.right = '5px';
+		btnContainer.style.bottom = '5px';
+		btnContainer.style.display = 'flex';
+		btnContainer.style.gap = '2px';
+
+		const bgSendBtn = btnContainer.createEl('button');
+		bgSendBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-cloud-upload"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="M12 12v9"/><path d="m16 16-4-4-4 4"/></svg>`;
+		bgSendBtn.title = "Send to Background (Cmd/Ctrl + Shift + Enter)";
+		bgSendBtn.style.padding = '6px';
+		bgSendBtn.style.display = 'flex';
+		bgSendBtn.style.alignItems = 'center';
+		bgSendBtn.style.justifyContent = 'center';
+		bgSendBtn.style.backgroundColor = 'transparent';
+		bgSendBtn.style.color = 'var(--text-muted)';
+		bgSendBtn.style.border = 'none';
+		bgSendBtn.style.cursor = 'pointer';
+		bgSendBtn.style.borderRadius = '5px';
+		bgSendBtn.addEventListener('mouseenter', () => bgSendBtn.style.color = 'var(--interactive-accent)');
+		bgSendBtn.addEventListener('mouseleave', () => bgSendBtn.style.color = 'var(--text-muted)');
+
+		const sendBtn = btnContainer.createEl('button');
 		sendBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>`;
-		sendBtn.style.position = 'absolute';
-		sendBtn.style.right = '5px';
-		sendBtn.style.bottom = '5px';
+		sendBtn.title = "Send (Enter)";
 		sendBtn.style.padding = '6px';
 		sendBtn.style.display = 'flex';
 		sendBtn.style.alignItems = 'center';
@@ -165,7 +355,6 @@ export class AgenticVaultChatView extends ItemView {
 		sendBtn.style.border = 'none';
 		sendBtn.style.cursor = 'pointer';
 		sendBtn.style.borderRadius = '5px';
-
 		sendBtn.addEventListener('mouseenter', () => sendBtn.style.color = 'var(--interactive-accent)');
 		sendBtn.addEventListener('mouseleave', () => sendBtn.style.color = 'var(--text-muted)');
 
@@ -184,7 +373,9 @@ export class AgenticVaultChatView extends ItemView {
 		};
 
 		this.plugin.chatService.onTimelineUpdated = () => {
-			this.renderHistory();
+			if (this.activeTab === 'chat') {
+				this.renderHistory();
+			}
 		};
 
 		const renderSuggestions = () => {
@@ -265,7 +456,7 @@ export class AgenticVaultChatView extends ItemView {
 				}
 			}
 
-			if (e.key === 'Enter' && !e.shiftKey) {
+			if (e.key === 'Enter') {
 				// If autocomplete is open and they press enter, autocomplete it
 				if (suggestionBoxEl.style.display === 'block' && currentSuggestions.length > 0) {
 					e.preventDefault();
@@ -276,12 +467,23 @@ export class AgenticVaultChatView extends ItemView {
 					}
 					return;
 				}
-				e.preventDefault(); // Prevent default newline insertion
-				handleSend();
+				
+				if (e.shiftKey && (e.metaKey || e.ctrlKey)) {
+					e.preventDefault();
+					handleSend(true);
+				} else if (!e.shiftKey) {
+					e.preventDefault(); // Prevent default newline insertion
+					handleSend(false);
+				}
 			}
 		});
 
-		const handleSend = async () => {
+		const handleSend = async (isBackground: boolean = false) => {
+			if (!isBackground && this.plugin.chatService.isProcessing) {
+				new Notice("Agentic Vault is currently processing a foreground task. Please wait or stop the task.");
+				return;
+			}
+			
 			const text = inputEl.value.trim();
 			if (!text) return;
 			
@@ -297,33 +499,57 @@ export class AgenticVaultChatView extends ItemView {
 				return;
 			}
 			
-			this.plugin.logger.log('USER_MESSAGE_SUBMITTED', { text, persona: this.activePersona });
+			this.plugin.logger.log('USER_MESSAGE_SUBMITTED', { text, persona: this.activePersona, isBackground });
 			
 			inputEl.value = '';
 			inputEl.style.height = 'auto'; // Reset height after sending
+
+			if (isBackground) {
+				const taskId = `adhoc_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+				this.plugin.routineManager.getTasks().push({
+					id: taskId,
+					routineId: 'Ad-Hoc Background Chat',
+					routineName: 'Ad-Hoc Background Chat',
+					status: 'running',
+					spawnTime: Date.now(),
+					attempts: 0
+				});
+				
+				const userMsg = `> ☁️ **[Sent to Background: "${text.length > 50 ? text.substring(0, 50) + '...' : text}"]**`;
+				this.plugin.chatService.unifiedTimeline.push({ role: 'user', content: userMsg, persona: 'System' });
+				this.renderHistory();
+				
+				// Fire and forget
+				this.plugin.chatService.sendMessage(text, this.activePersona, undefined, taskId).catch(e => {
+					console.error("Background Chat error:", e);
+					this.plugin.chatService.unifiedTimeline.push({ role: 'assistant', content: `⚠️ **[Background Spawn Failed]**\n\n${e.message}`, persona: 'System' });
+					this.renderHistory();
+				});
+				
+				return;
+			}
+
 			inputEl.disabled = true;
 			sendBtn.disabled = true;
+			bgSendBtn.disabled = true;
 
 			// Send to service (synchronously adds user message to timeline)
-			const sendPromise = this.plugin.chatService.sendMessage(text, this.activePersona);
-			
-			// Show user message and thinking indicator instantly
-			this.isThinking = true;
-			this.renderHistory();
-
-			// Wait for response and any chained handoffs
-			await sendPromise;
-			
-			// Show final assistant response
-			this.isThinking = false;
-			this.renderHistory();
-
-			inputEl.disabled = false;
-			sendBtn.disabled = false;
-			inputEl.focus();
+			try {
+				const sendPromise = this.plugin.chatService.sendMessage(text, this.activePersona);
+				await sendPromise;
+			} catch (e: any) {
+				console.error("Chat error:", e);
+				new Notice(e.message || "An error occurred during chat processing.");
+			} finally {
+				inputEl.disabled = false;
+				sendBtn.disabled = false;
+				bgSendBtn.disabled = false;
+				inputEl.focus();
+			}
 		};
 
-		sendBtn.addEventListener('click', handleSend);
+		sendBtn.addEventListener('click', () => handleSend(false));
+		bgSendBtn.addEventListener('click', () => handleSend(true));
 	}
 
 	renderHistory() {
@@ -332,7 +558,7 @@ export class AgenticVaultChatView extends ItemView {
 			this.appendMessage(msg);
 		}
 		
-		if (this.isThinking) {
+		if (this.plugin.chatService.isProcessing) {
 			const msgEl = this.messagesContainerEl.createDiv({ cls: `chat-message thinking` });
 			msgEl.style.marginBottom = '15px';
 			msgEl.style.padding = '12px';
@@ -342,7 +568,16 @@ export class AgenticVaultChatView extends ItemView {
 			msgEl.style.color = 'var(--text-muted)';
 			msgEl.style.fontStyle = 'italic';
 			msgEl.style.opacity = '0.8';
-			msgEl.setText(`🧠 ${this.activePersona} is thinking...`);
+			msgEl.style.display = 'flex';
+			msgEl.style.alignItems = 'center';
+			msgEl.style.gap = '10px';
+			
+			const spinner = msgEl.createDiv();
+			spinner.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><style>.spinner_P7sC{transform-origin:center;animation:spinner_svv2 .75s infinite linear}@keyframes spinner_svv2{100%{transform:rotate(360deg)}}</style><path d="M10.14,1.16a11,11,0,0,0-9,8.92A1.59,1.59,0,0,0,2.46,12,1.52,1.52,0,0,0,4.11,10.7a8,8,0,0,1,6.66-6.61A1.42,1.42,0,0,0,12,2.69h0A1.57,1.57,0,0,0,10.14,1.16Z" class="spinner_P7sC"/></svg>`;
+			spinner.style.display = 'flex';
+			
+			const statusText = this.plugin.chatService.currentStatus || `${this.activePersona} is thinking...`;
+			msgEl.createSpan({ text: statusText });
 		}
 		
 		this.messagesContainerEl.scrollTop = this.messagesContainerEl.scrollHeight;
@@ -394,16 +629,148 @@ export class AgenticVaultChatView extends ItemView {
 		msgEl.style.alignSelf = 'flex-start';
 		msgEl.style.marginLeft = '0';
 		
+		let initiatedBySystem = false;
+		if (msg.role === 'assistant') {
+			for (let j = this.plugin.chatService.unifiedTimeline.indexOf(msg); j >= 0; j--) {
+				const prevMsg = this.plugin.chatService.unifiedTimeline[j];
+				if (prevMsg.role === 'user') {
+					if (prevMsg.persona === 'System') initiatedBySystem = true;
+					break;
+				}
+			}
+		}
+		
 		if (msg.role === 'user') {
-			msgEl.style.border = '1px solid var(--interactive-accent)';
-			msgEl.style.borderLeft = '4px solid var(--interactive-accent)';
+			if (msg.persona === 'System') {
+				msgEl.style.border = '1px dashed var(--text-muted)';
+				msgEl.style.borderLeft = '4px solid var(--text-muted)';
+				msgEl.createEl('strong', { text: '⚙️ System Trigger', cls: 'message-persona', attr: { style: 'color: var(--text-muted); font-style: italic;' } });
+			} else {
+				msgEl.style.border = '1px solid var(--interactive-accent)';
+				msgEl.style.borderLeft = '4px solid var(--interactive-accent)';
+				msgEl.createEl('strong', { text: 'You', cls: 'message-persona' });
+			}
 		} else {
 			msgEl.style.borderLeft = '4px solid var(--text-muted)';
+			const headerDiv = msgEl.createDiv({ attr: { style: 'display: flex; justify-content: space-between; align-items: center;' } });
+			headerDiv.createEl('strong', { text: msg.persona, cls: 'message-persona' });
+			if (initiatedBySystem) {
+				const badge = headerDiv.createSpan({ text: '⚙️ Routine', attr: { title: 'Executing as part of an automated routine' } });
+				badge.style.fontSize = '0.75em';
+				badge.style.backgroundColor = 'var(--background-modifier-border)';
+				badge.style.padding = '2px 6px';
+				badge.style.borderRadius = '12px';
+				badge.style.color = 'var(--text-muted)';
+			}
 		}
 
-		msgEl.createEl('strong', { text: msg.role === 'user' ? 'You' : msg.persona, cls: 'message-persona' });
 		const contentDiv = msgEl.createEl('div', { cls: 'message-content' });
 		contentDiv.style.marginTop = '6px';
+		if (msg.role === 'user' && msg.persona === 'System') {
+			contentDiv.style.color = 'var(--text-muted)';
+			contentDiv.style.fontStyle = 'italic';
+		}
+
+		// Action buttons
+		const actionsDiv = msgEl.createEl('div', { cls: 'message-actions' });
+		actionsDiv.style.display = 'flex';
+		actionsDiv.style.justifyContent = 'flex-end';
+		actionsDiv.style.gap = '8px';
+		actionsDiv.style.marginTop = '8px';
+		actionsDiv.style.borderTop = '1px solid var(--background-modifier-border)';
+		actionsDiv.style.paddingTop = '8px';
+		actionsDiv.style.opacity = '0.6';
+
+		if (msg.role === 'user') {
+			const resendBtn = actionsDiv.createEl('button', { text: '🔄 Resend' });
+			resendBtn.style.padding = '4px 8px';
+			resendBtn.style.fontSize = '0.8em';
+			resendBtn.style.cursor = 'pointer';
+			resendBtn.style.backgroundColor = 'transparent';
+			resendBtn.style.boxShadow = 'none';
+			resendBtn.onclick = () => {
+				const inputEl = this.containerEl.querySelector('textarea.chat-input') as HTMLTextAreaElement;
+				if (inputEl) {
+					inputEl.value = msg.content;
+					inputEl.focus();
+				}
+			};
+		}
+
+		if (msg.role === 'assistant' && msg === this.plugin.chatService.unifiedTimeline[this.plugin.chatService.unifiedTimeline.length - 1] && this.plugin.chatService.isProcessing) {
+			const stopBtn = actionsDiv.createEl('button', { text: '⏹ Stop' });
+			stopBtn.style.padding = '4px 8px';
+			stopBtn.style.fontSize = '0.8em';
+			stopBtn.style.cursor = 'pointer';
+			stopBtn.style.backgroundColor = 'var(--color-red)';
+			stopBtn.style.color = 'white';
+			stopBtn.style.border = 'none';
+			stopBtn.onclick = () => {
+				this.plugin.chatService.abortProcessing();
+				stopBtn.setText('Stopped');
+				stopBtn.disabled = true;
+			};
+		}
+
+		const copyBtn = actionsDiv.createEl('button', { text: '📋 Copy' });
+		copyBtn.style.padding = '4px 8px';
+		copyBtn.style.fontSize = '0.8em';
+		copyBtn.style.cursor = 'pointer';
+		copyBtn.style.backgroundColor = 'transparent';
+		copyBtn.style.boxShadow = 'none';
+		copyBtn.onclick = async () => {
+			await navigator.clipboard.writeText(msg.content);
+			copyBtn.setText('✅ Copied!');
+			setTimeout(() => copyBtn.setText('📋 Copy'), 2000);
+		};
+
+		const debugBtn = actionsDiv.createEl('button', { text: '🐞 Debug' });
+		debugBtn.style.padding = '4px 8px';
+		debugBtn.style.fontSize = '0.8em';
+		debugBtn.style.cursor = 'pointer';
+		debugBtn.style.backgroundColor = 'transparent';
+		debugBtn.style.boxShadow = 'none';
+		debugBtn.onclick = async () => {
+			const safeSettings = { ...this.plugin.settings };
+			safeSettings.llmApiKey = 'HIDDEN';
+			const dump = {
+				timestamp: new Date().toISOString(),
+				messageRole: msg.role,
+				messagePersona: msg.persona,
+				routinesInMemory: this.plugin.routineManager.getRoutines().length,
+				routinePathsDebug: `${this.plugin.settings.rootFolder ? this.plugin.settings.rootFolder + '/' : ''}${this.plugin.settings.agenticVaultPath}/routines`.replace(/\/+/g, '/'),
+				routinesFolderExists: !!this.plugin.app.vault.getAbstractFileByPath(`${this.plugin.settings.rootFolder ? this.plugin.settings.rootFolder + '/' : ''}${this.plugin.settings.agenticVaultPath}/routines`.replace(/\/+/g, '/')),
+				tasksInQueue: this.plugin.routineManager.getTasks().length,
+				personasLoaded: this.plugin.personaEngine.getAllPersonas().length,
+				toolsLoaded: this.plugin.toolRegistry.getAllTools().length,
+				settings: safeSettings,
+				timelineLength: this.plugin.chatService.unifiedTimeline.length,
+				timelineSummary: this.plugin.chatService.unifiedTimeline.map(m => `[${m.role}] ${m.content.substring(0, 100).replace(/\n/g, ' ')}...`)
+			};
+			
+			const dumpStr = JSON.stringify(dump, null, 2);
+			const timestamp = new Date().getTime();
+			const debugDirPath = `${this.plugin.settings.rootFolder ? this.plugin.settings.rootFolder + '/' : ''}${this.plugin.settings.agenticVaultPath}/logs/debug`.replace(/\/+/g, '/');
+			
+			try {
+				if (!this.plugin.app.vault.getAbstractFileByPath(debugDirPath)) {
+					await this.plugin.app.vault.createFolder(debugDirPath);
+				}
+				const filename = `debug_dump_${timestamp}.json`;
+				const filepath = `${debugDirPath}/${filename}`;
+				await this.plugin.app.vault.create(filepath, dumpStr);
+				
+				const clipboardMsg = `Debug dump saved to: ${filepath}\nContext: Dumped at message index ${this.plugin.chatService.unifiedTimeline.indexOf(msg)} from ${msg.persona || 'user'}`;
+				await navigator.clipboard.writeText(clipboardMsg);
+				debugBtn.setText('✅ Dumped!');
+			} catch (e) {
+				console.error("Failed to write debug dump", e);
+				debugBtn.setText('❌ Error');
+			}
+			
+			setTimeout(() => debugBtn.setText('🐞 Debug'), 2000);
+		};
+
 		MarkdownRenderer.renderMarkdown(msg.content, contentDiv, '', this).then(() => {
 			// Handle file links
 			contentDiv.querySelectorAll('a.internal-link').forEach((el) => {
@@ -497,14 +864,16 @@ export class AgenticVaultChatView extends ItemView {
 						
 						this.plugin.chatService.persistState();
 
-						formContainer.style.opacity = '0.5';
+						const submitBtn = this.containerEl.querySelector('.chat-submit-btn') as HTMLButtonElement;
 						submitBtn.disabled = true;
 
-						this.isThinking = true;
-						this.renderHistory();
-						await this.plugin.chatService.sendMessage(responseText.trim(), this.activePersona);
-						this.isThinking = false;
-						this.renderHistory();
+						try {
+							await this.plugin.chatService.sendMessage(responseText.trim(), this.activePersona);
+						} catch (error) {
+							console.error(error);
+						} finally {
+							submitBtn.disabled = false;
+						}
 					};
 
 					pre.replaceWith(formContainer);

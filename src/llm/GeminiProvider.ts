@@ -74,6 +74,16 @@ export class GeminiProvider implements LLMProvider {
 			}
 		}
 
+		// Merge consecutive roles
+		const mergedContents: any[] = [];
+		for (const c of contents as any[]) {
+			if (mergedContents.length > 0 && mergedContents[mergedContents.length - 1].role === c.role) {
+				mergedContents[mergedContents.length - 1].parts.push(...c.parts);
+			} else {
+				mergedContents.push(c);
+			}
+		}
+
 		// Tool Declarations
 		let geminiTools: unknown[] = [];
 		if (tools.length > 0) {
@@ -119,7 +129,7 @@ export class GeminiProvider implements LLMProvider {
 			geminiTools = [{ functionDeclarations }];
 		}
 
-		const body: unknown = { contents };
+		const body: any = { contents: mergedContents };
 		if (systemInstruction) body.systemInstruction = systemInstruction;
 		if (geminiTools.length > 0) body.tools = geminiTools;
 

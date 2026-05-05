@@ -248,6 +248,24 @@ export class AgenticVaultChatView extends ItemView {
 				}
 			})
 		);
+
+		// Trigger Concierge Onboarding
+		if (this.plugin.chatService.unifiedTimeline.length === 0 && !this.plugin.settings.hasCompletedOnboarding) {
+			this.activePersona = 'Concierge';
+			if (this.personaIndicatorEl) this.personaIndicatorEl.setText(`Speaking to: ${this.activePersona}`);
+			
+			setTimeout(async () => {
+				// We don't want to show the user's prompt in the UI, so we just add a "System" message saying we're booting up
+				this.plugin.chatService.unifiedTimeline.push({ role: 'assistant', content: 'Initializing Agentic Vault for the first time...', persona: 'System' });
+				this.renderHistory();
+				
+				this.plugin.settings.hasCompletedOnboarding = true;
+				await this.plugin.saveSettings();
+				
+				const sysPrompt = "I am a new user and I just booted up my vault for the very first time. Please introduce yourself, explain Semantic Zones, and offer me the setup options.";
+				await this.plugin.chatService.sendMessage(sysPrompt, 'Concierge');
+			}, 1000);
+		}
 	}
 
 	renderApprovalsTab(contentEl: HTMLElement) {

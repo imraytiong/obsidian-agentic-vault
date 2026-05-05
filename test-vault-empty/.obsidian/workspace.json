@@ -173,7 +173,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 583.5
+    "width": 769.5
   },
   "left-ribbon": {
     "hiddenItems": {
@@ -189,7 +189,7 @@
       "bases:Create new base": false
     }
   },
-  "active": "c39ff7c257c7ed90",
+  "active": "3a2c23c1e6553413",
   "lastOpenFiles": [
     "agentic_vault/logs/Trace_Log.md",
     "agentic_vault/logs/routine_queue.json",

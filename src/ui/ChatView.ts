@@ -856,6 +856,71 @@ export class AgenticVaultChatView extends ItemView {
 		};
 
 		MarkdownRenderer.renderMarkdown(msg.content, contentDiv, '', this).then(() => {
+			// Handle custom multiple choice option syntax: [Option: Some Text]
+			const walk = document.createTreeWalker(contentDiv, NodeFilter.SHOW_TEXT, null);
+			let node;
+			const nodesToReplace = [];
+			while ((node = walk.nextNode())) {
+				if (node.nodeValue && node.nodeValue.includes('[Option:')) {
+					nodesToReplace.push(node);
+				}
+			}
+			nodesToReplace.forEach(n => {
+				const parent = n.parentNode;
+				if (!parent) return;
+				const text = n.nodeValue || '';
+				const regex = /\[Option:\s*([^\]]+)\]/g;
+				let lastIndex = 0;
+				let match;
+				const fragment = document.createDocumentFragment();
+				
+				while ((match = regex.exec(text)) !== null) {
+					if (match.index > lastIndex) {
+						fragment.appendChild(document.createTextNode(text.substring(lastIndex, match.index)));
+					}
+					
+					const btnText = match[1].trim();
+					const btn = document.createElement('button');
+					btn.className = 'chat-action-btn';
+					btn.textContent = btnText;
+					btn.style.margin = '4px';
+					btn.style.padding = '6px 12px';
+					btn.style.borderRadius = '16px';
+					btn.style.backgroundColor = 'var(--interactive-accent)';
+					btn.style.color = 'var(--text-on-accent)';
+					btn.style.border = 'none';
+					btn.style.cursor = 'pointer';
+					btn.style.fontSize = '0.9em';
+					
+					btn.onclick = () => {
+						const inputEl = this.containerEl.querySelector('textarea.chat-input') as HTMLTextAreaElement;
+						if (inputEl) {
+							inputEl.value = btnText;
+							inputEl.dispatchEvent(new Event('input'));
+							inputEl.focus();
+							
+							const enterEvent = new KeyboardEvent('keydown', {
+								key: 'Enter',
+								code: 'Enter',
+								bubbles: true
+							});
+							inputEl.dispatchEvent(enterEvent);
+						}
+					};
+					
+					fragment.appendChild(btn);
+					lastIndex = regex.lastIndex;
+				}
+				
+				if (lastIndex < text.length) {
+					fragment.appendChild(document.createTextNode(text.substring(lastIndex)));
+				}
+				
+				if (fragment.childNodes.length > 0) {
+					parent.replaceChild(fragment, n);
+				}
+			});
+
 			// Handle file links
 			contentDiv.querySelectorAll('a.internal-link').forEach((el) => {
 				el.addEventListener('click', async (e) => {

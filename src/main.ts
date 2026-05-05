@@ -60,22 +60,24 @@ export default class AgenticVaultPlugin extends Plugin {
 
 		// Initialize dynamic content
 		this.app.workspace.onLayoutReady(async () => {
-			await this.personaEngine.loadPersonas();
-			await this.toolRegistry.loadTools();
-			await this.skillsEngine.loadSkills();
-			await this.mcpEngine.initialize();
-			await this.routineManager.initialize();
-			await this.approvalQueue.loadQueue();
-			
-			// Refresh any open views now that the managers are fully loaded
-			this.app.workspace.getLeavesOfType(VIEW_TYPE_FLEET_DASHBOARD).forEach(leaf => {
-				if ((leaf.view as any).onOpen) {
-					(leaf.view as any).onOpen();
-				}
-			});
-		});
+			if (this.settings.llmApiKey) {
+				await this.personaEngine.loadPersonas();
+				await this.toolRegistry.loadTools();
+				await this.skillsEngine.loadSkills();
+				await this.mcpEngine.initialize();
+				await this.routineManager.initialize();
+				await this.approvalQueue.loadQueue();
+				
+				// Refresh any open views now that the managers are fully loaded
+				this.app.workspace.getLeavesOfType(VIEW_TYPE_FLEET_DASHBOARD).forEach(leaf => {
+					if ((leaf.view as any).onOpen) {
+						(leaf.view as any).onOpen();
+					}
+				});
 
-		void this.logger.log('PLUGIN_LOADED', { version: this.manifest.version });
+				void this.logger.log('PLUGIN_LOADED', { version: this.manifest.version });
+			}
+		});
 		
 		// Register Background Triggers
 		this.triggerParser.registerTriggers();
@@ -233,7 +235,25 @@ export default class AgenticVaultPlugin extends Plugin {
 	}
 
 	async loadSettings() {
-		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData() as Partial<AgenticVaultSettings>);
+		const rawData = await this.loadData() as any || {};
+		
+		// Migration: v0.0.1 hardcoded paths to v0.0.2 dynamic zones
+		if (rawData.projectsPath !== undefined && !rawData.zones) {
+			rawData.zones = JSON.parse(JSON.stringify(DEFAULT_SETTINGS.zones));
+			if (rawData.projectsPath) rawData.zones['active_projects'].path = rawData.projectsPath;
+			if (rawData.areasPath) rawData.zones['areas_of_responsibility'].path = rawData.areasPath;
+			if (rawData.resourcesPath) rawData.zones['knowledge_base'].path = rawData.resourcesPath;
+			if (rawData.archivesPath) rawData.zones['archives'].path = rawData.archivesPath;
+			
+			delete rawData.projectsPath;
+			delete rawData.areasPath;
+			delete rawData.resourcesPath;
+			delete rawData.archivesPath;
+			
+			await this.saveData(rawData);
+		}
+
+		this.settings = Object.assign({}, DEFAULT_SETTINGS, rawData);
 	}
 
 	async saveSettings() {

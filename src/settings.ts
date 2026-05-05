@@ -1,13 +1,15 @@
 import { App, PluginSettingTab, Setting, Notice } from 'obsidian';
 
+export interface ZoneDefinition {
+	path: string;
+	description: string;
+}
+
 export interface AgenticVaultSettings {
 	hasCompletedOnboarding: boolean;
 	rootFolder: string;
 	llmApiKey: string;
-	projectsPath: string;
-	areasPath: string;
-	resourcesPath: string;
-	archivesPath: string;
+	zones: Record<string, ZoneDefinition>;
 	agenticVaultPath: string;
 	sandboxEngine: string;
 	customEnvPath: string;
@@ -25,10 +27,14 @@ export const DEFAULT_SETTINGS: AgenticVaultSettings = {
 	hasCompletedOnboarding: false,
 	rootFolder: '',
 	llmApiKey: '',
-	projectsPath: '10_projects',
-	areasPath: '20_areas',
-	resourcesPath: '30_resources',
-	archivesPath: '40_archives',
+	zones: {
+		'inbox': { path: 'Inbox', description: 'Universal entry point for raw, unprocessed notes and ideas.' },
+		'active_projects': { path: '10_projects', description: 'Active, ongoing projects with clear endpoints.' },
+		'areas_of_responsibility': { path: '20_areas', description: 'Ongoing responsibilities and areas of focus without an end date.' },
+		'knowledge_base': { path: '30_resources', description: 'Reference materials, articles, and useful knowledge.' },
+		'archives': { path: '40_archives', description: 'Completed projects or inactive resources.' },
+		'daily_logs': { path: 'Daily_Notes', description: 'Chronological tracking of daily work and reflections.' }
+	},
 	agenticVaultPath: 'agentic_vault',
 	sandboxEngine: 'local-node',
 	customEnvPath: '/Users/raytiong/.nvm/versions/node/v24.11.0/bin:/usr/local/bin:/opt/homebrew/bin',
@@ -150,49 +156,24 @@ export class AgenticVaultSettingTab extends PluginSettingTab {
 					await this.plugin.saveSettings();
 				}));
 
-		new Setting(containerEl)
-			.setName('Projects Folder')
-			.setDesc('Path for active projects.')
-			.addText(text => text
-				.setPlaceholder('10_projects')
-				.setValue(this.plugin.settings.projectsPath)
-				.onChange(async (value) => {
-					this.plugin.settings.projectsPath = value;
-					await this.plugin.saveSettings();
-				}));
+		containerEl.createEl('h3', { text: 'Dynamic Zones' });
+		containerEl.createEl('p', { 
+			text: 'Semantic zones allow conversational agents to understand your organization structure without hardcoded paths.',
+			attr: { style: 'color: var(--text-muted); font-size: 0.9em; margin-bottom: 20px;' }
+		});
 
-		new Setting(containerEl)
-			.setName('Areas Folder')
-			.setDesc('Path for active areas of responsibility.')
-			.addText(text => text
-				.setPlaceholder('20_areas')
-				.setValue(this.plugin.settings.areasPath)
-				.onChange(async (value) => {
-					this.plugin.settings.areasPath = value;
-					await this.plugin.saveSettings();
-				}));
-
-		new Setting(containerEl)
-			.setName('Resources Folder')
-			.setDesc('Path for resources and reference material.')
-			.addText(text => text
-				.setPlaceholder('30_resources')
-				.setValue(this.plugin.settings.resourcesPath)
-				.onChange(async (value) => {
-					this.plugin.settings.resourcesPath = value;
-					await this.plugin.saveSettings();
-				}));
-
-		new Setting(containerEl)
-			.setName('Archives Folder')
-			.setDesc('Path for completed or inactive items.')
-			.addText(text => text
-				.setPlaceholder('40_archives')
-				.setValue(this.plugin.settings.archivesPath)
-				.onChange(async (value) => {
-					this.plugin.settings.archivesPath = value;
-					await this.plugin.saveSettings();
-				}));
+		Object.entries(this.plugin.settings.zones).forEach(([zoneId, zoneDef]) => {
+			new Setting(containerEl)
+				.setName(`Zone: ${zoneId}`)
+				.setDesc(`Semantic Purpose: ${zoneDef.description}`)
+				.addText(text => text
+					.setPlaceholder('Vault Path...')
+					.setValue(zoneDef.path)
+					.onChange(async (value) => {
+						this.plugin.settings.zones[zoneId].path = value;
+						await this.plugin.saveSettings();
+					}));
+		});
 
 		new Setting(containerEl)
 			.setName('Agentic Vault Folder')

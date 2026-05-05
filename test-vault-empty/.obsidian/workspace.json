@@ -217,6 +217,7 @@
     "agentic_vault/fleets/core/skills",
     "agentic_vault/fleets/core/tools",
     "agentic_vault/fleets/core/personas",
+    "AgenticVault/logs/sessions/2026-05-05T20-24-58-151Z_Session.md",
     "agentic_vault/fleets/para_career/tools/file_manager.md",
     "99_agentic_vault/fleets/para_career/tools/web_search.md",
     "99_agentic_vault/fleets/para_career/tools/update_memory.md",
@@ -224,7 +225,6 @@
     "99_agentic_vault/fleets/para_career/tools/map_vault.md",
     "99_agentic_vault/fleets/para_career/tools/google_workspace.md",
     "99_agentic_vault/fleets/para_career/tools/file_manager.md",
-    "99_agentic_vault/fleets/para_career/personas/coo.md",
-    "99_agentic_vault/fleets/para_career/personas/chief_of_staff.md"
+    "99_agentic_vault/fleets/para_career/personas/coo.md"
   ]
 }

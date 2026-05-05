@@ -23,23 +23,42 @@ export class InitializationEngine {
 
 		// Deploy Bundled Fleets
 		for (const [fleetName, fleetObj] of Object.entries(BundledFleets)) {
-			const fleetDir = normalizePath(`${vaultRoot}/fleets/${fleetName}`);
-			const isNewFleet = await this.ensureFolder(fleetDir);
+			// Only deploy 'core' by default. Other fleets must be manually installed.
+			if (fleetName !== 'core') continue;
+			await this.deployFleet(fleetName, fleetObj);
+		}
+	}
 
-			// Unpack subdirectories
-			const categories = ['personas', 'tools', 'skills', 'routines'];
-			for (const cat of categories) {
-				await this.ensureFolder(normalizePath(`${fleetDir}/${cat}`));
-			}
+	public async deployFleet(fleetName: string, fleetObj?: any) {
+		if (!fleetObj) {
+			fleetObj = (BundledFleets as any)[fleetName];
+			if (!fleetObj) return;
+		}
 
-			// Deploy Root files (like fleet.md)
+		const vaultRoot = this.plugin.settings.rootFolder 
+			? normalizePath(`${this.plugin.settings.rootFolder}/${this.plugin.settings.agenticVaultPath}`)
+			: normalizePath(this.plugin.settings.agenticVaultPath);
+
+		const fleetDir = normalizePath(`${vaultRoot}/fleets/${fleetName}`);
+		await this.ensureFolder(fleetDir);
+
+		// Unpack subdirectories
+		const categories = ['personas', 'tools', 'skills', 'routines'];
+		for (const cat of categories) {
+			await this.ensureFolder(normalizePath(`${fleetDir}/${cat}`));
+		}
+
+		// Deploy Root files (like fleet.md)
+		if (fleetObj.files.root) {
 			for (const fileObj of fleetObj.files.root) {
 				await this.deployFile(normalizePath(`${fleetDir}/${fileObj.filename}`), fileObj.content);
 			}
+		}
 
-			// Deploy categorized files
-			for (const cat of categories) {
-				for (const fileObj of (fleetObj.files as any)[cat]) {
+		// Deploy categorized files
+		for (const cat of categories) {
+			if (fleetObj.files[cat]) {
+				for (const fileObj of fleetObj.files[cat]) {
 					await this.deployFile(normalizePath(`${fleetDir}/${cat}/${fileObj.filename}`), fileObj.content);
 				}
 			}

@@ -53,8 +53,91 @@ export class AgenticVaultChatView extends ItemView {
 		});
 		providerSelect.value = 'gemini'; // default
 
-		const input = container.createEl('input', { type: 'password', placeholder: 'Enter API Key...', attr: { style: 'margin-bottom: 20px; padding: 10px; width: 100%; max-width: 300px;' } });
+		const input = container.createEl('input', { type: 'password', placeholder: 'Enter API Key...', attr: { style: 'margin-bottom: 10px; padding: 10px; width: 100%; max-width: 300px;' } });
 		
+		const modelSelect = container.createEl('select', { attr: { style: 'margin-bottom: 5px; padding: 5px; width: 100%; max-width: 300px; display: none;' } });
+		const statusText = container.createEl('p', { text: '', attr: { style: 'color: var(--text-muted); margin-bottom: 20px; font-size: 0.85em; display: none; height: 15px;' } });
+
+		let fetchTimeout: any = null;
+		input.addEventListener('input', () => {
+			if (fetchTimeout) clearTimeout(fetchTimeout);
+			fetchTimeout = setTimeout(async () => {
+				const apiKey = input.value.trim();
+				if (apiKey.length < 5) {
+					modelSelect.style.display = 'none';
+					statusText.style.display = 'none';
+					return;
+				}
+				
+				statusText.style.display = 'block';
+				statusText.style.color = 'var(--text-muted)';
+				statusText.setText('Testing connection and fetching models...');
+				try {
+					let models: string[] = [];
+					if (providerSelect.value === 'openai') {
+						const { OpenAIProvider } = await import('../llm/OpenAIProvider');
+						models = await OpenAIProvider.fetchAvailableModels(apiKey, this.plugin.settings.llmBaseUrl);
+					} else {
+						const { GeminiProvider } = await import('../llm/GeminiProvider');
+						models = await GeminiProvider.fetchAvailableModels(apiKey);
+					}
+					
+					this.plugin.settings.availableModels = models;
+					
+					if (models.length > 0) {
+						modelSelect.empty();
+						models.forEach(m => modelSelect.createEl('option', { value: m, text: m }));
+						
+						const getBestModel = (models: string[]) => {
+							return [...models].sort((a, b) => {
+								const getV = (str: string) => parseFloat(str.match(/[\d]+(?:\.[\d]+)?/)?.[0] || '0');
+								const vA = getV(a); const vB = getV(b);
+								if (vA !== vB) return vB - vA;
+								
+								const tierWeight = (m: string) => {
+									const lower = m.toLowerCase();
+									if (lower.includes('pro') || lower.includes('plus') || lower.includes('opus') || lower.includes('gpt-4o') || lower.includes('o1') || lower.includes('o3')) return 3;
+									if (lower.includes('flash') || lower.includes('sonnet') || lower.includes('turbo')) return 2;
+									if (lower.includes('haiku') || lower.includes('mini')) return 1;
+									return 0;
+								};
+								const wA = tierWeight(a); const wB = tierWeight(b);
+								if (wA !== wB) return wB - wA;
+								
+								const isExpA = a.toLowerCase().includes('exp') || a.toLowerCase().includes('preview');
+								const isExpB = b.toLowerCase().includes('exp') || b.toLowerCase().includes('preview');
+								if (isExpA !== isExpB) return isExpA ? 1 : -1;
+								
+								return a.length - b.length;
+							})[0] || models[0];
+						};
+						
+						const best = getBestModel(models);
+						this.plugin.settings.llmModel = best;
+						modelSelect.value = best;
+						modelSelect.style.display = 'block';
+						statusText.style.color = 'var(--text-success)';
+						statusText.setText(`Found ${models.length} models. Auto-selected best.`);
+					} else {
+						statusText.style.color = 'var(--text-error)';
+						statusText.setText('No compatible models found.');
+					}
+				} catch (e: any) {
+					statusText.style.color = 'var(--text-error)';
+					statusText.setText(`API Error: ${e.message}`);
+					modelSelect.style.display = 'none';
+				}
+			}, 1000);
+		});
+
+		providerSelect.addEventListener('change', () => {
+			input.dispatchEvent(new Event('input'));
+		});
+		
+		modelSelect.addEventListener('change', () => {
+			this.plugin.settings.llmModel = modelSelect.value;
+		});
+
 		container.createEl('p', { text: 'Installation Folder:', attr: { style: 'color: var(--text-muted); margin-bottom: 5px; font-size: 0.9em;' } });
 		const folderInput = container.createEl('input', { type: 'text', value: 'agentic_vault', placeholder: 'Installation Folder...', attr: { style: 'margin-bottom: 20px; padding: 10px; width: 100%; max-width: 300px;' } });
 		
@@ -76,6 +159,7 @@ export class AgenticVaultChatView extends ItemView {
 				this.plugin.settings.llmProvider = providerSelect.value as any;
 				this.plugin.settings.llmApiKey = key;
 				this.plugin.settings.agenticVaultPath = folderName;
+				// llmModel is automatically saved when modelSelect changes
 				await this.plugin.saveSettings();
 				
 				// Initialize the directories now that the user has opted in

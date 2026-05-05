@@ -1,4 +1,6 @@
 import { App, PluginSettingTab, Setting, Notice, debounce, DropdownComponent, ButtonComponent } from 'obsidian';
+import { GeminiProvider } from './llm/GeminiProvider';
+import { OpenAIProvider } from './llm/OpenAIProvider';
 
 export interface ZoneDefinition {
 	path: string;
@@ -56,19 +58,18 @@ export class AgenticVaultSettingTab extends PluginSettingTab {
 		this.plugin = plugin;
 		this.debouncedFetch = debounce(async (apiKey: string) => {
 			await this.performModelFetch(apiKey, false);
-		}, 1500, true);
+		}, 1500);
 	}
 
 	private async performModelFetch(apiKey: string, showNotice: boolean = false, buttonComponent?: ButtonComponent) {
 		if (!apiKey) return;
+		apiKey = apiKey.trim();
 		try {
 			if (buttonComponent) buttonComponent.setButtonText('Testing...');
 			let models: string[] = [];
 			if (this.plugin.settings.llmProvider === 'openai') {
-				const { OpenAIProvider } = await import('./llm/OpenAIProvider');
 				models = await OpenAIProvider.fetchAvailableModels(apiKey, this.plugin.settings.llmBaseUrl);
 			} else {
-				const { GeminiProvider } = await import('./llm/GeminiProvider');
 				models = await GeminiProvider.fetchAvailableModels(apiKey);
 			}
 			

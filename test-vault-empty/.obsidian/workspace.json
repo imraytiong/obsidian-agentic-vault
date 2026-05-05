@@ -198,7 +198,6 @@
     "agentic_vault/fleets/para_career/tools/unreliable_math.md",
     "agentic_vault/fleets/para_career/tools/map_vault.md",
     "agentic_vault/fleets/para_career/tools/google_workspace.md",
-    "agentic_vault/fleets/para_career/tools/file_manager.md",
     "agentic_vault/fleets/para_career/personas/coo.md",
     "agentic_vault/fleets/para_career/personas/chief_of_staff.md",
     "agentic_vault/fleets/para_career/fleet.md",
@@ -208,7 +207,9 @@
     "agentic_vault/fleets/para_career/personas",
     "agentic_vault/fleets/para_career",
     "agentic_vault/fleets/core/tools/system_diagnostic.md",
+    "agentic_vault/fleets/core/tools/file_manager.md",
     "agentic_vault/fleets/core/tools/echo.md",
+    "agentic_vault/fleets/core/tools/allocate_zone.md",
     "agentic_vault/fleets/core/personas/pager.md",
     "agentic_vault/fleets/core/personas/concierge.md",
     "agentic_vault/fleets/core/fleet.md",
@@ -216,6 +217,7 @@
     "agentic_vault/fleets/core/skills",
     "agentic_vault/fleets/core/tools",
     "agentic_vault/fleets/core/personas",
+    "agentic_vault/fleets/para_career/tools/file_manager.md",
     "99_agentic_vault/fleets/para_career/tools/web_search.md",
     "99_agentic_vault/fleets/para_career/tools/update_memory.md",
     "99_agentic_vault/fleets/para_career/tools/unreliable_math.md",
@@ -223,8 +225,6 @@
     "99_agentic_vault/fleets/para_career/tools/google_workspace.md",
     "99_agentic_vault/fleets/para_career/tools/file_manager.md",
     "99_agentic_vault/fleets/para_career/personas/coo.md",
-    "99_agentic_vault/fleets/para_career/personas/chief_of_staff.md",
-    "99_agentic_vault/fleets/para_career/fleet.md",
-    "99_agentic_vault/fleets/core/tools/system_diagnostic.md"
+    "99_agentic_vault/fleets/para_career/personas/chief_of_staff.md"
   ]
 }

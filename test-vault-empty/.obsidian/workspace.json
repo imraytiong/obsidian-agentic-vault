@@ -191,6 +191,7 @@
   },
   "active": "62b60857b788470a",
   "lastOpenFiles": [
+    "agentic_vault/logs/Trace_Log.md",
     "agentic_vault/logs/routine_queue.json",
     "agentic_vault/fleets/core/tools/system_diagnostic.md",
     "agentic_vault/fleets/core/tools/file_manager.md",
@@ -209,7 +210,6 @@
     "agentic_vault/memory",
     "agentic_vault/fleets",
     "agentic_vault",
-    "90_agentic_vault",
     "agentic_vault/fleets/para_career/tools/web_search.md",
     "agentic_vault/fleets/para_career/tools/update_memory.md",
     "agentic_vault/fleets/para_career/tools/unreliable_math.md",
@@ -218,7 +218,6 @@
     "agentic_vault/fleets/para_career/personas/coo.md",
     "agentic_vault/fleets/para_career/personas/chief_of_staff.md",
     "agentic_vault/fleets/para_career/fleet.md",
-    "agentic_vault/logs/Trace_Log.md",
     "AgenticVault/logs/sessions/2026-05-05T20-24-58-151Z_Session.md",
     "agentic_vault/fleets/para_career/tools/file_manager.md",
     "99_agentic_vault/fleets/para_career/tools/web_search.md",

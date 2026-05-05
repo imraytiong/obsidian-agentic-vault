@@ -175,13 +175,6 @@ export class AgenticVaultChatView extends ItemView {
 				if (this.personaIndicatorEl) {
 					this.personaIndicatorEl.setText(`Agent: ${this.activePersona}`);
 				}
-
-				// Trigger Concierge intro
-				this.plugin.chatService.sendMessage(
-					"The user has just connected the API for the first time. Introduce yourself and begin the interactive onboarding sequence.",
-					"Concierge",
-					"System"
-				);
 			});
 	}
 
@@ -250,7 +243,7 @@ export class AgenticVaultChatView extends ItemView {
 		);
 
 		// Trigger Concierge Onboarding
-		if (this.plugin.chatService.unifiedTimeline.length === 0 && !this.plugin.settings.hasCompletedOnboarding) {
+		if (!this.plugin.settings.hasCompletedOnboarding) {
 			this.activePersona = 'Concierge';
 			if (this.personaIndicatorEl) this.personaIndicatorEl.setText(`Speaking to: ${this.activePersona}`);
 			

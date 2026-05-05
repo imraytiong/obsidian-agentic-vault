@@ -157,9 +157,19 @@
               "icon": "lucide-list",
               "title": "Outline"
             }
+          },
+          {
+            "id": "c39ff7c257c7ed90",
+            "type": "leaf",
+            "state": {
+              "type": "agentic-vault-chat-view",
+              "state": {},
+              "icon": "lucide-file",
+              "title": "Agentic Vault Chat"
+            }
           }
         ],
-        "currentTab": 4
+        "currentTab": 5
       }
     ],
     "direction": "horizontal",
@@ -167,6 +177,9 @@
   },
   "left-ribbon": {
     "hiddenItems": {
+      "obsidian-agentic-vault:Open Agentic Vault chat": false,
+      "obsidian-agentic-vault:Open Agentic Control Center": false,
+      "obsidian-agentic-vault:Open Fleet Dashboard": false,
       "switcher:Open quick switcher": false,
       "graph:Open graph view": false,
       "canvas:Create new canvas": false,
@@ -176,7 +189,7 @@
       "bases:Create new base": false
     }
   },
-  "active": "76640c9eb5a9a152",
+  "active": "c39ff7c257c7ed90",
   "lastOpenFiles": [
     "agentic_vault/logs/Trace_Log.md",
     "agentic_vault/logs/routine_queue.json",

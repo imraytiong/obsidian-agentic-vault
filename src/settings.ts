@@ -170,8 +170,10 @@ export class AgenticVaultSettingTab extends PluginSettingTab {
 					.setPlaceholder('Vault Path...')
 					.setValue(zoneDef.path)
 					.onChange(async (value) => {
-						this.plugin.settings.zones[zoneId].path = value;
-						await this.plugin.saveSettings();
+						if (this.plugin.settings.zones[zoneId]) {
+							this.plugin.settings.zones[zoneId].path = value;
+							await this.plugin.saveSettings();
+						}
 					}));
 		});
 

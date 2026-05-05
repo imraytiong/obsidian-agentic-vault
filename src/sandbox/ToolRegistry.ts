@@ -9,21 +9,23 @@ export interface ToolDefinition {
 	fleet: string;
 }
 
+import { AgenticVaultSettings } from '../settings';
+
 export class ToolRegistry {
 	private app: App;
-	private agenticVaultPath: string;
+	private settings: AgenticVaultSettings;
 	private tools: Record<string, ToolDefinition> = {};
 
-	constructor(app: App, agenticVaultPath: string) {
+	constructor(app: App, settings: AgenticVaultSettings) {
 		this.app = app;
-		this.agenticVaultPath = agenticVaultPath;
+		this.settings = settings;
 	}
 
 	async loadTools() {
 		this.tools = {};
-		if (!this.agenticVaultPath) return;
+		if (!this.settings.agenticVaultPath) return;
 
-		const fleetsPath = `${this.agenticVaultPath}/fleets`;
+		const fleetsPath = `${this.settings.agenticVaultPath}/fleets`;
 		const fleetsFolder = this.app.vault.getAbstractFileByPath(fleetsPath);
 		if (!fleetsFolder || !(fleetsFolder instanceof TFolder)) return;
 
@@ -73,10 +75,21 @@ export class ToolRegistry {
 						}
 					}
 
+					// Dynamically inject ZONES_ENUM
+					let parameters = frontmatter.parameters || [];
+					if (parameters.length > 0) {
+						let paramString = JSON.stringify(parameters);
+						if (paramString.includes('{{ZONES_ENUM}}')) {
+							const zoneKeys = Object.keys(this.settings.zones);
+							paramString = paramString.replace(/"\{\{ZONES_ENUM\}\}"/g, JSON.stringify(zoneKeys));
+							parameters = JSON.parse(paramString);
+						}
+					}
+
 					this.tools[`${fleetName}.${frontmatter.name}`] = {
 						name: frontmatter.name,
 						description: frontmatter.description || '',
-						parameters: frontmatter.parameters || [],
+						parameters: parameters,
 						language: language,
 						scriptContent: scriptContent,
 						fleet: fleetName

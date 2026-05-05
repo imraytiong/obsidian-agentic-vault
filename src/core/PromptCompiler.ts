@@ -8,6 +8,11 @@ export class PromptCompiler {
 		const now = new Date();
 		systemPrompt += `\n\n[System Context]\nThe current date and time is: ${now.toLocaleString()}.`;
 
+		const zonesStr = Object.entries(plugin.settings.zones)
+			.map(([zoneId, zoneDef]) => `- **${zoneId}** -> \`${zoneDef.path}\`: ${zoneDef.description}`)
+			.join('\n');
+		systemPrompt += `\n\n[Active Semantic Zones]\nThe vault is organized into these authorized zones:\n${zonesStr}\nIf you need to read or write files, ALWAYS use one of these zone IDs in your tools. Do not hallucinate paths outside of these zones.`;
+
 		const sharedMemoryPath = 'AgenticVault/memory/shared_memory.md';
 		if (await plugin.app.vault.adapter.exists(sharedMemoryPath)) {
 			const sharedMemoryContent = await plugin.app.vault.adapter.read(sharedMemoryPath);

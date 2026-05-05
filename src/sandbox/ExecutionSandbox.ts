@@ -3,19 +3,19 @@ import { LoggerService } from '../services/LoggerService';
 import { ToolRegistry } from './ToolRegistry';
 import { spawn } from 'child_process';
 
+import { AgenticVaultSettings } from '../settings';
+
 export class ExecutionSandbox {
 	private app: App;
 	private logger: LoggerService;
 	private toolRegistry: ToolRegistry;
-	private sandboxEngine: string;
-	private customEnvPath: string;
+	private settings: AgenticVaultSettings;
 
-	constructor(app: App, logger: LoggerService, toolRegistry: ToolRegistry, sandboxEngine: string, customEnvPath: string) {
+	constructor(app: App, logger: LoggerService, toolRegistry: ToolRegistry, settings: AgenticVaultSettings) {
 		this.app = app;
 		this.logger = logger;
 		this.toolRegistry = toolRegistry;
-		this.sandboxEngine = sandboxEngine;
-		this.customEnvPath = customEnvPath;
+		this.settings = settings;
 	}
 
 	async executeTool(toolName: string, payload: unknown, executionFleet?: string): Promise<{ success: boolean, output: string }> {
@@ -24,38 +24,46 @@ export class ExecutionSandbox {
 			return { success: false, output: `Tool not found: ${toolName}` };
 		}
 
-		this.logger.log('SANDBOX_EXECUTION_STARTED', { tool: toolName, engine: this.sandboxEngine, payload });
+		this.logger.log('SANDBOX_EXECUTION_STARTED', { tool: toolName, engine: this.settings.sandboxEngine, payload });
 
 		try {
-			const payloadString = JSON.stringify(payload);
+			let enrichedPayload = payload;
+			if (typeof payload === 'object' && payload !== null) {
+				enrichedPayload = { 
+					...payload, 
+					__ZONES__: this.settings.zones,
+					__VAULT_ROOT__: (this.app.vault.adapter as any).basePath || ''
+				};
+			}
+			const payloadString = JSON.stringify(enrichedPayload);
 			let exe = '';
 			let args: string[] = [];
 
 			let lang = tool.language;
 			if (lang === 'js' || lang === 'javascript' || lang === 'ts' || lang === 'typescript') {
-				if (this.sandboxEngine === 'local-node') {
+				if (this.settings.sandboxEngine === 'local-node') {
 					exe = 'node';
 					args = ['-e', tool.scriptContent, payloadString];
-				} else if (this.sandboxEngine === 'docker') {
+				} else if (this.settings.sandboxEngine === 'docker') {
 					exe = 'docker';
 					args = ['run', '--rm', '-i', 'node:18', 'node', '-e', tool.scriptContent, payloadString];
-				} else if (this.sandboxEngine === 'podman') {
+				} else if (this.settings.sandboxEngine === 'podman') {
 					exe = 'podman';
 					args = ['run', '--rm', '-i', 'node:18', 'node', '-e', tool.scriptContent, payloadString];
 				}
 			} else if (lang === 'python' || lang === 'py') {
-				if (this.sandboxEngine === 'local-node') {
+				if (this.settings.sandboxEngine === 'local-node') {
 					exe = 'python3';
 					args = ['-c', tool.scriptContent, payloadString];
-				} else if (this.sandboxEngine === 'docker') {
+				} else if (this.settings.sandboxEngine === 'docker') {
 					exe = 'docker';
 					args = ['run', '--rm', '-i', 'python:3', 'python', '-c', tool.scriptContent, payloadString];
-				} else if (this.sandboxEngine === 'podman') {
+				} else if (this.settings.sandboxEngine === 'podman') {
 					exe = 'podman';
 					args = ['run', '--rm', '-i', 'python:3', 'python', '-c', tool.scriptContent, payloadString];
 				}
 			} else if (lang === 'bash' || lang === 'sh') {
-				if (this.sandboxEngine === 'local-node') {
+				if (this.settings.sandboxEngine === 'local-node') {
 					exe = 'bash';
 					args = ['-c', tool.scriptContent, payloadString];
 				} else {
@@ -67,11 +75,8 @@ export class ExecutionSandbox {
 			}
 
 			const output = await new Promise<{stdout: string, stderr: string}>((resolve, reject) => {
-				const augmentedEnv = {
-					...process.env,
-					PATH: `${this.customEnvPath}:${process.env.PATH || ''}`
-				};
-				const vaultPath = (this.app.vault.adapter as unknown).getBasePath ? (this.app.vault.adapter as unknown).getBasePath() : process.cwd();
+				const augmentedEnv = { ...process.env, PATH: `${this.settings.customEnvPath}:${process.env.PATH || ''}` };
+				const vaultPath = (this.app.vault.adapter as unknown as any).getBasePath ? (this.app.vault.adapter as unknown as any).getBasePath() : process.cwd();
 				const child = spawn(exe, args, { env: augmentedEnv, cwd: vaultPath });
 				let stdout = '';
 				let stderr = '';

@@ -52,8 +52,10 @@ export class InitializationEngine {
 			try {
 				await this.app.vault.createFolder(path);
 				return true; // Was created
-			} catch (e) {
-				console.error(`Failed to create folder ${path}`, e);
+			} catch (e: any) {
+				if (e.message && !e.message.includes('already exists')) {
+					console.error(`Failed to create folder ${path}`, e);
+				}
 			}
 		}
 		return false; // Already existed
@@ -66,7 +68,11 @@ export class InitializationEngine {
 			try {
 				await this.app.vault.create(path, content);
 			} catch (e: any) {
-				console.warn(`Failed to deploy ${path}, file might already exist on disk.`, e);
+				if (e.message && e.message.includes('already exists')) {
+					await this.app.vault.adapter.write(path, content);
+				} else {
+					console.warn(`Failed to deploy ${path}, file might already exist on disk.`, e);
+				}
 			}
 		} else if (file instanceof TFile) {
 			// Check versions

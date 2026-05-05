@@ -222,7 +222,15 @@ export class RoutineManager {
 		if (file instanceof TFile) {
 			await this.app.vault.modify(file, jsonString);
 		} else {
-			await this.app.vault.create(this.queueFilePath, jsonString);
+			try {
+				await this.app.vault.create(this.queueFilePath, jsonString);
+			} catch (e: any) {
+				if (e.message && e.message.includes('already exists')) {
+					await this.app.vault.adapter.write(this.queueFilePath, jsonString);
+				} else {
+					console.error("RoutineManager failed to save tasks", e);
+				}
+			}
 		}
 
 		if (this.onStateChanged) {

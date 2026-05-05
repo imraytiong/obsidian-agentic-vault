@@ -30,7 +30,15 @@ export class LoggerService {
 			} else {
 				// File doesn't exist, create it with a header
 				const header = `# Agentic Vault Trace Log\n\nThis file is autonomously generated to provide a deterministic ReAct audit trail.\n`;
-				await this.app.vault.create(logFilePath, header + logEntry);
+				try {
+					await this.app.vault.create(logFilePath, header + logEntry);
+				} catch (e: any) {
+					if (e.message && e.message.includes('already exists')) {
+						await this.app.vault.adapter.append(logFilePath, logEntry);
+					} else {
+						console.error("Agentic Vault Logger Error:", e);
+					}
+				}
 			}
 		} catch (error) {
 			console.error("Agentic Vault Logger Error:", error);

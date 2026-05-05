@@ -385,6 +385,7 @@ export class AgenticVaultChatView extends ItemView {
 		inputRow.style.width = '100%';
 
 		const inputEl = inputRow.createEl('textarea', { 
+			cls: 'chat-input',
 			placeholder: 'Type a message... (try /)'
 		});
 		inputEl.style.width = '100%';

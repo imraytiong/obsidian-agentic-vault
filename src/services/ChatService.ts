@@ -345,6 +345,15 @@ export class ChatService {
 								await this.plugin.saveSettings();
 								this.plugin.logger.log('SYSTEM_INFO', { message: `Dynamically allocated zone: ${zone_id} -> ${path}` });
 							}
+							if (parsed._INTERNAL_INSTALL_FLEET_TRIGGER) {
+								const { fleet_name } = parsed._INTERNAL_INSTALL_FLEET_TRIGGER;
+								const { InitializationEngine } = await import('../core/InitializationEngine');
+								const engine = new InitializationEngine(this.plugin);
+								await engine.deployFleet(fleet_name);
+								await this.plugin.personaEngine.loadPersonas();
+								await this.plugin.toolRegistry.loadTools();
+								this.plugin.logger.log('SYSTEM_INFO', { message: `Dynamically installed fleet: ${fleet_name}` });
+							}
 						} catch (e) {
 							// Ignored if output is not JSON
 						}

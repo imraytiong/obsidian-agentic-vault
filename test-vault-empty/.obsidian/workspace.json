@@ -191,6 +191,7 @@
   },
   "active": "c39ff7c257c7ed90",
   "lastOpenFiles": [
+    "agentic_vault/logs/debug/debug_dump_1778014343197.json",
     "agentic_vault/logs/debug/debug_dump_1778014219430.json",
     "agentic_vault/logs/debug",
     "agentic_vault/logs/Trace_Log.md",
@@ -209,7 +210,6 @@
     "agentic_vault/fleets/core",
     "agentic_vault/logs",
     "agentic_vault/memory",
-    "agentic_vault/fleets",
     "agentic_vault/fleets/para_career/tools/web_search.md",
     "agentic_vault/fleets/para_career/tools/update_memory.md",
     "agentic_vault/fleets/para_career/tools/unreliable_math.md",

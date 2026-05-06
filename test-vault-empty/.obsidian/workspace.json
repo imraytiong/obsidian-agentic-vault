@@ -11,10 +11,10 @@
             "id": "a7c64e1a82c7952a",
             "type": "leaf",
             "state": {
-              "type": "empty",
+              "type": "agentic-kanban-view",
               "state": {},
-              "icon": "lucide-file",
-              "title": "New tab"
+              "icon": "layout-dashboard",
+              "title": "Agentic Control Center"
             }
           }
         ]
@@ -159,7 +159,7 @@
             }
           },
           {
-            "id": "8b56651ebd677c5e",
+            "id": "9b86dfd614e4aafc",
             "type": "leaf",
             "state": {
               "type": "agentic-vault-chat-view",
@@ -167,9 +167,19 @@
               "icon": "lucide-file",
               "title": "Agentic Vault Chat"
             }
+          },
+          {
+            "id": "ee7e62bdcdb9bc0e",
+            "type": "leaf",
+            "state": {
+              "type": "fleet-dashboard-view",
+              "state": {},
+              "icon": "activity",
+              "title": "Fleet Dashboard"
+            }
           }
         ],
-        "currentTab": 5
+        "currentTab": 6
       }
     ],
     "direction": "horizontal",
@@ -177,20 +187,22 @@
   },
   "left-ribbon": {
     "hiddenItems": {
-      "obsidian-agentic-vault:Open Agentic Vault chat": false,
-      "obsidian-agentic-vault:Open Agentic Control Center": false,
-      "obsidian-agentic-vault:Open Fleet Dashboard": false,
       "switcher:Open quick switcher": false,
       "graph:Open graph view": false,
       "canvas:Create new canvas": false,
       "daily-notes:Open today's daily note": false,
       "templates:Insert template": false,
       "command-palette:Open command palette": false,
-      "bases:Create new base": false
+      "bases:Create new base": false,
+      "obsidian-agentic-vault:Open Agentic Vault chat": false,
+      "obsidian-agentic-vault:Open Agentic Control Center": false,
+      "obsidian-agentic-vault:Open Fleet Dashboard": false
     }
   },
-  "active": "8b56651ebd677c5e",
+  "active": "ee7e62bdcdb9bc0e",
   "lastOpenFiles": [
+    "agentic_vault/logs/debug/dashboard_dump_1778030645066.json",
+    "agentic_vault/logs/debug",
     "agentic_vault/logs/routine_queue.json",
     "agentic_vault/fleets/core/tools/system_diagnostic.md",
     "agentic_vault/fleets/core/tools/file_manager.md",
@@ -208,7 +220,6 @@
     "agentic_vault/logs",
     "agentic_vault/memory",
     "agentic_vault/fleets",
-    "agentic_vault",
     "agentic_vault/logs/Trace_Log.md",
     "agentic_vault/fleets/para_career/tools/web_search.md",
     "agentic_vault/fleets/para_career/tools/update_memory.md",

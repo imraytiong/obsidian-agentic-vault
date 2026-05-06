@@ -160,14 +160,20 @@ export default class AgenticVaultPlugin extends Plugin {
 	}
 
 	async initializeFleetArchitecture() {
-		const initializationEngine = new InitializationEngine(this);
-		await initializationEngine.initialize();
-		
-		await new Promise(resolve => window.setTimeout(resolve, 500));
-		await this.personaEngine.loadPersonas();
-		await this.toolRegistry.loadTools();
-		await this.skillsEngine.loadSkills();
-		await this.routineManager.initialize();
+		try {
+			const initializationEngine = new InitializationEngine(this);
+			await initializationEngine.initialize();
+			
+			await new Promise(resolve => window.setTimeout(resolve, 500));
+			await this.personaEngine.loadPersonas();
+			await this.toolRegistry.loadTools();
+			await this.skillsEngine.loadSkills();
+			await this.routineManager.initialize();
+		} catch (e: any) {
+			new Notice("CRITICAL CRASH in initializeFleetArchitecture: " + e.message, 10000);
+			console.error("initializeFleetArchitecture crashed:", e);
+			throw e;
+		}
 	}
 
 	async openChatView() {

@@ -4,11 +4,11 @@
     "type": "split",
     "children": [
       {
-        "id": "7db8f8d0b2752fde",
+        "id": "8bf5584ada6471be",
         "type": "tabs",
         "children": [
           {
-            "id": "2ddb058f430e3898",
+            "id": "6b42dda15415acb2",
             "type": "leaf",
             "state": {
               "type": "empty",
@@ -74,7 +74,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 230.5
+    "width": 269.5
   },
   "right": {
     "id": "09392ec77d69a733",
@@ -191,7 +191,8 @@
   },
   "active": "c20ce31daeb904da",
   "lastOpenFiles": [
-    "agentic_vault/logs/debug/debug_dump_1778042155768.json",
+    "agentic_vault/logs/debug/debug_dump_1778042577635.json",
+    "agentic_vault/logs/debug/debug_dump_1778042546684.json",
     "agentic_vault/logs/debug",
     "agentic_vault/logs/routine_queue.json",
     "agentic_vault/fleets/core/tools/system_diagnostic.md",
@@ -211,7 +212,6 @@
     "agentic_vault/memory",
     "agentic_vault/fleets",
     "agentic_vault/logs/Trace_Log.md",
-    "agentic_vault/logs",
     "90_agentic_vault/logs/Trace_Log.md",
     "90_agentic_vault/fleets/para_career/tools/web_search.md",
     "90_agentic_vault/fleets/para_career/tools/update_memory.md",

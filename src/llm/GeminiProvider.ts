@@ -5,6 +5,7 @@ import { ToolDefinition } from '../sandbox/ToolRegistry';
 export class GeminiProvider implements LLMProvider {
 	private apiKey: string;
 	private model: string;
+	private lastDumpPath?: string;
 
 	constructor(apiKey: string, model: string = 'gemini-2.5-flash') {
 		this.apiKey = apiKey;
@@ -120,7 +121,12 @@ export class GeminiProvider implements LLMProvider {
 					const typeStr = (param.type || 'string').toUpperCase();
 					const prop: any = { type: typeStr, description: param.description || '' };
 					if (typeStr === 'ARRAY') {
-						prop.items = { type: 'STRING' };
+						if (param.items && param.items.type) {
+							prop.items = { type: param.items.type.toUpperCase() };
+							if (param.items.properties) prop.items.properties = param.items.properties;
+						} else {
+							prop.items = { type: 'STRING' };
+						}
 					}
 					properties[param.name] = prop;
 					if (param.required) required.push(param.name);
@@ -147,13 +153,13 @@ export class GeminiProvider implements LLMProvider {
 			
 			// DEBUG DUMP PAYLOAD
 			try {
-				const dumpPath = `${this.agenticVaultPath}/logs/gemini_payload_debug.json`;
-				const file = this.app.vault.getAbstractFileByPath(dumpPath);
-				if (file) {
-					await this.app.vault.modify(file as any, JSON.stringify(body, null, 2));
-				} else {
-					await this.app.vault.create(dumpPath, JSON.stringify(body, null, 2));
-				}
+				const fs = require('fs');
+				const path = require('path');
+				const dumpPath = path.join(this.plugin.app.vault.adapter.getBasePath(), this.plugin.app.vault.configDir, 'plugins', 'obsidian-agentic-vault', 'gemini_payload_debug.json');
+				fs.writeFileSync(dumpPath, JSON.stringify(body, null, 2), 'utf8');
+				
+				// Dump response as well
+				this.lastDumpPath = path.join(this.plugin.app.vault.adapter.getBasePath(), this.plugin.app.vault.configDir, 'plugins', 'obsidian-agentic-vault', 'gemini_response_debug.json');
 			} catch (e) {
 				console.error("Failed to dump payload", e);
 			}
@@ -177,6 +183,14 @@ export class GeminiProvider implements LLMProvider {
 			}
 
 			const data = await res.json();
+			
+			try {
+				if (this.lastDumpPath) {
+					const fs = require('fs');
+					fs.writeFileSync(this.lastDumpPath, JSON.stringify(data, null, 2), 'utf8');
+				}
+			} catch(e) {}
+
 			const candidate = data.candidates?.[0];
 			if (!candidate) throw new Error('No candidate returned from Gemini');
 

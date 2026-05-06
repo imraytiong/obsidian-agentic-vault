@@ -113,7 +113,12 @@ export class GeminiProvider implements LLMProvider {
 				const properties: Record<string, unknown> = {};
 				const required: string[] = [];
 				for (const param of (t.parameters || [])) {
-					properties[param.name] = { type: (param.type || 'string').toUpperCase(), description: param.description || '' };
+					const typeStr = (param.type || 'string').toUpperCase();
+					const prop: any = { type: typeStr, description: param.description || '' };
+					if (typeStr === 'ARRAY') {
+						prop.items = { type: 'STRING' };
+					}
+					properties[param.name] = prop;
 					if (param.required) required.push(param.name);
 				}
 				return {

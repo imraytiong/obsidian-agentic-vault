@@ -468,7 +468,7 @@ export class AgenticVaultChatView extends ItemView {
 			inputEl.style.height = `${inputEl.scrollHeight}px`;
 		});
 
-		const btnContainer = inputRow.createDiv();
+		const btnContainer = this.inputRow.createDiv();
 		btnContainer.style.position = 'absolute';
 		btnContainer.style.right = '5px';
 		btnContainer.style.bottom = '5px';

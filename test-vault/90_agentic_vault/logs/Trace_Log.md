@@ -11797,3 +11797,18 @@ This file is autonomously generated to provide a deterministic ReAct audit trail
   "version": "0.0.21"
 }
 ```
+
+### [2026-05-06T01:43:25.727Z] FATAL_CRASH_RENDER
+```json
+{
+  "error": "inputRow is not defined",
+  "stack": "ReferenceError: inputRow is not defined\n    at AgenticVaultChatView.renderChatTab (plugin:obsidian-agentic-vault:32688:26)\n    at AgenticVaultChatView.renderChatInterface (plugin:obsidian-agentic-vault:32495:14)\n    at AgenticVaultChatView.onOpen (plugin:obsidian-agentic-vault:32332:10)\n    at AgenticVaultChatView.<anonymous> (app://obsidian.md/app.js:1:1048480)\n    at app://obsidian.md/app.js:1:258511\n    at Object.next (app://obsidian.md/app.js:1:258616)\n    at app://obsidian.md/app.js:1:257532\n    at new Promise (<anonymous>)\n    at y (app://obsidian.md/app.js:1:257277)\n    at AgenticVaultChatView.open (app://obsidian.md/app.js:1:1048337)"
+}
+```
+
+### [2026-05-06T01:43:27.537Z] PLUGIN_LOADED
+```json
+{
+  "version": "0.0.22"
+}
+```

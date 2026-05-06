@@ -151,7 +151,7 @@ export class GeminiProvider implements LLMProvider {
 			});
 			
 			const timeoutPromise = new Promise<never>((_, reject) => {
-				setTimeout(() => reject(new Error('Gemini API request timed out after 30 seconds')), 30000);
+				setTimeout(() => reject(new Error('Gemini API request timed out after 120 seconds. Generation may have been too large or the API is under heavy load.')), 120000);
 			});
 
 			const res = await Promise.race([fetchPromise, timeoutPromise]) as Response;

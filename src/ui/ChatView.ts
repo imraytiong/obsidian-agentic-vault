@@ -277,10 +277,10 @@ export class AgenticVaultChatView extends ItemView {
 				try {
 					this.plugin.logger.log('DEBUG_TRACE_ONBOARDING_SEND', { persona: 'Concierge' });
 					new Notice("Sending prompt to Concierge...");
-					const err = await this.plugin.chatService.sendMessage(sysPrompt, 'Concierge');
-					if (err) {
-						this.plugin.logger.log('DEBUG_TRACE_ONBOARDING_ERROR_RETURNED', { error: err });
-						new Notice("Concierge returned an error: " + err);
+					const responseMsg = await this.plugin.chatService.sendMessage(sysPrompt, 'Concierge');
+					if (responseMsg && responseMsg.startsWith("Error")) {
+						this.plugin.logger.log('DEBUG_TRACE_ONBOARDING_ERROR_RETURNED', { error: responseMsg });
+						new Notice("Concierge returned an error: " + responseMsg);
 					} else {
 						this.plugin.logger.log('DEBUG_TRACE_ONBOARDING_SUCCESS', { message: "Message sent successfully" });
 						new Notice("Concierge response received.");

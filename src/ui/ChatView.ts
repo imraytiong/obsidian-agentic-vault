@@ -1017,6 +1017,8 @@ export class AgenticVaultChatView extends ItemView {
 				
 				if (fragment.childNodes.length > 0) {
 					parent.replaceChild(fragment, n);
+				} else {
+					n.nodeValue = '';
 				}
 			});
 

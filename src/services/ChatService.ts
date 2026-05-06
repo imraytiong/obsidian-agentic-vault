@@ -401,6 +401,32 @@ export class ChatService {
 									}
 								}
 							}
+							if (parsed._INTERNAL_ALLOCATE_ZONES_TRIGGER) {
+								const { zones } = parsed._INTERNAL_ALLOCATE_ZONES_TRIGGER;
+								if (Array.isArray(zones)) {
+									for (const z of zones) {
+										const { zone_id, path, description } = z;
+										if (zone_id === 'agentic_vault' && path !== this.plugin.settings.agenticVaultPath) {
+											const oldPath = this.plugin.settings.agenticVaultPath;
+											const oldFolder = this.plugin.app.vault.getAbstractFileByPath(oldPath);
+											if (oldFolder) {
+												try {
+													await this.plugin.app.fileManager.renameFile(oldFolder, path);
+													this.plugin.settings.agenticVaultPath = path;
+													await this.plugin.saveSettings();
+													this.plugin.logger.log('SYSTEM_INFO', { message: `Renamed agentic_vault to ${path}` });
+												} catch (err) {
+													this.plugin.logger.log('SYSTEM_ERROR', { message: `Failed to rename agentic_vault: ${err}` });
+												}
+											}
+										} else {
+											this.plugin.settings.zones[zone_id] = { path, description };
+											this.plugin.logger.log('SYSTEM_INFO', { message: `Dynamically allocated zone: ${zone_id} -> ${path}` });
+										}
+									}
+									await this.plugin.saveSettings();
+								}
+							}
 							if (parsed._INTERNAL_INSTALL_FLEET_TRIGGER) {
 								const { fleet_name } = parsed._INTERNAL_INSTALL_FLEET_TRIGGER;
 								const { InitializationEngine } = await import('../core/InitializationEngine');

@@ -159,7 +159,7 @@
             }
           },
           {
-            "id": "62b60857b788470a",
+            "id": "78888a63fc58dac0",
             "type": "leaf",
             "state": {
               "type": "agentic-vault-chat-view",
@@ -189,9 +189,8 @@
       "bases:Create new base": false
     }
   },
-  "active": "62b60857b788470a",
+  "active": "78888a63fc58dac0",
   "lastOpenFiles": [
-    "agentic_vault/logs/Trace_Log.md",
     "agentic_vault/logs/routine_queue.json",
     "agentic_vault/fleets/core/tools/system_diagnostic.md",
     "agentic_vault/fleets/core/tools/file_manager.md",
@@ -210,6 +209,7 @@
     "agentic_vault/memory",
     "agentic_vault/fleets",
     "agentic_vault",
+    "agentic_vault/logs/Trace_Log.md",
     "agentic_vault/fleets/para_career/tools/web_search.md",
     "agentic_vault/fleets/para_career/tools/update_memory.md",
     "agentic_vault/fleets/para_career/tools/unreliable_math.md",

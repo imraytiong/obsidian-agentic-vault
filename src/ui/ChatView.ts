@@ -244,10 +244,12 @@ export class AgenticVaultChatView extends ItemView {
 
 		// Trigger Concierge Onboarding
 		if (!this.plugin.settings.hasCompletedOnboarding) {
+			new Notice("Triggering Concierge Onboarding...");
 			this.activePersona = 'Concierge';
 			if (this.personaIndicatorEl) this.personaIndicatorEl.setText(`Speaking to: ${this.activePersona}`);
 			
 			setTimeout(async () => {
+				new Notice("Onboarding timeout fired. Initializing system...");
 				// We don't want to show the user's prompt in the UI, so we just add a "System" message saying we're booting up
 				this.plugin.chatService.unifiedTimeline.push({ role: 'assistant', content: 'Initializing Agentic Vault for the first time...', persona: 'System' });
 				this.renderHistory();
@@ -256,7 +258,14 @@ export class AgenticVaultChatView extends ItemView {
 				await this.plugin.saveSettings();
 				
 				const sysPrompt = "I am a new user and I just booted up my vault for the very first time. Please introduce yourself, explain Semantic Zones, and offer me the setup options.";
-				await this.plugin.chatService.sendMessage(sysPrompt, 'Concierge');
+				try {
+					new Notice("Sending prompt to Concierge...");
+					await this.plugin.chatService.sendMessage(sysPrompt, 'Concierge');
+					new Notice("Concierge response received.");
+				} catch (e: any) {
+					new Notice("Error sending onboarding prompt: " + e.message);
+					console.error(e);
+				}
 			}, 1000);
 		}
 	}

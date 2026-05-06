@@ -47,40 +47,51 @@ export class PersonaEngine {
 
 			for (const file of folder.children) {
 				if (file instanceof TFile && file.extension === 'md') {
-				const cache = this.app.metadataCache.getFileCache(file);
-				const frontmatter = cache?.frontmatter as Record<string, unknown> | undefined;
-				
-				if (frontmatter && typeof frontmatter.name === 'string' && typeof frontmatter.cmd === 'string') {
 					const content = await this.app.vault.cachedRead(file);
 					
-					// Simple extraction: strip YAML frontmatter
-					let systemPrompt = content;
+					// Manually extract frontmatter in case metadataCache is still indexing newly created files
+					let frontmatter: Record<string, any> = {};
 					if (content.startsWith('---')) {
 						const endOfFrontmatter = content.indexOf('---', 3);
 						if (endOfFrontmatter !== -1) {
-							systemPrompt = content.substring(endOfFrontmatter + 3).trim();
+							const yaml = content.substring(3, endOfFrontmatter);
+							const nameMatch = yaml.match(/name:\s*([^\n]+)/);
+							const cmdMatch = yaml.match(/cmd:\s*([^\n]+)/);
+							const descMatch = yaml.match(/description:\s*([^\n]+)/);
+							if (nameMatch) frontmatter.name = nameMatch[1].trim();
+							if (cmdMatch) frontmatter.cmd = cmdMatch[1].trim();
+							if (descMatch) frontmatter.description = descMatch[1].trim();
 						}
 					}
+					
+					if (frontmatter.name && frontmatter.cmd) {
+						// Simple extraction: strip YAML frontmatter
+						let systemPrompt = content;
+						if (content.startsWith('---')) {
+							const endOfFrontmatter = content.indexOf('---', 3);
+							if (endOfFrontmatter !== -1) {
+								systemPrompt = content.substring(endOfFrontmatter + 3).trim();
+							}
+						}
+						
+						let parsedCmd = frontmatter.cmd;
+						if (!parsedCmd.startsWith('/')) {
+							parsedCmd = '/' + parsedCmd;
+						}
 
-					// Automatically prepend '/' if the user omitted it
-					let parsedCmd = frontmatter.cmd;
-					if (!parsedCmd.startsWith('/')) {
-						parsedCmd = '/' + parsedCmd;
+						const description = typeof frontmatter.description === 'string' ? frontmatter.description : undefined;
+						const skills = Array.isArray(frontmatter.skills) ? frontmatter.skills.map(String) : [];
+
+						this.personas[frontmatter.name] = {
+							id: file.basename,
+							name: frontmatter.name,
+							cmd: parsedCmd,
+							description,
+							skills,
+							systemPrompt: systemPrompt,
+							fleet: fleetName
+						};
 					}
-
-					const description = typeof frontmatter.description === 'string' ? frontmatter.description : undefined;
-					const skills = Array.isArray(frontmatter.skills) ? frontmatter.skills.map(String) : [];
-
-					this.personas[frontmatter.name] = {
-						id: file.basename,
-						name: frontmatter.name,
-						cmd: parsedCmd,
-						description,
-						skills,
-						systemPrompt: systemPrompt,
-						fleet: fleetName
-					};
-				}
 				}
 			}
 		}

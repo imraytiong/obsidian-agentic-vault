@@ -159,7 +159,7 @@
             }
           },
           {
-            "id": "78888a63fc58dac0",
+            "id": "8b56651ebd677c5e",
             "type": "leaf",
             "state": {
               "type": "agentic-vault-chat-view",
@@ -189,7 +189,7 @@
       "bases:Create new base": false
     }
   },
-  "active": "78888a63fc58dac0",
+  "active": "8b56651ebd677c5e",
   "lastOpenFiles": [
     "agentic_vault/logs/routine_queue.json",
     "agentic_vault/fleets/core/tools/system_diagnostic.md",

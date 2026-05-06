@@ -72,6 +72,21 @@ export class NativeToolHandler {
 			return { handled: true, haltReAct: true, responseMessage: msg }; 
 		}
 
+		if (tc.name === 'present_options') {
+			const args = tc.arguments;
+			const options = Array.isArray(args.options) ? args.options : [];
+			const type = args.selection_type === 'multiple' ? 'multiple' : 'single';
+			const custom = args.allow_custom === true;
+
+			activeAssistantMessage.uiOptions = { options, type, custom };
+			
+			history.push({ role: 'tool', content: "Options presented successfully. System paused waiting for user selection.", toolCallId: tc.id, toolName: tc.name });
+
+			if (this.plugin.chatService.onTimelineUpdated) this.plugin.chatService.onTimelineUpdated();
+			this.plugin.chatService.persistState();
+			return { handled: true, haltReAct: true, responseMessage: "Awaiting user selection..." };
+		}
+
 		if (tc.name === 'manage_routines') {
 			const args = tc.arguments;
 			let toolOutputStr = '';

@@ -929,54 +929,114 @@ export class AgenticVaultChatView extends ItemView {
 
 		MarkdownRenderer.renderMarkdown(msg.content, contentDiv, '', this).then(() => {
 			if (!this.messagesContainerEl.contains(msgEl)) return;
-			// Handle custom multiple choice option syntax: [Option: Some Text]
-			const walk = document.createTreeWalker(contentDiv, NodeFilter.SHOW_TEXT, null);
-			let node;
-			const nodesToReplace = [];
-			while ((node = walk.nextNode())) {
-				if (node.nodeValue && node.nodeValue.includes('[Option:')) {
-					nodesToReplace.push(node);
-				}
-			}
+			// Handle Native UI Options
 			const isLatest = msg === this.plugin.chatService.unifiedTimeline[this.plugin.chatService.unifiedTimeline.length - 1];
-			let hasAddedOptionsToBottom = false;
-
-			nodesToReplace.forEach(n => {
-				const parent = n.parentNode;
-				if (!parent) return;
-				const text = n.nodeValue || '';
-				const regex = /\[Option:\s*([^\]]+)\]/g;
-				let lastIndex = 0;
-				let match;
-				const fragment = document.createDocumentFragment();
+			
+			if (msg.uiOptions && msg.uiOptions.options.length > 0) {
+				const opts = msg.uiOptions;
 				
-				while ((match = regex.exec(text)) !== null) {
-					if (match.index > lastIndex) {
-						fragment.appendChild(document.createTextNode(text.substring(lastIndex, match.index)));
+				if (!isLatest) {
+					// Render historical options
+					const historyDiv = contentDiv.createDiv();
+					historyDiv.style.marginTop = '12px';
+					historyDiv.style.display = 'flex';
+					historyDiv.style.flexWrap = 'wrap';
+					historyDiv.style.gap = '8px';
+					
+					// Determine what was selected by looking at the next user message
+					let selectedOptions: string[] = [];
+					const msgIndex = this.plugin.chatService.unifiedTimeline.indexOf(msg);
+					if (msgIndex >= 0 && msgIndex < this.plugin.chatService.unifiedTimeline.length - 1) {
+						const nextMsg = this.plugin.chatService.unifiedTimeline[msgIndex + 1];
+						if (nextMsg.role === 'user') {
+							selectedOptions = opts.options.filter(opt => nextMsg.content.includes(opt));
+						}
 					}
 					
-					const btnText = match[1].trim();
+					opts.options.forEach(optText => {
+						const isSelected = selectedOptions.includes(optText);
+						const pill = document.createElement('div');
+						pill.textContent = optText;
+						pill.style.padding = '4px 10px';
+						pill.style.borderRadius = '12px';
+						pill.style.fontSize = '0.85em';
+						pill.style.border = isSelected ? '1px solid var(--interactive-accent)' : '1px solid var(--background-modifier-border)';
+						pill.style.backgroundColor = isSelected ? 'var(--interactive-accent)' : 'transparent';
+						pill.style.color = isSelected ? 'var(--text-on-accent)' : 'var(--text-muted)';
+						pill.style.opacity = isSelected ? '1' : '0.6';
+						historyDiv.appendChild(pill);
+					});
+				} else if (this.optionsContainerEl && this.inputRow) {
+					// Render active options
+					this.optionsContainerEl.empty();
+					this.optionsContainerEl.style.display = 'flex';
 					
-					if (!isLatest) {
-						const btn = document.createElement('button');
-						btn.className = 'chat-action-btn';
-						btn.textContent = btnText;
-						btn.style.margin = '4px';
-						btn.style.padding = '6px 12px';
-						btn.style.borderRadius = '16px';
-						btn.style.backgroundColor = 'var(--interactive-accent)';
-						btn.style.color = 'var(--text-on-accent)';
-						btn.style.border = 'none';
-						btn.style.cursor = 'not-allowed';
-						btn.style.fontSize = '0.9em';
-						btn.disabled = true;
-						btn.style.opacity = '0.5';
-						fragment.appendChild(btn);
+					// If custom is not allowed, hide the chat input. Otherwise show it.
+					this.inputRow.style.display = opts.custom ? 'flex' : 'none';
+					
+					if (opts.type === 'multiple') {
+						const formDiv = document.createElement('div');
+						formDiv.style.display = 'flex';
+						formDiv.style.flexDirection = 'column';
+						formDiv.style.gap = '8px';
+						formDiv.style.width = '100%';
+						formDiv.style.backgroundColor = 'var(--background-secondary)';
+						formDiv.style.padding = '12px';
+						formDiv.style.borderRadius = '8px';
+						
+						const checkboxes: HTMLInputElement[] = [];
+						opts.options.forEach(optText => {
+							const row = document.createElement('label');
+							row.style.display = 'flex';
+							row.style.alignItems = 'center';
+							row.style.gap = '8px';
+							row.style.cursor = 'pointer';
+							
+							const cb = document.createElement('input');
+							cb.type = 'checkbox';
+							cb.value = optText;
+							checkboxes.push(cb);
+							
+							const span = document.createElement('span');
+							span.textContent = optText;
+							
+							row.appendChild(cb);
+							row.appendChild(span);
+							formDiv.appendChild(row);
+						});
+						
+						const submitBtn = document.createElement('button');
+						submitBtn.textContent = 'Submit Selection';
+						submitBtn.style.marginTop = '8px';
+						submitBtn.style.backgroundColor = 'var(--interactive-accent)';
+						submitBtn.style.color = 'var(--text-on-accent)';
+						submitBtn.style.border = 'none';
+						submitBtn.style.padding = '8px 16px';
+						submitBtn.style.borderRadius = '6px';
+						submitBtn.style.cursor = 'pointer';
+						
+						submitBtn.onclick = () => {
+							const selected = checkboxes.filter(cb => cb.checked).map(cb => cb.value);
+							if (selected.length === 0) return;
+							
+							const inputEl = this.containerEl.querySelector('textarea.chat-input') as HTMLTextAreaElement;
+							if (inputEl) {
+								inputEl.value = "Selected: " + selected.join(", ");
+								inputEl.dispatchEvent(new Event('input'));
+								
+								const enterEvent = new KeyboardEvent('keydown', { key: 'Enter', code: 'Enter', bubbles: true });
+								inputEl.dispatchEvent(enterEvent);
+							}
+						};
+						
+						formDiv.appendChild(submitBtn);
+						this.optionsContainerEl.appendChild(formDiv);
+						
 					} else {
-						hasAddedOptionsToBottom = true;
-						if (this.optionsContainerEl) {
+						// Single Choice (Buttons)
+						opts.options.forEach(optText => {
 							const optBtn = document.createElement('button');
-							optBtn.textContent = btnText;
+							optBtn.textContent = optText;
 							optBtn.style.padding = '10px 15px';
 							optBtn.style.borderRadius = '8px';
 							optBtn.style.backgroundColor = 'var(--interactive-accent)';
@@ -992,58 +1052,41 @@ export class AgenticVaultChatView extends ItemView {
 							optBtn.onclick = () => {
 								const inputEl = this.containerEl.querySelector('textarea.chat-input') as HTMLTextAreaElement;
 								if (inputEl) {
-									inputEl.value = btnText;
+									inputEl.value = optText;
 									inputEl.dispatchEvent(new Event('input'));
 									inputEl.focus();
 									
-									const enterEvent = new KeyboardEvent('keydown', {
-										key: 'Enter',
-										code: 'Enter',
-										bubbles: true
-									});
+									const enterEvent = new KeyboardEvent('keydown', { key: 'Enter', code: 'Enter', bubbles: true });
 									inputEl.dispatchEvent(enterEvent);
 								}
 							};
 							this.optionsContainerEl.appendChild(optBtn);
-						}
+						});
 					}
 					
-					lastIndex = regex.lastIndex;
+					if (!opts.custom) {
+						const escapeBtn = document.createElement('button');
+						escapeBtn.textContent = 'Switch to text input...';
+						escapeBtn.style.padding = '8px';
+						escapeBtn.style.marginTop = '4px';
+						escapeBtn.style.borderRadius = '8px';
+						escapeBtn.style.backgroundColor = 'transparent';
+						escapeBtn.style.color = 'var(--text-muted)';
+						escapeBtn.style.border = '1px solid var(--background-modifier-border)';
+						escapeBtn.style.cursor = 'pointer';
+						escapeBtn.style.fontSize = '0.85em';
+						
+						escapeBtn.onclick = () => {
+							if (this.optionsContainerEl && this.inputRow) {
+								this.optionsContainerEl.style.display = 'none';
+								this.inputRow.style.display = 'flex';
+								const inputEl = this.containerEl.querySelector('textarea.chat-input') as HTMLTextAreaElement;
+								if (inputEl) inputEl.focus();
+							}
+						};
+						this.optionsContainerEl.appendChild(escapeBtn);
+					}
 				}
-				
-				if (lastIndex < text.length) {
-					fragment.appendChild(document.createTextNode(text.substring(lastIndex)));
-				}
-				
-				if (fragment.childNodes.length > 0) {
-					parent.replaceChild(fragment, n);
-				} else {
-					n.nodeValue = '';
-				}
-			});
-
-			if (isLatest && hasAddedOptionsToBottom && this.optionsContainerEl && this.inputRow) {
-				this.optionsContainerEl.style.display = 'flex';
-				this.inputRow.style.display = 'none';
-				
-				const escapeBtn = document.createElement('button');
-				escapeBtn.textContent = 'Switch to text input...';
-				escapeBtn.style.padding = '8px';
-				escapeBtn.style.marginTop = '4px';
-				escapeBtn.style.borderRadius = '8px';
-				escapeBtn.style.backgroundColor = 'transparent';
-				escapeBtn.style.color = 'var(--text-muted)';
-				escapeBtn.style.border = '1px solid var(--background-modifier-border)';
-				escapeBtn.style.cursor = 'pointer';
-				escapeBtn.style.fontSize = '0.85em';
-				
-				escapeBtn.onclick = () => {
-					this.optionsContainerEl.style.display = 'none';
-					this.inputRow.style.display = 'flex';
-					const inputEl = this.containerEl.querySelector('textarea.chat-input') as HTMLTextAreaElement;
-					if (inputEl) inputEl.focus();
-				};
-				this.optionsContainerEl.appendChild(escapeBtn);
 			}
 
 			// Handle file links

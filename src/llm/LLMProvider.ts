@@ -7,6 +7,11 @@ export interface LLMMessage {
 	toolCallId?: string;
 	toolName?: string;
 	toolCalls?: { id: string, name: string, arguments: unknown, raw?: unknown }[];
+	uiOptions?: {
+		options: string[];
+		type: 'single' | 'multiple';
+		custom: boolean;
+	};
 }
 
 export interface LLMResponse {

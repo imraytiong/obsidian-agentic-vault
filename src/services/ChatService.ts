@@ -209,6 +209,19 @@ export class ChatService {
 				]
 			});
 
+			// Inject Native Tool for UI Options
+			tools.push({
+				name: 'present_options',
+				description: 'Present the user with a set of interactive choices. The system will halt and wait for the user to make a selection or type a custom response.',
+				language: 'native',
+				scriptContent: '',
+				parameters: [
+					{ name: 'options', type: 'array', description: 'The list of choices to present to the user (array of strings).', required: true },
+					{ name: 'selection_type', type: 'string', description: 'Either "single" (default) or "multiple". If single, renders as instant-action buttons. If multiple, renders as checkboxes.', required: false },
+					{ name: 'allow_custom', type: 'boolean', description: 'If true, explicitly encourages the user to type a custom response in the chat box if none of the options fit.', required: false }
+				]
+			});
+
 			// Inject Native Tool for Managing Routines
 			tools.push({
 				name: 'manage_routines',

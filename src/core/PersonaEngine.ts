@@ -51,16 +51,13 @@ export class PersonaEngine {
 					
 					// Manually extract frontmatter in case metadataCache is still indexing newly created files
 					let frontmatter: Record<string, any> = {};
-					if (content.startsWith('---')) {
-						const endOfFrontmatter = content.indexOf('---', 3);
-						if (endOfFrontmatter !== -1) {
-							const yaml = content.substring(3, endOfFrontmatter);
-							const nameMatch = yaml.match(/name:\s*([^\n]+)/);
-							const cmdMatch = yaml.match(/cmd:\s*([^\n]+)/);
-							const descMatch = yaml.match(/description:\s*([^\n]+)/);
-							if (nameMatch) frontmatter.name = nameMatch[1].trim();
-							if (cmdMatch) frontmatter.cmd = cmdMatch[1].trim();
-							if (descMatch) frontmatter.description = descMatch[1].trim();
+					const fmMatch = content.match(/^---\n([\s\S]*?)\n---/);
+					if (fmMatch) {
+						const { parseYaml } = await import('obsidian');
+						try {
+							frontmatter = parseYaml(fmMatch[1]) || {};
+						} catch (e) {
+							console.error(`Failed to parse YAML for persona ${file.path}`, e);
 						}
 					}
 					

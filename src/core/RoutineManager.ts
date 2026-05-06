@@ -83,30 +83,26 @@ export class RoutineManager {
 				if (child instanceof TFile && child.extension === 'md') {
 					const content = await this.app.vault.read(child);
 					const id = child.basename;
-					
-					// Basic frontmatter parsing
-					let name = id, trigger = '', agent = '', skill = '', status = 'active';
-					let timeout = 5;
-					let retries = 3;
-					let last_run = 0;
-					
-					if (content.startsWith('---')) {
-						const endIdx = content.indexOf('---', 3);
-						if (endIdx !== -1) {
-							const fm = content.substring(3, endIdx);
-							const lines = fm.split('\n');
-							for (const line of lines) {
-								if (line.startsWith('name:')) name = line.substring(5).trim();
-								if (line.startsWith('trigger:')) trigger = line.substring(8).trim().replace(/^["']|["']$/g, '');
-								if (line.startsWith('agent:')) agent = line.substring(6).trim();
-								if (line.startsWith('skill:')) skill = line.substring(6).trim();
-								if (line.startsWith('status:')) status = line.substring(7).trim();
-								if (line.startsWith('timeout:')) timeout = parseInt(line.substring(8).trim()) || 5;
-								if (line.startsWith('retries:')) retries = parseInt(line.substring(8).trim()) || 0;
-								if (line.startsWith('last_run:')) last_run = parseInt(line.substring(9).trim()) || 0;
-							}
+					// Parse frontmatter
+					let frontmatter: any = {};
+					const fmMatch = content.match(/^---\n([\s\S]*?)\n---/);
+					if (fmMatch) {
+						const { parseYaml } = await import('obsidian');
+						try {
+							frontmatter = parseYaml(fmMatch[1]) || {};
+						} catch (e) {
+							console.error(`Failed to parse YAML for routine ${child.path}`, e);
 						}
 					}
+
+					let name = frontmatter.name || id;
+					let trigger = frontmatter.trigger || '';
+					let agent = frontmatter.agent || '';
+					let skill = frontmatter.skill || '';
+					let status = frontmatter.status || 'active';
+					let timeout = frontmatter.timeout !== undefined ? parseInt(frontmatter.timeout) : 5;
+					let retries = frontmatter.retries !== undefined ? parseInt(frontmatter.retries) : 3;
+					let last_run = frontmatter.last_run !== undefined ? parseInt(frontmatter.last_run) : 0;
 					
 					// Default to 3 retries if not specified
 					if (retries === undefined || isNaN(retries)) retries = 3;

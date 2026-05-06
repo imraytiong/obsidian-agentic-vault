@@ -46,16 +46,25 @@ export class ToolRegistry {
 
 			for (const file of folder.children) {
 				if (file instanceof TFile && file.extension === 'md') {
-				const cache = this.app.metadataCache.getFileCache(file);
-				const frontmatter = cache?.frontmatter;
-				
-				if (frontmatter && frontmatter.name) {
-					// Ignore MCP server definition files (McpEngine handles them)
-					if (frontmatter.mcp_server === true) continue;
-
 					const content = await this.app.vault.cachedRead(file);
+					let frontmatter: any = null;
 					
-					let scriptContent = '';
+					// Manually extract frontmatter to avoid cache race conditions on first boot
+					const fmMatch = content.match(/^---\n([\s\S]*?)\n---/);
+					if (fmMatch) {
+						const { parseYaml } = await import('obsidian');
+						try {
+							frontmatter = parseYaml(fmMatch[1]);
+						} catch (e) {
+							console.error(`Failed to parse YAML for tool ${file.path}`, e);
+						}
+					}
+					
+					if (frontmatter && frontmatter.name) {
+						// Ignore MCP server definition files (McpEngine handles them)
+						if (frontmatter.mcp_server === true) continue;
+						
+						let scriptContent = '';
 					let language = 'javascript'; // default
 
 					// Extract code block

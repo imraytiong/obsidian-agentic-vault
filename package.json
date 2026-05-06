@@ -1,6 +1,6 @@
 {
 	"name": "obsidian-agentic-vault",
-	"version": "0.0.17",
+	"version": "0.0.18",
 	"description": "Run a team of agents in Obisidian",
 	"main": "main.js",
 	"type": "module",

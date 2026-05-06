@@ -1,5 +1,6 @@
 import type AgenticVaultPlugin from '../main';
 import { LLMMessage, LLMProvider } from "../llm/LLMProvider";
+import { parseYaml } from "obsidian";
 import { GeminiProvider } from "../llm/GeminiProvider";
 import { OpenAIProvider } from "../llm/OpenAIProvider";
 
@@ -417,7 +418,6 @@ export class ChatService {
 									if (fleetFile) {
 										const match = fleetFile.content.match(/---\n([\s\S]*?)\n---/);
 										if (match) {
-											const { parseYaml } = await import('obsidian');
 											const fm = parseYaml(match[1]);
 											if (fm && fm.required_zones) {
 												const zonesJson = JSON.stringify(fm.required_zones, null, 2);

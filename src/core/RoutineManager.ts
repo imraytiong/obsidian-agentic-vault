@@ -1,4 +1,4 @@
-import { App, TFile, TFolder } from 'obsidian';
+import { App, TFile, TFolder, parseYaml } from 'obsidian';
 
 export interface RoutineDefinition {
 	id: string;
@@ -87,7 +87,6 @@ export class RoutineManager {
 					let frontmatter: any = {};
 					const fmMatch = content.match(/^---\n([\s\S]*?)\n---/);
 					if (fmMatch) {
-						const { parseYaml } = await import('obsidian');
 						try {
 							frontmatter = parseYaml(fmMatch[1]) || {};
 						} catch (e) {

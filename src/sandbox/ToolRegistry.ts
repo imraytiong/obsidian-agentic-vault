@@ -1,4 +1,4 @@
-import { App, TFile, TFolder } from 'obsidian';
+import { App, TFile, TFolder, parseYaml } from 'obsidian';
 
 export interface ToolDefinition {
 	name: string;
@@ -52,7 +52,6 @@ export class ToolRegistry {
 					// Manually extract frontmatter to avoid cache race conditions on first boot
 					const fmMatch = content.match(/^---\n([\s\S]*?)\n---/);
 					if (fmMatch) {
-						const { parseYaml } = await import('obsidian');
 						try {
 							frontmatter = parseYaml(fmMatch[1]);
 						} catch (e) {

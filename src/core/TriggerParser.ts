@@ -11,6 +11,7 @@ export class TriggerParser {
 	private sandbox: ExecutionSandbox;
 	private routineManager: RoutineManager;
 	private chatService: ChatService;
+	private cronInterval?: number;
 
 	constructor(app: App, logger: LoggerService, sandbox: ExecutionSandbox, routineManager: RoutineManager, chatService: ChatService) {
 		this.app = app;
@@ -48,7 +49,13 @@ export class TriggerParser {
 		evaluateCrons();
 		
 		// Then evaluate every 60 seconds
-		window.setInterval(evaluateCrons, 60000);
+		this.cronInterval = window.setInterval(evaluateCrons, 60000);
+	}
+
+	unregisterTriggers() {
+		if (this.cronInterval !== undefined) {
+			window.clearInterval(this.cronInterval);
+		}
 	}
 
 	private isCronDue(routine: RoutineDefinition): boolean {

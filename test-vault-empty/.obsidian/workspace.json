@@ -4,17 +4,17 @@
     "type": "split",
     "children": [
       {
-        "id": "b517ca6e4d7f3ebc",
+        "id": "7db8f8d0b2752fde",
         "type": "tabs",
         "children": [
           {
-            "id": "a7c64e1a82c7952a",
+            "id": "2ddb058f430e3898",
             "type": "leaf",
             "state": {
-              "type": "agentic-kanban-view",
+              "type": "empty",
               "state": {},
-              "icon": "layout-dashboard",
-              "title": "Agentic Control Center"
+              "icon": "lucide-file",
+              "title": "New tab"
             }
           }
         ]
@@ -157,29 +157,9 @@
               "icon": "lucide-list",
               "title": "Outline"
             }
-          },
-          {
-            "id": "9b86dfd614e4aafc",
-            "type": "leaf",
-            "state": {
-              "type": "agentic-vault-chat-view",
-              "state": {},
-              "icon": "lucide-file",
-              "title": "Agentic Vault Chat"
-            }
-          },
-          {
-            "id": "ee7e62bdcdb9bc0e",
-            "type": "leaf",
-            "state": {
-              "type": "fleet-dashboard-view",
-              "state": {},
-              "icon": "activity",
-              "title": "Fleet Dashboard"
-            }
           }
         ],
-        "currentTab": 6
+        "currentTab": 4
       }
     ],
     "direction": "horizontal",
@@ -193,13 +173,10 @@
       "daily-notes:Open today's daily note": false,
       "templates:Insert template": false,
       "command-palette:Open command palette": false,
-      "bases:Create new base": false,
-      "obsidian-agentic-vault:Open Agentic Vault chat": false,
-      "obsidian-agentic-vault:Open Agentic Control Center": false,
-      "obsidian-agentic-vault:Open Fleet Dashboard": false
+      "bases:Create new base": false
     }
   },
-  "active": "ee7e62bdcdb9bc0e",
+  "active": "76640c9eb5a9a152",
   "lastOpenFiles": [
     "agentic_vault/logs/debug/dashboard_dump_1778030645066.json",
     "agentic_vault/logs/debug",

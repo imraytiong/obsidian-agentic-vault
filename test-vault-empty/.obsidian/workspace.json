@@ -11,14 +11,10 @@
             "id": "2ddb058f430e3898",
             "type": "leaf",
             "state": {
-              "type": "markdown",
-              "state": {
-                "file": "agentic_vault/fleets/core/personas/concierge.md",
-                "mode": "source",
-                "source": false
-              },
+              "type": "empty",
+              "state": {},
               "icon": "lucide-file",
-              "title": "concierge"
+              "title": "New tab"
             }
           }
         ]
@@ -193,27 +189,11 @@
       "obsidian-agentic-vault:Open Fleet Dashboard": false
     }
   },
-  "active": "2ddb058f430e3898",
+  "active": "c20ce31daeb904da",
   "lastOpenFiles": [
-    "90_agentic_vault",
-    "80_templates",
-    "60_archives",
-    "50_resources",
-    "40_areas",
-    "30_projects",
-    "20_inbox",
-    "10_daily_notes",
-    "agentic_vault/fleets/para_career/tools/web_search.md",
-    "agentic_vault/fleets/para_career/tools/update_memory.md",
-    "agentic_vault/fleets/para_career/tools/unreliable_math.md",
-    "agentic_vault/fleets/para_career/tools/map_vault.md",
-    "agentic_vault/fleets/para_career/tools/google_workspace.md",
-    "agentic_vault/fleets/para_career/personas/coo.md",
-    "agentic_vault/fleets/para_career/personas/chief_of_staff.md",
-    "agentic_vault/fleets/para_career/fleet.md",
-    "agentic_vault/fleets/para_career/routines",
-    "agentic_vault/fleets/para_career/skills",
-    "agentic_vault/fleets/para_career/tools",
+    "agentic_vault/logs/debug/debug_dump_1778037560964.json",
+    "agentic_vault/logs/debug",
+    "agentic_vault/logs/routine_queue.json",
     "agentic_vault/fleets/core/tools/system_diagnostic.md",
     "agentic_vault/fleets/core/tools/file_manager.md",
     "agentic_vault/fleets/core/tools/echo.md",
@@ -222,7 +202,23 @@
     "agentic_vault/fleets/core/personas/pager.md",
     "agentic_vault/fleets/core/personas/concierge.md",
     "agentic_vault/fleets/core/fleet.md",
+    "agentic_vault/fleets/core/routines",
+    "agentic_vault/fleets/core/skills",
+    "agentic_vault/fleets/core/tools",
+    "agentic_vault/fleets/core/personas",
+    "agentic_vault/fleets/core",
+    "agentic_vault/memory",
+    "agentic_vault/fleets",
     "agentic_vault/logs/Trace_Log.md",
+    "agentic_vault/logs",
+    "agentic_vault/fleets/para_career/tools/web_search.md",
+    "agentic_vault/fleets/para_career/tools/update_memory.md",
+    "agentic_vault/fleets/para_career/tools/unreliable_math.md",
+    "agentic_vault/fleets/para_career/tools/map_vault.md",
+    "agentic_vault/fleets/para_career/tools/google_workspace.md",
+    "agentic_vault/fleets/para_career/personas/coo.md",
+    "agentic_vault/fleets/para_career/personas/chief_of_staff.md",
+    "agentic_vault/fleets/para_career/fleet.md",
     "agentic_vault/fleets/core/tools/allocate_zone.md",
     "AgenticVault/logs/sessions/2026-05-05T20-24-58-151Z_Session.md",
     "agentic_vault/fleets/para_career/tools/file_manager.md",

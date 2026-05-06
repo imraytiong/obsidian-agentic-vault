@@ -33,7 +33,11 @@ export class GeminiProvider implements LLMProvider {
 
 		for (const msg of messages) {
 			if (msg.role === 'system') {
-				systemInstruction = { parts: [{ text: msg.content }] };
+				if (!systemInstruction) {
+					systemInstruction = { parts: [{ text: msg.content }] };
+				} else {
+					contents.push({ role: 'user', parts: [{ text: `[SYSTEM EVENT]: ${msg.content}` }] });
+				}
 			} else if (msg.role === 'user') {
 				contents.push({ role: 'user', parts: [{ text: msg.content }] });
 			} else if (msg.role === 'assistant') {

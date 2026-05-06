@@ -138,11 +138,16 @@ export class GeminiProvider implements LLMProvider {
 			
 			// DEBUG DUMP PAYLOAD
 			try {
-				const fs = require('fs');
-				const path = require('path');
-				const dumpPath = path.join(this.app.vault.adapter.getBasePath(), '.obsidian/plugins/obsidian-agentic-vault/gemini_payload_debug.json');
-				fs.writeFileSync(dumpPath, JSON.stringify(body, null, 2));
-			} catch (e) {}
+				const dumpPath = `${this.agenticVaultPath}/logs/gemini_payload_debug.json`;
+				const file = this.app.vault.getAbstractFileByPath(dumpPath);
+				if (file) {
+					await this.app.vault.modify(file as any, JSON.stringify(body, null, 2));
+				} else {
+					await this.app.vault.create(dumpPath, JSON.stringify(body, null, 2));
+				}
+			} catch (e) {
+				console.error("Failed to dump payload", e);
+			}
 
 			const fetchPromise = fetch(url, {
 				method: 'POST',

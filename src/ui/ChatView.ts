@@ -928,6 +928,7 @@ export class AgenticVaultChatView extends ItemView {
 		};
 
 		MarkdownRenderer.renderMarkdown(msg.content, contentDiv, '', this).then(() => {
+			if (!this.messagesContainerEl.contains(msgEl)) return;
 			// Handle custom multiple choice option syntax: [Option: Some Text]
 			const walk = document.createTreeWalker(contentDiv, NodeFilter.SHOW_TEXT, null);
 			let node;

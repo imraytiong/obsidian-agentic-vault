@@ -14,7 +14,7 @@
               "type": "markdown",
               "state": {
                 "file": "agentic_vault/logs/Trace_Log.md",
-                "mode": "preview",
+                "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
@@ -162,9 +162,19 @@
               "icon": "lucide-list",
               "title": "Outline of Trace_Log"
             }
+          },
+          {
+            "id": "c20ce31daeb904da",
+            "type": "leaf",
+            "state": {
+              "type": "agentic-vault-chat-view",
+              "state": {},
+              "icon": "lucide-file",
+              "title": "Agentic Vault Chat"
+            }
           }
         ],
-        "currentTab": 4
+        "currentTab": 5
       }
     ],
     "direction": "horizontal",
@@ -184,7 +194,7 @@
       "obsidian-agentic-vault:Open Fleet Dashboard": false
     }
   },
-  "active": "76640c9eb5a9a152",
+  "active": "2ddb058f430e3898",
   "lastOpenFiles": [
     "agentic_vault/logs/routine_queue.json",
     "agentic_vault/fleets/core/tools/system_diagnostic.md",

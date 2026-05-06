@@ -154,13 +154,12 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "agentic_vault/logs/Trace_Log.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "Outline of Trace_Log"
+              "title": "Outline"
             }
           },
           {
@@ -194,8 +193,10 @@
       "obsidian-agentic-vault:Open Fleet Dashboard": false
     }
   },
-  "active": "2ddb058f430e3898",
+  "active": "c20ce31daeb904da",
   "lastOpenFiles": [
+    "agentic_vault/logs/debug/debug_dump_1778032458952.json",
+    "agentic_vault/logs/debug",
     "agentic_vault/logs/routine_queue.json",
     "agentic_vault/fleets/core/tools/system_diagnostic.md",
     "agentic_vault/fleets/core/tools/file_manager.md",
@@ -214,7 +215,6 @@
     "agentic_vault/fleets",
     "agentic_vault/logs/Trace_Log.md",
     "agentic_vault/logs",
-    "agentic_vault",
     "agentic_vault/fleets/para_career/tools/web_search.md",
     "agentic_vault/fleets/para_career/tools/update_memory.md",
     "agentic_vault/fleets/para_career/tools/unreliable_math.md",

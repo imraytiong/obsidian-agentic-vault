@@ -134,13 +134,21 @@ export class GeminiProvider implements LLMProvider {
 		if (geminiTools.length > 0) body.tools = geminiTools;
 
 		try {
-			const res = await requestUrl({
+			console.log("Sending Gemini request...", body);
+			const requestPromise = requestUrl({
 				url,
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify(body),
 				throw: false
 			});
+			
+			const timeoutPromise = new Promise<never>((_, reject) => {
+				setTimeout(() => reject(new Error('Gemini API request timed out after 30 seconds')), 30000);
+			});
+
+			const res = await Promise.race([requestPromise, timeoutPromise]) as any;
+			console.log("Received Gemini response:", res.status);
 
 			if (res.status !== 200) {
 				throw new Error(`Gemini API Error: ${res.text}`);

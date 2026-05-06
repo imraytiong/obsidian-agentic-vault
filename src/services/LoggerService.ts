@@ -24,7 +24,13 @@ export class LoggerService {
 		while (this.queue.length > 0) {
 			const { action, context } = this.queue.shift()!;
 			const timestamp = new Date().toISOString();
-			const logEntry = `\n### [${timestamp}] ${action}\n\`\`\`json\n${JSON.stringify(context, null, 2)}\n\`\`\`\n`;
+			let logContent = '';
+			try {
+				logContent = JSON.stringify(context, null, 2);
+			} catch (e: any) {
+				logContent = `[Error stringifying context: ${e.message}]`;
+			}
+			const logEntry = `\n### [${timestamp}] ${action}\n\`\`\`json\n${logContent}\n\`\`\`\n`;
 
 			if (!this.agenticVaultPath) continue;
 

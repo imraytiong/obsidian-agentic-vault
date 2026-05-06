@@ -394,6 +394,7 @@ export class ChatService {
 												try {
 													await this.plugin.app.fileManager.renameFile(oldFolder, normalizePath(newPath));
 													this.plugin.settings.agenticVaultPath = path;
+													this.plugin.logger.agenticVaultPath = normalizePath(newPath);
 													this.plugin.logger.log('SYSTEM_INFO', { message: `Renamed agentic_vault to ${path}` });
 												} catch (err: any) {
 													this.plugin.logger.log('SYSTEM_ERROR', { message: `Failed to rename agentic_vault: ${err}` });

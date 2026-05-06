@@ -2,7 +2,7 @@ import { App, TFile } from 'obsidian';
 
 export class LoggerService {
 	private app: App;
-	private agenticVaultPath: string;
+	public agenticVaultPath: string;
 
 	constructor(app: App, agenticVaultPath: string) {
 		this.app = app;

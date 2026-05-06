@@ -377,47 +377,30 @@ export class ChatService {
 								}
 							}
 							if (parsed._INTERNAL_ALLOCATE_ZONES_TRIGGER) {
-								for (const trigger of parsed._INTERNAL_ALLOCATE_ZONES_TRIGGER) {
-									const { zone_id, path, description } = trigger;
-									if (zone_id === 'agentic_vault') {
-										const oldPath = this.plugin.settings.agenticVaultPath;
-										if (oldPath !== path) {
-											try {
-												const oldFolder = this.plugin.app.vault.getAbstractFileByPath(oldPath);
-												if (oldFolder) {
-													await this.plugin.app.fileManager.renameFile(oldFolder, path);
-												}
-												this.plugin.settings.agenticVaultPath = path;
-												await this.plugin.saveSettings();
-												this.plugin.logger.log('SYSTEM_INFO', { message: `Renamed agentic_vault to ${path}` });
-											} catch (err) {
-												this.plugin.logger.log('SYSTEM_ERROR', { message: `Failed to rename agentic_vault: ${err}` });
-											}
-										}
-									} else {
-										this.plugin.settings.zones[zone_id] = { path, description };
-										await this.plugin.saveSettings();
-										this.plugin.logger.log('SYSTEM_INFO', { message: `Dynamically allocated zone: ${zone_id} -> ${path}` });
-									}
-								}
-							}
-							if (parsed._INTERNAL_ALLOCATE_ZONES_TRIGGER) {
 								const { zones } = parsed._INTERNAL_ALLOCATE_ZONES_TRIGGER;
 								if (Array.isArray(zones)) {
 									for (const z of zones) {
 										const { zone_id, path, description } = z;
 										if (zone_id === 'agentic_vault' && path !== this.plugin.settings.agenticVaultPath) {
-											const oldPath = this.plugin.settings.agenticVaultPath;
-											const oldFolder = this.plugin.app.vault.getAbstractFileByPath(oldPath);
+											const oldPath = this.plugin.settings.rootFolder
+												? `${this.plugin.settings.rootFolder}/${this.plugin.settings.agenticVaultPath}`
+												: this.plugin.settings.agenticVaultPath;
+											const newPath = this.plugin.settings.rootFolder
+												? `${this.plugin.settings.rootFolder}/${path}`
+												: path;
+											
+											const { normalizePath } = await import('obsidian');
+											const oldFolder = this.plugin.app.vault.getAbstractFileByPath(normalizePath(oldPath));
 											if (oldFolder) {
 												try {
-													await this.plugin.app.fileManager.renameFile(oldFolder, path);
+													await this.plugin.app.fileManager.renameFile(oldFolder, normalizePath(newPath));
 													this.plugin.settings.agenticVaultPath = path;
-													await this.plugin.saveSettings();
 													this.plugin.logger.log('SYSTEM_INFO', { message: `Renamed agentic_vault to ${path}` });
 												} catch (err) {
 													this.plugin.logger.log('SYSTEM_ERROR', { message: `Failed to rename agentic_vault: ${err}` });
 												}
+											} else {
+												this.plugin.logger.log('SYSTEM_ERROR', { message: `Failed to rename agentic_vault: Could not find existing folder at ${oldPath}` });
 											}
 										} else {
 											this.plugin.settings.zones[zone_id] = { path, description };

@@ -11,10 +11,14 @@
             "id": "2ddb058f430e3898",
             "type": "leaf",
             "state": {
-              "type": "empty",
-              "state": {},
+              "type": "markdown",
+              "state": {
+                "file": "agentic_vault/fleets/para_career/personas/coo.md",
+                "mode": "source",
+                "source": true
+              },
               "icon": "lucide-file",
-              "title": "New tab"
+              "title": "coo"
             }
           }
         ]
@@ -189,9 +193,12 @@
       "obsidian-agentic-vault:Open Fleet Dashboard": false
     }
   },
-  "active": "c20ce31daeb904da",
+  "active": "2ddb058f430e3898",
   "lastOpenFiles": [
-    "90_agentic_vault",
+    "agentic_vault/fleets/para_career/personas/chief_of_staff.md",
+    "agentic_vault/fleets/para_career/personas/coo.md",
+    "agentic_vault/fleets/para_career/fleet.md",
+    "agentic_vault/fleets/core/fleet.md",
     "80_templates",
     "60_archives",
     "50_resources",
@@ -204,9 +211,6 @@
     "agentic_vault/fleets/para_career/tools/unreliable_math.md",
     "agentic_vault/fleets/para_career/tools/map_vault.md",
     "agentic_vault/fleets/para_career/tools/google_workspace.md",
-    "agentic_vault/fleets/para_career/personas/coo.md",
-    "agentic_vault/fleets/para_career/personas/chief_of_staff.md",
-    "agentic_vault/fleets/para_career/fleet.md",
     "agentic_vault/fleets/para_career/routines",
     "agentic_vault/fleets/para_career/skills",
     "agentic_vault/fleets/para_career/tools",
@@ -218,7 +222,6 @@
     "agentic_vault/fleets/core/tools/install_fleet.md",
     "agentic_vault/fleets/core/personas/pager.md",
     "agentic_vault/fleets/core/personas/concierge.md",
-    "agentic_vault/fleets/core/fleet.md",
     "agentic_vault/logs/Trace_Log.md",
     "AgenticVault/logs/sessions/2026-05-05T20-24-58-151Z_Session.md",
     "agentic_vault/fleets/para_career/tools/file_manager.md",

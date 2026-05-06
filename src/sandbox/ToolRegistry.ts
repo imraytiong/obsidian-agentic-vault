@@ -46,7 +46,7 @@ export class ToolRegistry {
 
 			for (const file of folder.children) {
 				if (file instanceof TFile && file.extension === 'md') {
-					const content = await this.app.vault.cachedRead(file);
+					const content = await this.app.vault.read(file);
 					let frontmatter: any = null;
 					
 					// Manually extract frontmatter to avoid cache race conditions on first boot

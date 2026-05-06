@@ -47,7 +47,7 @@ export class PersonaEngine {
 
 			for (const file of folder.children) {
 				if (file instanceof TFile && file.extension === 'md') {
-					const content = await this.app.vault.cachedRead(file);
+					const content = await this.app.vault.read(file);
 					
 					// Manually extract frontmatter in case metadataCache is still indexing newly created files
 					let frontmatter: Record<string, any> = {};

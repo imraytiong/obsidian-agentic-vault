@@ -135,26 +135,34 @@ export class GeminiProvider implements LLMProvider {
 
 		try {
 			console.log("Sending Gemini request...", body);
-			const requestPromise = requestUrl({
-				url,
+			
+			// DEBUG DUMP PAYLOAD
+			try {
+				const fs = require('fs');
+				const path = require('path');
+				const dumpPath = path.join(this.app.vault.adapter.getBasePath(), '.obsidian/plugins/obsidian-agentic-vault/gemini_payload_debug.json');
+				fs.writeFileSync(dumpPath, JSON.stringify(body, null, 2));
+			} catch (e) {}
+
+			const fetchPromise = fetch(url, {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify(body),
-				throw: false
+				body: JSON.stringify(body)
 			});
 			
 			const timeoutPromise = new Promise<never>((_, reject) => {
 				setTimeout(() => reject(new Error('Gemini API request timed out after 30 seconds')), 30000);
 			});
 
-			const res = await Promise.race([requestPromise, timeoutPromise]) as any;
+			const res = await Promise.race([fetchPromise, timeoutPromise]) as Response;
 			console.log("Received Gemini response:", res.status);
 
 			if (res.status !== 200) {
-				throw new Error(`Gemini API Error: ${res.text}`);
+				const text = await res.text();
+				throw new Error(`Gemini API Error: ${text}`);
 			}
 
-			const data = res.json;
+			const data = await res.json();
 			const candidate = data.candidates?.[0];
 			if (!candidate) throw new Error('No candidate returned from Gemini');
 

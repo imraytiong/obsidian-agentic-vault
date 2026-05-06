@@ -11,14 +11,10 @@
             "id": "2ddb058f430e3898",
             "type": "leaf",
             "state": {
-              "type": "markdown",
-              "state": {
-                "file": "agentic_vault/logs/Trace_Log.md",
-                "mode": "source",
-                "source": false
-              },
+              "type": "empty",
+              "state": {},
               "icon": "lucide-file",
-              "title": "Trace_Log"
+              "title": "New tab"
             }
           }
         ]
@@ -195,7 +191,7 @@
   },
   "active": "c20ce31daeb904da",
   "lastOpenFiles": [
-    "agentic_vault/logs/debug/debug_dump_1778032458952.json",
+    "agentic_vault/logs/debug/debug_dump_1778033013148.json",
     "agentic_vault/logs/debug",
     "agentic_vault/logs/routine_queue.json",
     "agentic_vault/fleets/core/tools/system_diagnostic.md",

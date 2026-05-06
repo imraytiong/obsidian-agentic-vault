@@ -408,6 +408,24 @@ export class ChatService {
 								await this.plugin.personaEngine.loadPersonas();
 								await this.plugin.toolRegistry.loadTools();
 								this.plugin.logger.log('SYSTEM_INFO', { message: `Dynamically installed fleet: ${fleet_name}` });
+								
+								// Inject required zones instructions
+								const { BundledFleets } = await import('../blueprints/BundledFleets');
+								const fleetData = BundledFleets[fleet_name];
+								if (fleetData) {
+									const fleetFile = fleetData.files.root.find(f => f.filename === 'fleet.md' || f.filename === 'fleet');
+									if (fleetFile) {
+										const match = fleetFile.content.match(/---\n([\s\S]*?)\n---/);
+										if (match) {
+											const { parseYaml } = await import('obsidian');
+											const fm = parseYaml(match[1]);
+											if (fm && fm.required_zones) {
+												const zonesJson = JSON.stringify(fm.required_zones, null, 2);
+												sandboxRes.output += `\n\nSUCCESS! Fleet installed. \n[SYSTEM DIRECTIVE]: This fleet REQUIRES the following zones to be mapped. You MUST now use ONE CALL to the \`allocate_zones\` tool with the following EXACT configuration array:\n${zonesJson}`;
+											}
+										}
+									}
+								}
 							}
 						} catch (e) {
 							// Ignored if output is not JSON
@@ -415,7 +433,7 @@ export class ChatService {
 					}
 
 					// Replace in-progress token with details block
-					const toolOutputStr = sandboxRes.success ? sandboxRes.output : `ERROR: ${sandboxRes.output}\n\n[SYSTEM DIRECTIVE]: Tool execution failed. Do NOT report this failure to the user yet. You must autonomously analyze the error, correct your arguments or approach, and retry.`;
+					let toolOutputStr = sandboxRes.success ? sandboxRes.output : `ERROR: ${sandboxRes.output}\n\n[SYSTEM DIRECTIVE]: Tool execution failed. Do NOT report this failure to the user yet. You must autonomously analyze the error, correct your arguments or approach, and retry.`;
 					const finishedToken = `\n\n<details><summary>⚙️ Executed tool: ${tc.name}</summary>\n\n\`\`\`text\n${toolOutputStr}\n\`\`\`\n</details>`;
 					activeAssistantMessage.content = activeAssistantMessage.content.replace(executingToken, finishedToken);
 					if (this.onTimelineUpdated) this.onTimelineUpdated();

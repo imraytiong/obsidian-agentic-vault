@@ -9,39 +9,53 @@ export class LoggerService {
 		this.agenticVaultPath = agenticVaultPath;
 	}
 
+	private isWriting = false;
+	private queue: {action: string, context: Record<string, unknown>}[] = [];
+
 	async log(action: string, context: Record<string, unknown> = {}) {
-		const timestamp = new Date().toISOString();
-		const logEntry = `\n### [${timestamp}] ${action}\n\`\`\`json\n${JSON.stringify(context, null, 2)}\n\`\`\`\n`;
+		this.queue.push({ action, context });
+		if (!this.isWriting) {
+			this.isWriting = true;
+			await this.processQueue();
+		}
+	}
 
-		if (!this.agenticVaultPath) return;
+	private async processQueue() {
+		while (this.queue.length > 0) {
+			const { action, context } = this.queue.shift()!;
+			const timestamp = new Date().toISOString();
+			const logEntry = `\n### [${timestamp}] ${action}\n\`\`\`json\n${JSON.stringify(context, null, 2)}\n\`\`\`\n`;
 
-		const logsDir = `${this.agenticVaultPath}/logs`;
-		const logFilePath = `${logsDir}/Trace_Log.md`;
+			if (!this.agenticVaultPath) continue;
 
-		try {
-			if (!this.app.vault.getAbstractFileByPath(logsDir)) {
-				await this.app.vault.createFolder(logsDir);
-			}
+			const logsDir = `${this.agenticVaultPath}/logs`;
+			const logFilePath = `${logsDir}/Trace_Log.md`;
 
-			let file = this.app.vault.getAbstractFileByPath(logFilePath);
-			
-			if (file instanceof TFile) {
-				await this.app.vault.append(file, logEntry);
-			} else {
-				// File doesn't exist, create it with a header
-				const header = `# Agentic Vault Trace Log\n\nThis file is autonomously generated to provide a deterministic ReAct audit trail.\n`;
-				try {
-					await this.app.vault.create(logFilePath, header + logEntry);
-				} catch (e: any) {
-					if (e.message && e.message.includes('already exists')) {
-						await this.app.vault.adapter.append(logFilePath, logEntry);
-					} else {
-						console.error("Agentic Vault Logger Error:", e);
+			try {
+				if (!this.app.vault.getAbstractFileByPath(logsDir)) {
+					try { await this.app.vault.createFolder(logsDir); } catch(e){}
+				}
+
+				let file = this.app.vault.getAbstractFileByPath(logFilePath);
+				
+				if (file instanceof TFile) {
+					await this.app.vault.append(file, logEntry);
+				} else {
+					const header = `# Agentic Vault Trace Log\n\nThis file is autonomously generated to provide a deterministic ReAct audit trail.\n`;
+					try {
+						await this.app.vault.create(logFilePath, header + logEntry);
+					} catch (e: any) {
+						if (e.message && e.message.includes('already exists')) {
+							await this.app.vault.adapter.append(logFilePath, logEntry);
+						} else {
+							console.error("Agentic Vault Logger Error:", e);
+						}
 					}
 				}
+			} catch (error) {
+				console.error("Agentic Vault Logger Error:", error);
 			}
-		} catch (error) {
-			console.error("Agentic Vault Logger Error:", error);
 		}
+		this.isWriting = false;
 	}
 }

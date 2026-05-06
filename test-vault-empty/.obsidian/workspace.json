@@ -11,10 +11,14 @@
             "id": "2ddb058f430e3898",
             "type": "leaf",
             "state": {
-              "type": "empty",
-              "state": {},
+              "type": "markdown",
+              "state": {
+                "file": "agentic_vault/logs/Trace_Log.md",
+                "mode": "preview",
+                "source": false
+              },
               "icon": "lucide-file",
-              "title": "New tab"
+              "title": "Trace_Log"
             }
           }
         ]
@@ -74,7 +78,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 300
+    "width": 230.5
   },
   "right": {
     "id": "09392ec77d69a733",
@@ -167,13 +171,23 @@
               "icon": "lucide-file",
               "title": "Agentic Vault Chat"
             }
+          },
+          {
+            "id": "954da0844b251e27",
+            "type": "leaf",
+            "state": {
+              "type": "fleet-dashboard-view",
+              "state": {},
+              "icon": "activity",
+              "title": "Fleet Dashboard"
+            }
           }
         ],
-        "currentTab": 5
+        "currentTab": 6
       }
     ],
     "direction": "horizontal",
-    "width": 863.5
+    "width": 750.5
   },
   "left-ribbon": {
     "hiddenItems": {
@@ -189,7 +203,7 @@
       "obsidian-agentic-vault:Open Fleet Dashboard": false
     }
   },
-  "active": "40600c2ab64fa87a",
+  "active": "954da0844b251e27",
   "lastOpenFiles": [
     "agentic_vault/logs/routine_queue.json",
     "agentic_vault/fleets/core/tools/system_diagnostic.md",
@@ -205,12 +219,11 @@
     "agentic_vault/fleets/core/tools",
     "agentic_vault/fleets/core/personas",
     "agentic_vault/fleets/core",
-    "agentic_vault/logs",
     "agentic_vault/memory",
     "agentic_vault/fleets",
-    "agentic_vault",
-    "agentic_vault/logs/debug/dashboard_dump_1778030645066.json",
     "agentic_vault/logs/Trace_Log.md",
+    "agentic_vault/logs",
+    "agentic_vault",
     "agentic_vault/fleets/para_career/tools/web_search.md",
     "agentic_vault/fleets/para_career/tools/update_memory.md",
     "agentic_vault/fleets/para_career/tools/unreliable_math.md",

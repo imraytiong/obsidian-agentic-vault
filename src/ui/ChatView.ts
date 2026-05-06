@@ -147,43 +147,50 @@ export class AgenticVaultChatView extends ItemView {
 			.setButtonText('Save & Wake Up')
 			.setCta()
 			.onClick(async () => {
-				const key = input.value.trim();
-				const folderName = folderInput.value.trim();
-				if (!key) {
-					new Notice('API Key is required.');
-					return;
+				try {
+					const key = input.value.trim();
+					const folderName = folderInput.value.trim();
+					if (!key) {
+						new Notice('API Key is required.');
+						return;
+					}
+					if (!folderName) {
+						new Notice('Installation folder is required.');
+						return;
+					}
+					
+					this.plugin.settings.llmProvider = providerSelect.value as any;
+					this.plugin.settings.llmApiKey = key;
+					this.plugin.settings.agenticVaultPath = folderName;
+					// llmModel is automatically saved when modelSelect changes
+					await this.plugin.saveSettings();
+					
+					// Initialize the directories now that the user has opted in
+					this.plugin.logger.log('DEBUG_TRACE_SAVE_BTN', { step: 'initializing architecture' });
+					await this.plugin.initializeFleetArchitecture();
+					
+					this.plugin.logger.log('DEBUG_TRACE_SAVE_BTN', { step: 'rendering chat interface' });
+					contentEl.empty();
+					this.renderChatInterface(contentEl);
+					
+					// Set active persona to Concierge
+					this.activePersona = 'Concierge';
+					if (this.personaIndicatorEl) {
+						this.personaIndicatorEl.setText(`Speaking to: ${this.activePersona}`);
+					}
+					this.plugin.logger.log('DEBUG_TRACE_SAVE_BTN', { step: 'done' });
+				} catch (e: any) {
+					console.error("CRASH IN SAVE BTN:", e);
+					new Notice("Save Btn CRASH: " + e.message, 10000);
+					this.plugin.logger.log('FATAL_CRASH_SAVE_BTN', { error: e.message, stack: e.stack });
 				}
-				if (!folderName) {
-					new Notice('Installation folder is required.');
-					return;
-				}
-				
-				this.plugin.settings.llmProvider = providerSelect.value as any;
-				this.plugin.settings.llmApiKey = key;
-				this.plugin.settings.agenticVaultPath = folderName;
-				// llmModel is automatically saved when modelSelect changes
-				await this.plugin.saveSettings();
-				
-				// Initialize the directories now that the user has opted in
-				this.plugin.logger.log('DEBUG_TRACE_SAVE_BTN', { step: 'initializing architecture' });
-				await this.plugin.initializeFleetArchitecture();
-				
-				this.plugin.logger.log('DEBUG_TRACE_SAVE_BTN', { step: 'rendering chat interface' });
-				contentEl.empty();
-				this.renderChatInterface(contentEl);
-				
-				// Set active persona to Concierge
-				this.activePersona = 'Concierge';
-				if (this.personaIndicatorEl) {
-					this.personaIndicatorEl.setText(`Speaking to: ${this.activePersona}`);
-				}
-				this.plugin.logger.log('DEBUG_TRACE_SAVE_BTN', { step: 'done' });
 			});
 	}
 
 	renderChatInterface(contentEl: HTMLElement) {
-		contentEl.style.display = 'flex';
-		contentEl.style.flexDirection = 'column';
+		try {
+			contentEl.style.display = 'flex';
+			contentEl.style.flexDirection = 'column';
 		contentEl.style.height = '100%';
 
 		const tabBar = contentEl.createDiv({ cls: 'chat-tab-bar' });
@@ -284,6 +291,11 @@ export class AgenticVaultChatView extends ItemView {
 					console.error(e);
 				}
 			}, 1000);
+		}
+		} catch (error: any) {
+			console.error("FATAL CRASH in renderChatInterface:", error);
+			new Notice(`renderChatInterface CRASH: ${error.message}`, 10000);
+			this.plugin.logger.log('FATAL_CRASH_RENDER', { error: error.message, stack: error.stack });
 		}
 	}
 

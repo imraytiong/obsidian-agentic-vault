@@ -69,7 +69,7 @@ export class ChatService {
 		this.backgroundTasks.delete(taskId);
 	}
 
-	async sendMessage(message: string, personaName: string, senderOverride?: string, taskId?: string, isInternalHandoff: boolean = false): Promise<string> {
+	async sendMessage(message: string, personaName: string, senderOverride?: string, taskId?: string, isInternalHandoff: boolean = false, roleOverride?: 'system' | 'user'): Promise<string> {
 		if (taskId) {
 			this.backgroundTasks.add(taskId);
 		} else {
@@ -97,7 +97,7 @@ export class ChatService {
 			
 			if (message) {
 				const msgPersona = senderOverride || personaName;
-				const newMsg: LLMMessage = { role: 'user', content: message, persona: msgPersona };
+				const newMsg: LLMMessage = { role: roleOverride || 'user', content: message, persona: msgPersona };
 				history.push(newMsg);
 				
 				if (!taskId) {

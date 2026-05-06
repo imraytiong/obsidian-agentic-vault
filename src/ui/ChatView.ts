@@ -266,18 +266,15 @@ export class AgenticVaultChatView extends ItemView {
 			
 			setTimeout(async () => {
 				new Notice("Onboarding timeout fired. Initializing system...");
-				// We don't want to show the user's prompt in the UI, so we just add a "System" message saying we're booting up
-				this.plugin.chatService.unifiedTimeline.push({ role: 'assistant', content: 'Initializing Agentic Vault for the first time...', persona: 'System' });
-				this.renderHistory();
 				
 				this.plugin.settings.hasCompletedOnboarding = true;
 				await this.plugin.saveSettings();
 				
-				const sysPrompt = "I am a new user and I just booted up my vault for the very first time. Please introduce yourself, explain Semantic Zones, and offer me the setup options.";
+				const sysPrompt = "System Initialized. A new user has just booted up their vault for the very first time. Please introduce yourself, explain Semantic Zones, and offer them the setup options.";
 				try {
 					this.plugin.logger.log('DEBUG_TRACE_ONBOARDING_SEND', { persona: 'Concierge' });
 					new Notice("Sending prompt to Concierge...");
-					const responseMsg = await this.plugin.chatService.sendMessage(sysPrompt, 'Concierge');
+					const responseMsg = await this.plugin.chatService.sendMessage(sysPrompt, 'Concierge', 'System', undefined, false, 'system');
 					if (responseMsg && responseMsg.startsWith("Error")) {
 						this.plugin.logger.log('DEBUG_TRACE_ONBOARDING_ERROR_RETURNED', { error: responseMsg });
 						new Notice("Concierge returned an error: " + responseMsg);
@@ -931,43 +928,10 @@ export class AgenticVaultChatView extends ItemView {
 			if (!this.messagesContainerEl.contains(msgEl)) return;
 			// Handle Native UI Options
 			const isLatest = msg === this.plugin.chatService.unifiedTimeline[this.plugin.chatService.unifiedTimeline.length - 1];
-			
-			if (msg.uiOptions && msg.uiOptions.options.length > 0) {
+			if (msg.uiOptions && msg.uiOptions.options.length > 0 && isLatest && this.optionsContainerEl && this.inputRow) {
 				const opts = msg.uiOptions;
 				
-				if (!isLatest) {
-					// Render historical options
-					const historyDiv = contentDiv.createDiv();
-					historyDiv.style.marginTop = '12px';
-					historyDiv.style.display = 'flex';
-					historyDiv.style.flexWrap = 'wrap';
-					historyDiv.style.gap = '8px';
-					
-					// Determine what was selected by looking at the next user message
-					let selectedOptions: string[] = [];
-					const msgIndex = this.plugin.chatService.unifiedTimeline.indexOf(msg);
-					if (msgIndex >= 0 && msgIndex < this.plugin.chatService.unifiedTimeline.length - 1) {
-						const nextMsg = this.plugin.chatService.unifiedTimeline[msgIndex + 1];
-						if (nextMsg.role === 'user') {
-							selectedOptions = opts.options.filter(opt => nextMsg.content.includes(opt));
-						}
-					}
-					
-					opts.options.forEach(optText => {
-						const isSelected = selectedOptions.includes(optText);
-						const pill = document.createElement('div');
-						pill.textContent = optText;
-						pill.style.padding = '4px 10px';
-						pill.style.borderRadius = '12px';
-						pill.style.fontSize = '0.85em';
-						pill.style.border = isSelected ? '1px solid var(--interactive-accent)' : '1px solid var(--background-modifier-border)';
-						pill.style.backgroundColor = isSelected ? 'var(--interactive-accent)' : 'transparent';
-						pill.style.color = isSelected ? 'var(--text-on-accent)' : 'var(--text-muted)';
-						pill.style.opacity = isSelected ? '1' : '0.6';
-						historyDiv.appendChild(pill);
-					});
-				} else if (this.optionsContainerEl && this.inputRow) {
-					// Render active options
+				// Render active options
 					this.optionsContainerEl.empty();
 					this.optionsContainerEl.style.display = 'flex';
 					
@@ -1085,6 +1049,40 @@ export class AgenticVaultChatView extends ItemView {
 							}
 						};
 						this.optionsContainerEl.appendChild(escapeBtn);
+					}
+				}
+
+
+			// Render Historical Options in User Message
+			if (msg.role === 'user') {
+				const msgIndex = this.plugin.chatService.unifiedTimeline.indexOf(msg);
+				if (msgIndex > 0) {
+					const prevMsg = this.plugin.chatService.unifiedTimeline[msgIndex - 1];
+					if (prevMsg.uiOptions && prevMsg.uiOptions.options.length > 0) {
+						const opts = prevMsg.uiOptions;
+						const selectedOptions = opts.options.filter(opt => msg.content.includes(opt));
+						
+						if (selectedOptions.length > 0) {
+							contentDiv.empty();
+							const historyDiv = contentDiv.createDiv();
+							historyDiv.style.display = 'flex';
+							historyDiv.style.flexWrap = 'wrap';
+							historyDiv.style.gap = '8px';
+							
+							opts.options.forEach(optText => {
+								const isSelected = selectedOptions.includes(optText);
+								const pill = document.createElement('div');
+								pill.textContent = optText;
+								pill.style.padding = '4px 10px';
+								pill.style.borderRadius = '12px';
+								pill.style.fontSize = '0.85em';
+								pill.style.border = isSelected ? '1px solid var(--interactive-accent)' : '1px solid var(--background-modifier-border)';
+								pill.style.backgroundColor = isSelected ? 'var(--interactive-accent)' : 'transparent';
+								pill.style.color = isSelected ? 'var(--text-on-accent)' : 'var(--text-muted)';
+								pill.style.opacity = isSelected ? '1' : '0.6';
+								historyDiv.appendChild(pill);
+							});
+						}
 					}
 				}
 			}

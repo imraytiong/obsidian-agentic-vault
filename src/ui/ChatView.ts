@@ -165,16 +165,19 @@ export class AgenticVaultChatView extends ItemView {
 				await this.plugin.saveSettings();
 				
 				// Initialize the directories now that the user has opted in
+				this.plugin.logger.log('DEBUG_TRACE_SAVE_BTN', { step: 'initializing architecture' });
 				await this.plugin.initializeFleetArchitecture();
 				
+				this.plugin.logger.log('DEBUG_TRACE_SAVE_BTN', { step: 'rendering chat interface' });
 				contentEl.empty();
 				this.renderChatInterface(contentEl);
 				
 				// Set active persona to Concierge
 				this.activePersona = 'Concierge';
 				if (this.personaIndicatorEl) {
-					this.personaIndicatorEl.setText(`Agent: ${this.activePersona}`);
+					this.personaIndicatorEl.setText(`Speaking to: ${this.activePersona}`);
 				}
+				this.plugin.logger.log('DEBUG_TRACE_SAVE_BTN', { step: 'done' });
 			});
 	}
 
@@ -243,7 +246,13 @@ export class AgenticVaultChatView extends ItemView {
 		);
 
 		// Trigger Concierge Onboarding
+		this.plugin.logger.log('DEBUG_TRACE_ONBOARDING_CHECK', { 
+			hasCompletedOnboarding: this.plugin.settings.hasCompletedOnboarding,
+			hasCompletedOnboardingType: typeof this.plugin.settings.hasCompletedOnboarding
+		});
+		
 		if (!this.plugin.settings.hasCompletedOnboarding) {
+			this.plugin.logger.log('DEBUG_TRACE_ONBOARDING_START', { message: "Condition passed. Triggering Concierge." });
 			new Notice("Triggering Concierge Onboarding...");
 			this.activePersona = 'Concierge';
 			if (this.personaIndicatorEl) this.personaIndicatorEl.setText(`Speaking to: ${this.activePersona}`);
@@ -259,10 +268,18 @@ export class AgenticVaultChatView extends ItemView {
 				
 				const sysPrompt = "I am a new user and I just booted up my vault for the very first time. Please introduce yourself, explain Semantic Zones, and offer me the setup options.";
 				try {
+					this.plugin.logger.log('DEBUG_TRACE_ONBOARDING_SEND', { persona: 'Concierge' });
 					new Notice("Sending prompt to Concierge...");
-					await this.plugin.chatService.sendMessage(sysPrompt, 'Concierge');
-					new Notice("Concierge response received.");
+					const err = await this.plugin.chatService.sendMessage(sysPrompt, 'Concierge');
+					if (err) {
+						this.plugin.logger.log('DEBUG_TRACE_ONBOARDING_ERROR_RETURNED', { error: err });
+						new Notice("Concierge returned an error: " + err);
+					} else {
+						this.plugin.logger.log('DEBUG_TRACE_ONBOARDING_SUCCESS', { message: "Message sent successfully" });
+						new Notice("Concierge response received.");
+					}
 				} catch (e: any) {
+					this.plugin.logger.log('DEBUG_TRACE_ONBOARDING_CRASH', { error: e.message });
 					new Notice("Error sending onboarding prompt: " + e.message);
 					console.error(e);
 				}

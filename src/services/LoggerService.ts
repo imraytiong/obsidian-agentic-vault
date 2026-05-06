@@ -16,7 +16,13 @@ export class LoggerService {
 		this.queue.push({ action, context });
 		if (!this.isWriting) {
 			this.isWriting = true;
-			await this.processQueue();
+			this.processQueue(); // Fire and forget
+		}
+	}
+
+	async waitForFlush() {
+		while (this.isWriting || this.queue.length > 0) {
+			await new Promise(resolve => setTimeout(resolve, 50));
 		}
 	}
 

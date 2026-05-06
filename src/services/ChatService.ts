@@ -392,6 +392,7 @@ export class ChatService {
 											const oldFolder = this.plugin.app.vault.getAbstractFileByPath(normalizePath(oldPath));
 											if (oldFolder) {
 												try {
+													await this.plugin.logger.waitForFlush();
 													await this.plugin.app.fileManager.renameFile(oldFolder, normalizePath(newPath));
 													this.plugin.settings.agenticVaultPath = path;
 													this.plugin.logger.agenticVaultPath = normalizePath(newPath);

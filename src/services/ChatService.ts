@@ -1,6 +1,6 @@
 import type AgenticVaultPlugin from '../main';
 import { LLMMessage, LLMProvider } from "../llm/LLMProvider";
-import { parseYaml } from "obsidian";
+import { parseYaml, normalizePath } from "obsidian";
 import { GeminiProvider } from "../llm/GeminiProvider";
 import { OpenAIProvider } from "../llm/OpenAIProvider";
 
@@ -389,14 +389,13 @@ export class ChatService {
 												? `${this.plugin.settings.rootFolder}/${path}`
 												: path;
 											
-											const { normalizePath } = await import('obsidian');
 											const oldFolder = this.plugin.app.vault.getAbstractFileByPath(normalizePath(oldPath));
 											if (oldFolder) {
 												try {
 													await this.plugin.app.fileManager.renameFile(oldFolder, normalizePath(newPath));
 													this.plugin.settings.agenticVaultPath = path;
 													this.plugin.logger.log('SYSTEM_INFO', { message: `Renamed agentic_vault to ${path}` });
-												} catch (err) {
+												} catch (err: any) {
 													this.plugin.logger.log('SYSTEM_ERROR', { message: `Failed to rename agentic_vault: ${err}` });
 												}
 											} else {
@@ -436,8 +435,10 @@ export class ChatService {
 									}
 								}
 							}
-						} catch (e) {
-							// Ignored if output is not JSON
+						} catch (e: any) {
+							if (sandboxRes.metadata && sandboxRes.metadata.stdout && sandboxRes.metadata.stdout.includes('_INTERNAL_')) {
+								this.plugin.logger.log('SYSTEM_ERROR', { message: `Failed to process internal trigger: ${e}` });
+							}
 						}
 					}
 

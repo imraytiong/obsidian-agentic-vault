@@ -25,3 +25,6 @@ data.json
 test-vault/.obsidian/workspace.json
 test-vault/.obsidian/workspace-mobile.json
 test-vault/.obsidian/plugins/obsidian-agentic-vault/
+
+test-vault*/
+empty-vault/

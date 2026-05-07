@@ -1,25 +1,27 @@
-import { requestUrl } from 'obsidian';
 import { LLMMessage, LLMProvider, LLMResponse } from './LLMProvider';
 import { ToolDefinition } from '../sandbox/ToolRegistry';
+import type { INetwork } from '../core/interfaces/Environment';
 
 export class OpenAIProvider implements LLMProvider {
 	private apiKey: string;
 	private model: string;
 	private baseUrl: string;
+	private network: INetwork;
 
-	constructor(apiKey: string, model: string, baseUrl: string) {
+	constructor(apiKey: string, model: string, baseUrl: string, network: INetwork) {
 		this.apiKey = apiKey;
 		this.model = model || 'gpt-4o-mini';
 		this.baseUrl = baseUrl || 'https://api.openai.com/v1';
+		this.network = network;
 	}
 
-	static async fetchAvailableModels(apiKey: string, baseUrl: string): Promise<string[]> {
+	static async fetchAvailableModels(apiKey: string, baseUrl: string, network: INetwork): Promise<string[]> {
 		const base = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
 		const url = `${base}/models`;
 		const headers: Record<string, string> = {};
 		if (apiKey) headers['Authorization'] = `Bearer ${apiKey}`;
 
-		const res = await requestUrl({ url, method: 'GET', headers });
+		const res = await network.request({ url, method: 'GET', headers });
 		if (res.status !== 200) throw new Error(`API Error: ${res.status}`);
 		
 		const data = res.json;
@@ -28,7 +30,7 @@ export class OpenAIProvider implements LLMProvider {
 		return data.data.map((m: unknown) => m.id);
 	}
 
-	async generateResponse(messages: LLMMessage[], tools: ToolDefinition[]): Promise<LLMResponse> {
+	async generateResponse(messages: LLMMessage[], tools: ToolDefinition[], signal?: AbortSignal): Promise<LLMResponse> {
 		const base = this.baseUrl.endsWith('/') ? this.baseUrl.slice(0, -1) : this.baseUrl;
 		const url = `${base}/chat/completions`;
 		
@@ -90,12 +92,25 @@ export class OpenAIProvider implements LLMProvider {
 		}
 
 		try {
-			const res = await requestUrl({
+			const fetchPromise = this.network.request({
 				url,
 				method: 'POST',
 				headers,
 				body: JSON.stringify(body)
 			});
+			
+			const timeoutPromise = new Promise<never>((_, reject) => {
+				setTimeout(() => reject(new Error('OpenAI API request timed out after 300 seconds. Generation may have been too large or the API is under heavy load.')), 300000);
+			});
+			
+			const abortPromise = new Promise<never>((_, reject) => {
+				if (signal) {
+					if (signal.aborted) reject(new Error('Aborted by user.'));
+					signal.addEventListener('abort', () => reject(new Error('Aborted by user.')));
+				}
+			});
+
+			const res = await Promise.race([fetchPromise, timeoutPromise, abortPromise]) as any;
 
 			if (res.status !== 200) {
 				throw new Error(`OpenAI API Error: ${res.text}`);

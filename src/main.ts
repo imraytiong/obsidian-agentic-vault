@@ -16,6 +16,8 @@ import { ApprovalQueueManager } from "./core/ApprovalQueueManager";
 import { TFile, Notice, WorkspaceLeaf } from 'obsidian';
 import { FleetDashboardView, VIEW_TYPE_FLEET_DASHBOARD } from "./ui/FleetDashboardView";
 import { InitializationEngine } from "./core/InitializationEngine";
+import type { AgenticContext } from "./core/interfaces/Environment";
+import { ObsidianFileSystem, ObsidianNetwork, ObsidianUI, ObsidianProcessRunner } from "./adapters/ObsidianAdapter";
 
 export default class AgenticVaultPlugin extends Plugin {
 	settings: AgenticVaultSettings;
@@ -29,6 +31,7 @@ export default class AgenticVaultPlugin extends Plugin {
 	executionSandbox: ExecutionSandbox;
 	routineManager: RoutineManager;
 	approvalQueue: ApprovalQueueManager;
+	context: AgenticContext;
 
 	async onload() {
 		try {
@@ -36,17 +39,36 @@ export default class AgenticVaultPlugin extends Plugin {
 		await this.loadSettings();
 		const agenticVaultPath = this.settings.agenticVaultPath;
 
+		this.context = {
+			fs: new ObsidianFileSystem(this.app),
+			network: new ObsidianNetwork(),
+			ui: new ObsidianUI(),
+			runner: new ObsidianProcessRunner(),
+			settings: this.settings,
+			saveSettings: async () => await this.saveSettings()
+		};
+
 		// Initialize services
 		this.logger = new LoggerService(this.app, agenticVaultPath);
 		this.personaEngine = new PersonaEngine(this.app, agenticVaultPath);
 		this.toolRegistry = new ToolRegistry(this.app, this.settings);
-		this.executionSandbox = new ExecutionSandbox(this.app, this.logger, this.toolRegistry, this.settings);
+		this.executionSandbox = new ExecutionSandbox(this.context, this.logger, this.toolRegistry, this.settings);
 		this.skillsEngine = new SkillsEngine(this.app, agenticVaultPath);
 		this.mcpEngine = new McpEngine(this.app, agenticVaultPath, this.settings.customEnvPath);
 		this.chatService = new ChatService(this);
 		this.routineManager = new RoutineManager(this.app, agenticVaultPath);
 		this.approvalQueue = new ApprovalQueueManager(this.app, agenticVaultPath);
 		this.triggerParser = new TriggerParser(this.app, this.logger, this.executionSandbox, this.routineManager, this.chatService);
+
+		// Wire up context engines
+		this.context.logger = this.logger;
+		this.context.personaEngine = this.personaEngine;
+		this.context.toolRegistry = this.toolRegistry;
+		this.context.executionSandbox = this.executionSandbox;
+		this.context.routineManager = this.routineManager;
+		this.context.approvalQueue = this.approvalQueue;
+		this.context.mcpEngine = this.mcpEngine;
+		this.context.chatService = this.chatService;
 
 		// Initialize Fleet Architecture (only if they have passed the onboarding gateway)
 		if (this.settings.llmApiKey) {

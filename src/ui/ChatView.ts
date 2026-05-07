@@ -78,10 +78,10 @@ export class AgenticVaultChatView extends ItemView {
 					let models: string[] = [];
 					if (providerSelect.value === 'openai') {
 						const { OpenAIProvider } = await import('../llm/OpenAIProvider');
-						models = await OpenAIProvider.fetchAvailableModels(apiKey, this.plugin.settings.llmBaseUrl);
+						models = await OpenAIProvider.fetchAvailableModels(apiKey, this.plugin.settings.llmBaseUrl, this.plugin.context.network);
 					} else {
 						const { GeminiProvider } = await import('../llm/GeminiProvider');
-						models = await GeminiProvider.fetchAvailableModels(apiKey);
+						models = await GeminiProvider.fetchAvailableModels(apiKey, this.plugin.context.network);
 					}
 					
 					this.plugin.settings.availableModels = models;
@@ -487,7 +487,7 @@ export class AgenticVaultChatView extends ItemView {
 		bgSendBtn.addEventListener('mouseenter', () => bgSendBtn.style.color = 'var(--interactive-accent)');
 		bgSendBtn.addEventListener('mouseleave', () => bgSendBtn.style.color = 'var(--text-muted)');
 
-		const sendBtn = btnContainer.createEl('button');
+		const sendBtn = btnContainer.createEl('button', { cls: 'chat-submit-btn' });
 		sendBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>`;
 		sendBtn.title = "Send (Enter)";
 		sendBtn.style.padding = '6px';
@@ -731,6 +731,19 @@ export class AgenticVaultChatView extends ItemView {
 			
 			const statusText = this.plugin.chatService.currentStatus || `${this.activePersona} is thinking...`;
 			msgEl.createSpan({ text: statusText });
+			
+			const interruptBtn = msgEl.createEl('button', { text: 'Interrupt' });
+			interruptBtn.style.marginLeft = 'auto';
+			interruptBtn.style.padding = '4px 8px';
+			interruptBtn.style.fontSize = '0.8em';
+			interruptBtn.style.backgroundColor = 'var(--background-modifier-error)';
+			interruptBtn.style.color = 'var(--text-on-accent)';
+			interruptBtn.style.border = 'none';
+			interruptBtn.style.borderRadius = '4px';
+			interruptBtn.style.cursor = 'pointer';
+			interruptBtn.onclick = () => {
+				this.plugin.chatService.abortProcessing();
+			};
 		}
 		
 		this.messagesContainerEl.scrollTop = this.messagesContainerEl.scrollHeight;
@@ -1179,7 +1192,8 @@ export class AgenticVaultChatView extends ItemView {
 						
 						this.plugin.chatService.persistState();
 
-						const submitBtn = this.containerEl.querySelector('.chat-submit-btn') as HTMLButtonElement;
+						const chatSubmitBtn = this.containerEl.querySelector('.chat-submit-btn') as HTMLButtonElement;
+						if (chatSubmitBtn) chatSubmitBtn.disabled = true;
 						submitBtn.disabled = true;
 
 						try {
@@ -1187,6 +1201,7 @@ export class AgenticVaultChatView extends ItemView {
 						} catch (error) {
 							console.error(error);
 						} finally {
+							if (chatSubmitBtn) chatSubmitBtn.disabled = false;
 							submitBtn.disabled = false;
 						}
 					};

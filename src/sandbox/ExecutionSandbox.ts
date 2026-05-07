@@ -1,18 +1,16 @@
-import { App } from 'obsidian';
 import { LoggerService } from '../services/LoggerService';
 import { ToolRegistry } from './ToolRegistry';
-import { spawn } from 'child_process';
-
 import { AgenticVaultSettings } from '../settings';
+import type { AgenticContext } from '../core/interfaces/Environment';
 
 export class ExecutionSandbox {
-	private app: App;
+	private context: AgenticContext;
 	private logger: LoggerService;
 	private toolRegistry: ToolRegistry;
 	private settings: AgenticVaultSettings;
 
-	constructor(app: App, logger: LoggerService, toolRegistry: ToolRegistry, settings: AgenticVaultSettings) {
-		this.app = app;
+	constructor(context: AgenticContext, logger: LoggerService, toolRegistry: ToolRegistry, settings: AgenticVaultSettings) {
+		this.context = context;
 		this.logger = logger;
 		this.toolRegistry = toolRegistry;
 		this.settings = settings;
@@ -32,7 +30,7 @@ export class ExecutionSandbox {
 				enrichedPayload = { 
 					...payload, 
 					__ZONES__: this.settings.zones,
-					__VAULT_ROOT__: (this.app.vault.adapter as any).basePath || ''
+					__VAULT_ROOT__: this.context.fs.getBasePath() || ''
 				};
 			}
 			const payloadString = JSON.stringify(enrichedPayload);
@@ -74,20 +72,9 @@ export class ExecutionSandbox {
 				return { success: false, output: `Unsupported language block: ${lang}` };
 			}
 
-			const output = await new Promise<{stdout: string, stderr: string}>((resolve, reject) => {
-				const augmentedEnv = { ...process.env, PATH: `${this.settings.customEnvPath}:${process.env.PATH || ''}` };
-				const vaultPath = (this.app.vault.adapter as unknown as any).getBasePath ? (this.app.vault.adapter as unknown as any).getBasePath() : process.cwd();
-				const child = spawn(exe, args, { env: augmentedEnv, cwd: vaultPath });
-				let stdout = '';
-				let stderr = '';
-				child.stdout.on('data', (d: unknown) => stdout += d.toString());
-				child.stderr.on('data', (d: unknown) => stderr += d.toString());
-				child.on('close', (code: number) => {
-					if (code === 0) resolve({stdout, stderr});
-					else reject(new Error(stdout || stderr || `Process exited with code ${code}`));
-				});
-				child.on('error', (err: unknown) => reject(err));
-			});
+			const augmentedEnv = { ...process.env, PATH: `${this.settings.customEnvPath}:${process.env.PATH || ''}` } as Record<string, string>;
+			const vaultPath = this.context.fs.getBasePath() ? this.context.fs.getBasePath() : process.cwd();
+			const output = await this.context.runner.run(exe, args, vaultPath, augmentedEnv);
 			
 			if (output.stderr) {
 				this.logger.log('SANDBOX_EXECUTION_STDERR', { tool: toolName, stderr: output.stderr });
@@ -104,7 +91,7 @@ export class ExecutionSandbox {
 			if (parsedOutput && Array.isArray(parsedOutput.side_effects)) {
 				for (const effect of parsedOutput.side_effects) {
 					if (!effect.path) continue;
-					const exists = await this.app.vault.adapter.exists(effect.path);
+					const exists = await this.context.fs.exists(effect.path);
 					if (effect.type === 'write' || effect.type === 'mkdir') {
 						if (!exists) {
 							const errorMsg = `VERIFICATION_FAILED: The tool reported success, but the file system verification failed. The path '${effect.path}' does not exist on disk.`;

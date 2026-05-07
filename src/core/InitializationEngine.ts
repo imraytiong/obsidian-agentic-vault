@@ -43,7 +43,7 @@ export class InitializationEngine {
 		await this.ensureFolder(fleetDir);
 
 		// Unpack subdirectories
-		const categories = ['personas', 'tools', 'skills', 'routines'];
+		const categories = ['personas', 'tools', 'skills', 'routines', 'templates'];
 		for (const cat of categories) {
 			await this.ensureFolder(normalizePath(`${fleetDir}/${cat}`));
 		}

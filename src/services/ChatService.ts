@@ -18,10 +18,14 @@ export class ChatService {
 	isProcessing: boolean = false;
 	backgroundTasks: Set<string> = new Set();
 	currentStatus: string = '';
+	abortController?: AbortController;
 	private nativeToolHandler: NativeToolHandler;
 
-	constructor(plugin: AgenticVaultPlugin) {
+	private provider?: LLMProvider;
+
+	constructor(plugin: AgenticVaultPlugin, provider?: LLMProvider) {
 		this.plugin = plugin;
+		this.provider = provider;
 		this.nativeToolHandler = new NativeToolHandler(this.plugin);
 		if (this.plugin.settings.chatState) {
 			this.unifiedTimeline = this.plugin.settings.chatState.unifiedTimeline || [];
@@ -53,16 +57,23 @@ export class ChatService {
 	}
 
 	private getProvider(): LLMProvider {
+		if (this.provider) {
+			console.log('Using configured provider:', this.provider.constructor.name);
+			return this.provider;
+		}
+		console.log('Using GeminiProvider fallback!');
 		if (this.plugin.settings.llmProvider === 'openai') {
 			return new OpenAIProvider(
 				this.plugin.settings.llmApiKey,
 				this.plugin.settings.llmModel,
-				this.plugin.settings.llmBaseUrl
+				this.plugin.settings.llmBaseUrl,
+				this.plugin.context.network
 			);
 		}
 		return new GeminiProvider(
 			this.plugin.settings.llmApiKey,
-			this.plugin.settings.llmModel
+			this.plugin.settings.llmModel,
+			this.plugin.context.network
 		);
 	}
 
@@ -78,6 +89,7 @@ export class ChatService {
 				throw new Error("ChatService is already processing a request.");
 			}
 			this.isProcessing = true;
+			this.abortController = new AbortController();
 			if (this.onTimelineUpdated) this.onTimelineUpdated();
 		}
 
@@ -246,7 +258,7 @@ export class ChatService {
 				if (this.onTimelineUpdated) this.onTimelineUpdated();
 			}
 
-			let llmResponse = await provider.generateResponse(payload, tools);
+			let llmResponse = await provider.generateResponse(payload, tools, this.abortController?.signal);
 			this.plugin.logger.log('LLM_RAW_RESPONSE', llmResponse);
 
 			if (!isStillActive()) return 'Aborted.';
@@ -429,9 +441,11 @@ export class ChatService {
 										const match = fleetFile.content.match(/---\n([\s\S]*?)\n---/);
 										if (match) {
 											const fm = parseYaml(match[1]);
+											console.log("YAML String:", match[1]);
+											console.log("Parsed YAML:", fm);
 											if (fm && fm.required_zones) {
 												const zonesJson = JSON.stringify(fm.required_zones, null, 2);
-												sandboxRes.output += `\n\nSUCCESS! Fleet installed. \n[SYSTEM DIRECTIVE]: This fleet REQUIRES the following zones to be mapped. You MUST now use ONE CALL to the \`allocate_zones\` tool with the following EXACT configuration array:\n${zonesJson}`;
+												sandboxRes.output += `\n\nSUCCESS! Fleet installed. \n[SYSTEM DIRECTIVE]: This fleet REQUIRES the following zones to be mapped. You MUST now call the \`allocate_zone\` tool multiple times (once for each zone) with the following configurations:\n${zonesJson}`;
 											}
 										}
 									}
@@ -468,7 +482,7 @@ export class ChatService {
 				this.currentStatus = `Analyzing tool execution results...`;
 				if (this.onTimelineUpdated) this.onTimelineUpdated();
 
-				llmResponse = await provider.generateResponse(followupPayload, tools);
+				llmResponse = await provider.generateResponse(followupPayload, tools, this.abortController?.signal);
 				this.plugin.logger.log('LLM_FOLLOWUP_RESPONSE', llmResponse);
 			}
 
@@ -562,10 +576,10 @@ export class ChatService {
 			
 			try {
 				const dir = 'AgenticVault/logs/sessions';
-				if (!(await this.plugin.app.vault.adapter.exists(dir))) {
-					await this.plugin.app.vault.adapter.mkdir(dir);
+				if (!(await this.plugin.context.fs.exists(dir))) {
+					await this.plugin.context.fs.mkdir(dir);
 				}
-				await this.plugin.app.vault.adapter.write(archivePath, sessionContent);
+				await this.plugin.context.fs.writeText(archivePath, sessionContent);
 			} catch (e) {
 				console.error("Failed to archive session:", e);
 			}
@@ -580,6 +594,9 @@ export class ChatService {
 	public abortProcessing() {
 		this.isProcessing = false;
 		this.currentStatus = 'Aborted by user.';
+		if (this.abortController) {
+			this.abortController.abort();
+		}
 		if (this.onTimelineUpdated) this.onTimelineUpdated();
 	}
 }

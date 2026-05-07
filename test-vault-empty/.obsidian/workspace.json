@@ -11,10 +11,14 @@
             "id": "6b42dda15415acb2",
             "type": "leaf",
             "state": {
-              "type": "empty",
-              "state": {},
+              "type": "markdown",
+              "state": {
+                "file": "00_Inbox/starting my career planning.md",
+                "mode": "source",
+                "source": false
+              },
               "icon": "lucide-file",
-              "title": "New tab"
+              "title": "starting my career planning"
             }
           }
         ]
@@ -167,13 +171,23 @@
               "icon": "lucide-file",
               "title": "Agentic Vault Chat"
             }
+          },
+          {
+            "id": "d8a235821116fc4e",
+            "type": "leaf",
+            "state": {
+              "type": "fleet-dashboard-view",
+              "state": {},
+              "icon": "activity",
+              "title": "Fleet Dashboard"
+            }
           }
         ],
         "currentTab": 5
       }
     ],
     "direction": "horizontal",
-    "width": 593.5
+    "width": 792.5
   },
   "left-ribbon": {
     "hiddenItems": {
@@ -191,41 +205,41 @@
   },
   "active": "c20ce31daeb904da",
   "lastOpenFiles": [
-    "agentic_vault/logs/debug/debug_dump_1778042577635.json",
-    "agentic_vault/logs/debug/debug_dump_1778042546684.json",
-    "agentic_vault/logs/debug",
-    "agentic_vault/logs/routine_queue.json",
-    "agentic_vault/fleets/core/tools/system_diagnostic.md",
-    "agentic_vault/fleets/core/tools/file_manager.md",
-    "agentic_vault/fleets/core/tools/echo.md",
-    "agentic_vault/fleets/core/tools/allocate_zone.md",
-    "agentic_vault/fleets/core/tools/allocate_zones.md",
-    "agentic_vault/fleets/core/tools/install_fleet.md",
-    "agentic_vault/fleets/core/personas/pager.md",
-    "agentic_vault/fleets/core/personas/concierge.md",
-    "agentic_vault/fleets/core/fleet.md",
-    "agentic_vault/fleets/core/routines",
-    "agentic_vault/fleets/core/skills",
-    "agentic_vault/fleets/core/tools",
-    "agentic_vault/fleets/core/personas",
-    "agentic_vault/fleets/core",
-    "agentic_vault/memory",
-    "agentic_vault/fleets",
-    "agentic_vault/logs/Trace_Log.md",
-    "90_agentic_vault/logs/Trace_Log.md",
-    "90_agentic_vault/fleets/para_career/tools/web_search.md",
-    "90_agentic_vault/fleets/para_career/tools/update_memory.md",
-    "90_agentic_vault/fleets/para_career/tools/unreliable_math.md",
-    "90_agentic_vault/fleets/para_career/tools/map_vault.md",
-    "90_agentic_vault/fleets/para_career/tools/google_workspace.md",
-    "90_agentic_vault/fleets/para_career/personas/coo.md",
-    "90_agentic_vault/fleets/para_career/personas/chief_of_staff.md",
-    "90_agentic_vault/fleets/para_career/fleet.md",
-    "90_agentic_vault/fleets/core/tools/system_diagnostic.md",
-    "90_agentic_vault/fleets/core/tools/file_manager.md",
-    "90_agentic_vault/fleets/core/tools/echo.md",
-    "90_agentic_vault/fleets/core/tools/allocate_zone.md",
-    "90_agentic_vault/fleets/core/tools/allocate_zones.md",
-    "90_agentic_vault/fleets/core/tools/install_fleet.md"
+    "fleets/para_career/tools/web_search.md",
+    "fleets/para_career/tools/web_search.js",
+    "fleets/para_career/tools/update_memory.md",
+    "fleets/para_career/tools/unreliable_math.md",
+    "fleets/para_career/tools/map_vault.md",
+    "fleets/para_career/tools/google_workspace.md",
+    "fleets/para_career/personas/coo.md",
+    "fleets/para_career/personas/chief_of_staff.md",
+    "fleets/core/tools/system_diagnostic.md",
+    "fleets/core/tools/install_fleet.md",
+    "fleets/core/tools/file_manager.md",
+    "fleets/core/tools/echo.md",
+    "fleets/core/tools/allocate_zone.md",
+    "fleets/core/personas/pager.md",
+    "fleets/core/personas/concierge.md",
+    "fleets/business_of_you/tools/read_calendar.md",
+    "fleets/business_of_you/tools/manage_queue.md",
+    "fleets/business_of_you/tools/crm_query.md",
+    "fleets/business_of_you/templates/Research_Report_Template.md",
+    "fleets/business_of_you/templates/Project_Brief_Template.md",
+    "fleets/business_of_you/templates/Performance_Review_Template.md",
+    "fleets/business_of_you/templates/Outreach_Email_Template.md",
+    "fleets/business_of_you/templates/Deviation_Report_Template.md",
+    "fleets/business_of_you/templates/Daily_Briefing_Template.md",
+    "fleets/business_of_you/templates/Coaching_Plan_Template.md",
+    "fleets/business_of_you/templates/1_on_1_Agenda_Template.md",
+    "fleets/business_of_you/routines/deviation_report.md",
+    "fleets/para_career/tools",
+    "fleets/para_career/skills",
+    "fleets/para_career/routines",
+    "fleets/para_career/personas",
+    "fleets/core/tools",
+    "fleets/core/skills",
+    "fleets/core/routines",
+    "fleets/core/personas",
+    "fleets/business_of_you/tools"
   ]
 }

@@ -1,21 +1,23 @@
-import { requestUrl } from 'obsidian';
 import { LLMMessage, LLMProvider, LLMResponse } from './LLMProvider';
 import { ToolDefinition } from '../sandbox/ToolRegistry';
+import type { INetwork } from '../core/interfaces/Environment';
 
 export class GeminiProvider implements LLMProvider {
 	private apiKey: string;
 	private model: string;
+	private network: INetwork;
 	private lastDumpPath?: string;
 
-	constructor(apiKey: string, model: string = 'gemini-2.5-flash') {
+	constructor(apiKey: string, model: string = 'gemini-2.5-flash', network: INetwork) {
 		this.apiKey = apiKey;
 		this.model = model || 'gemini-2.5-flash';
+		this.network = network;
 	}
 
-	static async fetchAvailableModels(apiKey: string): Promise<string[]> {
+	static async fetchAvailableModels(apiKey: string, network: INetwork): Promise<string[]> {
 		if (!apiKey) throw new Error("API Key required.");
 		const url = `https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`;
-		const res = await requestUrl({ url, method: 'GET' });
+		const res = await network.request({ url, method: 'GET' });
 		if (res.status !== 200) throw new Error(`API Error: ${res.status}`);
 		
 		const data = res.json;
@@ -26,7 +28,7 @@ export class GeminiProvider implements LLMProvider {
 			.filter((name: string) => name.includes('gemini'));
 	}
 
-	async generateResponse(messages: LLMMessage[], tools: ToolDefinition[]): Promise<LLMResponse> {
+	async generateResponse(messages: LLMMessage[], tools: ToolDefinition[], signal?: AbortSignal): Promise<LLMResponse> {
 		const url = `https://generativelanguage.googleapis.com/v1beta/models/${this.model}:generateContent?key=${this.apiKey}`;
 		
 		let systemInstruction: unknown = undefined;
@@ -91,7 +93,7 @@ export class GeminiProvider implements LLMProvider {
 
 		// Tool Declarations
 		let geminiTools: unknown[] = [];
-		if (tools.length > 0) {
+		if (tools && tools.length > 0) {
 			const functionDeclarations = tools.map(t => {
 				if (t.parameters && !Array.isArray(t.parameters) && typeof t.parameters === 'object') {
 					// It's already a JSON schema! (MCP format)
@@ -151,45 +153,36 @@ export class GeminiProvider implements LLMProvider {
 		try {
 			console.log("Sending Gemini request...", body);
 			
-			// DEBUG DUMP PAYLOAD
-			try {
-				const fs = require('fs');
-				const path = require('path');
-				const dumpPath = path.join(this.plugin.app.vault.adapter.getBasePath(), this.plugin.app.vault.configDir, 'plugins', 'obsidian-agentic-vault', 'gemini_payload_debug.json');
-				fs.writeFileSync(dumpPath, JSON.stringify(body, null, 2), 'utf8');
-				
-				// Dump response as well
-				this.lastDumpPath = path.join(this.plugin.app.vault.adapter.getBasePath(), this.plugin.app.vault.configDir, 'plugins', 'obsidian-agentic-vault', 'gemini_response_debug.json');
-			} catch (e) {
-				console.error("Failed to dump payload", e);
-			}
 
-			const fetchPromise = fetch(url, {
+
+			const fetchPromise = this.network.request({
+				url,
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify(body)
 			});
 			
 			const timeoutPromise = new Promise<never>((_, reject) => {
-				setTimeout(() => reject(new Error('Gemini API request timed out after 120 seconds. Generation may have been too large or the API is under heavy load.')), 120000);
+				setTimeout(() => reject(new Error('Gemini API request timed out after 300 seconds. The reasoning model is still processing or the API is under heavy load.')), 300000);
+			});
+			
+			const abortPromise = new Promise<never>((_, reject) => {
+				if (signal) {
+					if (signal.aborted) reject(new Error('Aborted by user.'));
+					signal.addEventListener('abort', () => reject(new Error('Aborted by user.')));
+				}
 			});
 
-			const res = await Promise.race([fetchPromise, timeoutPromise]) as Response;
+			const res = await Promise.race([fetchPromise, timeoutPromise, abortPromise]) as any;
 			console.log("Received Gemini response:", res.status);
 
 			if (res.status !== 200) {
-				const text = await res.text();
-				throw new Error(`Gemini API Error: ${text}`);
+				throw new Error(`Gemini API Error: ${res.text}`);
 			}
 
-			const data = await res.json();
+			const data = res.json;
 			
-			try {
-				if (this.lastDumpPath) {
-					const fs = require('fs');
-					fs.writeFileSync(this.lastDumpPath, JSON.stringify(data, null, 2), 'utf8');
-				}
-			} catch(e) {}
+
 
 			const candidate = data.candidates?.[0];
 			if (!candidate) throw new Error('No candidate returned from Gemini');

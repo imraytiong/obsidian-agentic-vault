@@ -68,9 +68,9 @@ export class AgenticVaultSettingTab extends PluginSettingTab {
 			if (buttonComponent) buttonComponent.setButtonText('Testing...');
 			let models: string[] = [];
 			if (this.plugin.settings.llmProvider === 'openai') {
-				models = await OpenAIProvider.fetchAvailableModels(apiKey, this.plugin.settings.llmBaseUrl);
+				models = await OpenAIProvider.fetchAvailableModels(apiKey, this.plugin.settings.llmBaseUrl, this.plugin.context.network);
 			} else {
-				models = await GeminiProvider.fetchAvailableModels(apiKey);
+				models = await GeminiProvider.fetchAvailableModels(apiKey, this.plugin.context.network);
 			}
 			
 			this.plugin.settings.availableModels = models;

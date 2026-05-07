@@ -38,6 +38,7 @@ if (fs.existsSync(fleetsDir)) {
                 tools: [],
                 skills: [],
                 routines: [],
+                templates: [],
                 root: []
             }
         };
@@ -59,6 +60,7 @@ if (fs.existsSync(fleetsDir)) {
             else if (category === 'tools') bundledFleets[fleet].files.tools.push(fileObj);
             else if (category === 'skills') bundledFleets[fleet].files.skills.push(fileObj);
             else if (category === 'routines') bundledFleets[fleet].files.routines.push(fileObj);
+            else if (category === 'templates') bundledFleets[fleet].files.templates.push(fileObj);
             else bundledFleets[fleet].files.root.push({ filename: relPath, content });
         }
     }
@@ -79,6 +81,7 @@ export interface BundledFleet {
         tools: BundledFile[];
         skills: BundledFile[];
         routines: BundledFile[];
+        templates: BundledFile[];
         root: BundledFile[];
     }
 }

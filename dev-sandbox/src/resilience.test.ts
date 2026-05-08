@@ -14,7 +14,7 @@ describe('GeminiProvider Resilience', () => {
     });
 
     it('should retry twice on 429 and then fail', async () => {
-        (mockNetwork.request as any).mockResolvedValue({
+        (mockNetwork.request as unknown).mockResolvedValue({
             status: 429,
             text: 'Rate limited'
         });
@@ -29,7 +29,7 @@ describe('GeminiProvider Resilience', () => {
     }, 10000);
 
     it('should fallback on 503 if allowFallback is true and models are available', async () => {
-        (mockNetwork.request as any)
+        (mockNetwork.request as unknown)
             .mockResolvedValueOnce({ status: 503, text: 'Overloaded' })
             .mockResolvedValueOnce({
                 status: 200,
@@ -46,15 +46,15 @@ describe('GeminiProvider Resilience', () => {
         expect(res.content).toBe('Success on fallback');
         expect(mockNetwork.request).toHaveBeenCalledTimes(2);
         
-        const firstCallUrl = (mockNetwork.request as any).mock.calls[0][0].url;
-        const secondCallUrl = (mockNetwork.request as any).mock.calls[1][0].url;
+        const firstCallUrl = (mockNetwork.request as unknown).mock.calls[0][0].url;
+        const secondCallUrl = (mockNetwork.request as unknown).mock.calls[1][0].url;
 
         expect(firstCallUrl).toContain('gemini-3.1-pro-preview');
         expect(secondCallUrl).toContain('gemini-2.5-pro');
     });
 
     it('should throw immediately on 503 if allowFallback is false', async () => {
-        (mockNetwork.request as any).mockResolvedValue({ status: 503, text: 'Overloaded' });
+        (mockNetwork.request as unknown).mockResolvedValue({ status: 503, text: 'Overloaded' });
 
         await expect(provider.generateResponse([{ role: 'user', content: 'test' }], [], {
             allowFallback: false,
@@ -65,7 +65,7 @@ describe('GeminiProvider Resilience', () => {
     });
 
     it('should throw immediately on 400 Bad Request', async () => {
-        (mockNetwork.request as any).mockResolvedValue({ status: 400, text: 'Bad schema' });
+        (mockNetwork.request as unknown).mockResolvedValue({ status: 400, text: 'Bad schema' });
 
         await expect(provider.generateResponse([{ role: 'user', content: 'test' }], [])).rejects.toThrow('Gemini API Error (400)');
         expect(mockNetwork.request).toHaveBeenCalledTimes(1);

@@ -10,7 +10,7 @@ export class MockLLMProvider implements LLMProvider {
 
 	async generateResponse(messages: LLMMessage[], tools: ToolDefinition[]): Promise<LLMResponse> {
 		if (this.queuedResponses.length > 0) {
-			return this.queuedResponses.shift()!;
+			return this.queuedResponses.shift();
 		}
 		
 		// Default fallback if nothing is queued

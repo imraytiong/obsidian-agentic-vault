@@ -5,8 +5,9 @@ export interface MarkdownTestScenario {
 	description: string;
 	persona: string;
 	assume_installed_fleet?: string;
+	offline_mode?: boolean;
 	userInput: string;
-	expectedToolCalls: any[];
+	expectedToolCalls: unknown[];
 	expectedOutput: string;
 	expectedDirectories: string[];
 	expectedFiles: string[];
@@ -39,6 +40,7 @@ export function parseMarkdownTest(filePath: string): MarkdownTestScenario {
 			if (line.startsWith('description:')) scenario.description = line.substring(12).trim();
 			if (line.startsWith('persona:')) scenario.persona = line.substring(8).trim();
 			if (line.startsWith('assume_installed_fleet:')) scenario.assume_installed_fleet = line.substring(23).trim();
+			if (line.startsWith('offline_mode:')) scenario.offline_mode = line.substring(13).trim() === 'true';
 		}
 	}
 

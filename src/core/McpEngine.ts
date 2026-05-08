@@ -30,13 +30,15 @@ export class McpEngine {
 	private app: App;
 	private agenticVaultPath: string;
 	private customEnvPath: string;
+	private settings: unknown;
 	public clients: Record<string, Client> = {};
 	public availableTools: Record<string, McpTool> = {};
 
-	constructor(app: App, agenticVaultPath: string, customEnvPath: string = '') {
+	constructor(app: App, agenticVaultPath: string, customEnvPath: string = '', settings?: unknown) {
 		this.app = app;
 		this.agenticVaultPath = agenticVaultPath;
 		this.customEnvPath = customEnvPath;
+		this.settings = settings || {};
 	}
 
 	async initialize() {
@@ -76,7 +78,7 @@ export class McpEngine {
 							try {
 								frontmatter = parseYaml(match[1] || '') as Record<string, unknown>;
 								if (frontmatter && typeof frontmatter === 'object' && 'name' in frontmatter && typeof frontmatter.name === 'string' && 'mcp_server' in frontmatter && frontmatter.mcp_server === true) {
-									void this.connectServer(frontmatter.name, frontmatter as unknown as McpServerConfig);
+									await this.connectServer(frontmatter.name, frontmatter as unknown as McpServerConfig);
 								}
 							} catch (e) {
 								console.error("YAML Parse Error", e);
@@ -169,11 +171,17 @@ export class McpEngine {
 				}
 			}
 			console.debug(`Connected to MCP Server: ${name} with ${toolResponse?.tools?.length || 0} tools.`);
-			void this.app.vault.adapter.append('AgenticVault/logs/mcp_debug.txt', `\n[${new Date().toISOString()}] Connected to MCP Server: ${name} with ${toolResponse?.tools?.length || 0} tools.`);
+			void this.app.vault.append(
+				(this.app.vault.getAbstractFileByPath('AgenticVault/logs/mcp_debug.txt') || { path: 'AgenticVault/logs/mcp_debug.txt' }) as any,
+				`\n[${new Date().toISOString()}] Connected to MCP Server: ${name} with ${toolResponse?.tools?.length || 0} tools.`
+			);
 			
 		} catch (e: unknown) {
 			console.error(`Failed to connect to MCP Server ${name}:`, e);
-			void this.app.vault.adapter.append('AgenticVault/logs/mcp_debug.txt', `\n[${new Date().toISOString()}] Failed to connect to MCP Server ${name}: ${(e as Error).message}`);
+			void this.app.vault.append(
+				(this.app.vault.getAbstractFileByPath('AgenticVault/logs/mcp_debug.txt') || { path: 'AgenticVault/logs/mcp_debug.txt' }) as any,
+				`\n[${new Date().toISOString()}] Failed to connect to MCP Server ${name}: ${(e as Error).message}`
+			);
 		}
 	}
 
@@ -188,7 +196,11 @@ export class McpEngine {
 		}));
 	}
 
-	async executeTool(toolId: string, args: Record<string, unknown>): Promise<unknown> {
+	async executeTool(toolId: string, args: Record<string, unknown>, timeoutMs: number = 15000): Promise<unknown> {
+		if (this.settings && (this.settings as any).offlineMode) {
+			throw new Error("Network Disconnect: Offline mode is enabled.");
+		}
+
 		const tool = this.availableTools[toolId];
 		if (!tool) throw new Error(`MCP Tool ${toolId} not found`);
 
@@ -220,11 +232,16 @@ export class McpEngine {
 		}
 
 		// Standard Execution
-		const result = await client.callTool({
+		const execPromise = client.callTool({
 			name: tool._originalName,
 			arguments: args
 		});
 
+		const timeoutPromise = new Promise((_, reject) => 
+			setTimeout(() => reject(new Error("Timeout Error: The network request took too long and was aborted.")), timeoutMs)
+		);
+
+		const result = await Promise.race([execPromise, timeoutPromise]);
 		return result;
 	}
 }

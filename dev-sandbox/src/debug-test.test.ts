@@ -42,11 +42,11 @@ async function runTest() {
 
 	const mockApp = new ObsidianApp();
 	
-	const getAllFiles = async (dir: string): Promise<any[]> => {
-		let results: any[] = [];
+	const getAllFiles = async (dir: string): Promise<unknown[]> => {
+		let results: unknown[] = [];
 		const list = await context.fs.listFiles(dir);
 		for (const p of list) {
-			const fullPath = context.fs.resolvePath ? (context.fs as any).resolvePath(p) : path.join(vaultPath, p);
+			const fullPath = context.fs.resolvePath ? (context.fs as unknown).resolvePath(p) : path.join(vaultPath, p);
 			if (fs.statSync(fullPath).isDirectory()) {
 				results = results.concat(await getAllFiles(p));
 			} else {
@@ -61,8 +61,8 @@ async function runTest() {
 	};
 
 	mockApp.vault.getFiles = () => {
-		const readDirRecursiveSync = (dir: string, base: string = ''): any[] => {
-			let results: any[] = [];
+		const readDirRecursiveSync = (dir: string, base: string = ''): unknown[] => {
+			let results: unknown[] = [];
 			const list = fs.readdirSync(dir);
 			for (const f of list) {
 				const fullPath = path.join(dir, f);
@@ -83,13 +83,13 @@ async function runTest() {
 		return readDirRecursiveSync(vaultPath);
 	};
 
-	mockApp.vault.read = async (file: any) => {
+	mockApp.vault.read = async (file: unknown) => {
 		return await context.fs.readText(file.path);
 	};
 	
 	mockApp.vault.getAbstractFileByPath = (p: string) => {
 		const files = mockApp.vault.getFiles();
-		return files.find((f: any) => f.path === p) || null;
+		return files.find((f: unknown) => f.path === p) || null;
 	};
 
 	const logger = new LoggerService(mockApp, settings.agenticVaultPath);
@@ -101,7 +101,7 @@ async function runTest() {
 	const mcpEngine = new McpEngine(mockApp, settings.agenticVaultPath, settings.customEnvPath);
 	const skillsEngine = new SkillsEngine(mockApp, settings.agenticVaultPath);
 
-	const pluginMock: any = {
+	const pluginMock: unknown = {
 		settings,
 		app: mockApp,
 		logger,

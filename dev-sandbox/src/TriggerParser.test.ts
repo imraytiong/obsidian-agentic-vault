@@ -3,11 +3,11 @@ import { TriggerParser } from '../../src/core/TriggerParser';
 
 describe('TriggerParser', () => {
 	let triggerParser: TriggerParser;
-	let mockApp: any;
-	let mockLogger: any;
-	let mockSandbox: any;
-	let mockRoutineManager: any;
-	let mockChatService: any;
+	let mockApp: unknown;
+	let mockLogger: unknown;
+	let mockSandbox: unknown;
+	let mockRoutineManager: unknown;
+	let mockChatService: unknown;
 	
 	beforeEach(() => {
 		mockApp = { workspace: { on: vi.fn() } };
@@ -22,11 +22,12 @@ describe('TriggerParser', () => {
 			updateTask: vi.fn()
 		};
 		mockChatService = {
+			plugin: { settings: { routinesEnabled: true } },
 			sendMessage: vi.fn().mockResolvedValue(true),
 			abortBackgroundTask: vi.fn()
 		};
 		
-		(global as any).window = global;
+		(global as unknown).window = global;
 
 		triggerParser = new TriggerParser(mockApp, mockLogger, mockSandbox, mockRoutineManager, mockChatService);
 		vi.useFakeTimers();
@@ -74,7 +75,7 @@ describe('TriggerParser', () => {
 			.mockRejectedValueOnce(new Error('First fail'))
 			.mockResolvedValueOnce(true);
 
-		const executePromise = triggerParser.executeRoutine(routine as any, 'Test');
+		const executePromise = triggerParser.executeRoutine(routine as unknown, 'Test');
 		
 		// Advance timers to trigger the delay between retries
 		await vi.runAllTimersAsync();

@@ -94,14 +94,14 @@ export class RoutineManager {
 						}
 					}
 
-					let name = (frontmatter as any).name || id;
-					let trigger = (frontmatter as any).trigger || '';
-					let agent = (frontmatter as any).agent || '';
-					let skill = (frontmatter as any).skill || '';
-					let status = (frontmatter as any).status || 'active';
-					let timeout = (frontmatter as any).timeout !== undefined ? parseInt((frontmatter as any).timeout) : 5;
-					let retries = (frontmatter as any).retries !== undefined ? parseInt((frontmatter as any).retries) : 3;
-					let last_run = (frontmatter as any).last_run !== undefined ? parseInt((frontmatter as any).last_run) : 0;
+					let name = (frontmatter as Record<string, any>).name || id;
+					let trigger = (frontmatter as Record<string, any>).trigger || '';
+					let agent = (frontmatter as Record<string, any>).agent || '';
+					let skill = (frontmatter as Record<string, any>).skill || '';
+					let status = (frontmatter as Record<string, any>).status || 'active';
+					let timeout = (frontmatter as Record<string, any>).timeout !== undefined ? parseInt((frontmatter as Record<string, any>).timeout) : 5;
+					let retries = (frontmatter as Record<string, any>).retries !== undefined ? parseInt((frontmatter as Record<string, any>).retries) : 3;
+					let last_run = (frontmatter as Record<string, any>).last_run !== undefined ? parseInt((frontmatter as Record<string, any>).last_run) : 0;
 					
 					// Default to 3 retries if not specified
 					if (retries === undefined || isNaN(retries)) retries = 3;

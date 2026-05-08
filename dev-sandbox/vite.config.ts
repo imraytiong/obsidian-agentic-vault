@@ -6,12 +6,12 @@ import { spawn } from 'child_process'
 
 const SandboxFSApi = () => ({
   name: 'sandbox-fs-api',
-  configureServer(server: any) {
-    server.middlewares.use((req: any, res: any, next: any) => {
+  configureServer(server: unknown) {
+    server.middlewares.use((req: unknown, res: unknown, next: unknown) => {
       if (!req.url.startsWith('/api/')) return next();
       
       let body = '';
-      req.on('data', (chunk: any) => body += chunk.toString());
+      req.on('data', (chunk: unknown) => body += chunk.toString());
       req.on('end', () => {
         try {
           const payload = body ? JSON.parse(body) : {};
@@ -57,8 +57,8 @@ const SandboxFSApi = () => ({
             
             let stdout = '';
             let stderr = '';
-            child.stdout.on('data', (d: any) => stdout += d.toString());
-            child.stderr.on('data', (d: any) => stderr += d.toString());
+            child.stdout.on('data', (d: unknown) => stdout += d.toString());
+            child.stderr.on('data', (d: unknown) => stderr += d.toString());
             child.on('close', (code: number) => {
               if (code === 0) res.end(JSON.stringify({ stdout, stderr }));
               else {
@@ -66,12 +66,12 @@ const SandboxFSApi = () => ({
                 res.end(JSON.stringify({ error: stdout || stderr || `Process exited with code ${code}`, stderr }));
               }
             });
-            child.on('error', (err: any) => {
+            child.on('error', (err: unknown) => {
               res.statusCode = 500;
               res.end(JSON.stringify({ error: err.message }));
             });
           }
-        } catch (e: any) {
+        } catch (e: unknown) {
           res.statusCode = 500;
           res.end(JSON.stringify({ error: e.message }));
         }

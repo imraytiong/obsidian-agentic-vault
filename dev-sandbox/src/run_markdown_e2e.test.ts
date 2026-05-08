@@ -43,7 +43,13 @@ describe('Markdown E2E Test Runner', () => {
 				fs.mkdirSync(path.join(vaultPath, 'AgenticVault'), { recursive: true });
 				fs.cpSync(fleetsSource, path.join(vaultPath, 'AgenticVault', 'fleets'), { recursive: true });
 
-				const settings = { ...DEFAULT_SETTINGS, agenticVaultPath: 'AgenticVault', llmApiKey: 'dummy-key' };
+				// Inject mock test_fleet
+				fs.mkdirSync(path.join(vaultPath, 'AgenticVault', 'fleets', 'test_fleet', 'tools'), { recursive: true });
+				fs.writeFileSync(path.join(vaultPath, 'AgenticVault', 'fleets', 'test_fleet', 'fleet.md'), '---\nname: Test Fleet\nstatus: active\n---\n');
+				const mockMcpPath = path.resolve(__dirname, 'mock-mcp-server.mjs');
+				fs.writeFileSync(path.join(vaultPath, 'AgenticVault', 'fleets', 'test_fleet', 'tools', 'mock_server.md'), `---\nname: mock_server\nmcp_server: true\ntype: stdio\ncommand: node\nargs: ["${mockMcpPath}"]\n---\n`);
+
+				const settings = { ...DEFAULT_SETTINGS, agenticVaultPath: 'AgenticVault', llmApiKey: 'dummy-key', offlineMode: scenario.offline_mode || false };
 
 				const context: AgenticContext = {
 					fs: new NodeFileSystem(vaultPath),
@@ -55,11 +61,12 @@ describe('Markdown E2E Test Runner', () => {
 				};
 
 				const mockApp = new ObsidianApp();
+				mockApp.metadataCache = { getFileCache: () => null } as unknown;
 				
 				// Same mockApp filesystem wiring as onboarding.test.ts
 				mockApp.vault.getFiles = () => {
-					const readDirRecursiveSync = (dir: string, base: string = ''): any[] => {
-						let results: any[] = [];
+					const readDirRecursiveSync = (dir: string, base: string = ''): unknown[] => {
+						let results: unknown[] = [];
 						const list = fs.readdirSync(dir);
 						for (const f of list) {
 							const fullPath = path.join(dir, f);
@@ -80,7 +87,7 @@ describe('Markdown E2E Test Runner', () => {
 					return readDirRecursiveSync(vaultPath);
 				};
 
-				mockApp.vault.read = async (file: any) => {
+				mockApp.vault.read = async (file: unknown) => {
 					return await context.fs.readText(file.path);
 				};
 
@@ -125,14 +132,19 @@ describe('Markdown E2E Test Runner', () => {
 					await context.fs.writeText(p, c);
 					const file = new TFile(); file.path = p; return file;
 				};
-				mockApp.vault.append = async (file: any, text: string) => {
-					const current = await context.fs.readText(file.path);
+				mockApp.vault.append = async (file: unknown, text: string) => {
+					let current = '';
+					try {
+						current = await context.fs.readText(file.path);
+					} catch (e) {
+						// Ignore if file doesn't exist, we will create it
+					}
 					await context.fs.writeText(file.path, current + text);
 				};
 				mockApp.vault.createFolder = async (p: string) => {
 					fs.mkdirSync(path.join(vaultPath, p), { recursive: true });
 				};
-				mockApp.vault.copy = async (file: any, destPath: string) => {
+				mockApp.vault.copy = async (file: unknown, destPath: string) => {
 					const destFull = path.join(vaultPath, destPath);
 					const srcFull = path.join(vaultPath, file.path);
 					fs.mkdirSync(path.dirname(destFull), { recursive: true });
@@ -146,10 +158,11 @@ describe('Markdown E2E Test Runner', () => {
 				const executionSandbox = new ExecutionSandbox(context, logger, toolRegistry, settings);
 				const routineManager = new RoutineManager(mockApp, settings.agenticVaultPath);
 				const approvalQueue = new ApprovalQueueManager(mockApp, settings.agenticVaultPath);
-				const mcpEngine = new McpEngine(mockApp, settings.agenticVaultPath, settings.customEnvPath);
+				const mcpEngine = new McpEngine(mockApp, settings.agenticVaultPath, settings.customEnvPath, settings);
+				await mcpEngine.initialize();
 				const skillsEngine = new SkillsEngine(mockApp, settings.agenticVaultPath);
 
-				const pluginMock: any = {
+				const pluginMock: unknown = {
 					settings, app: mockApp, logger, personaEngine, toolRegistry,
 					executionSandbox, routineManager, approvalQueue, mcpEngine, skillsEngine,
 					context, saveData: async () => {}, saveSettings: async () => {}

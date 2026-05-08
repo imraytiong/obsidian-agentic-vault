@@ -10,7 +10,7 @@ export class NodeNetwork implements INetwork {
 			const url = new URL(options.url);
 			const req = https.request(url, {
 				method: options.method,
-				headers: options.headers as any
+				headers: options.headers as unknown
 			}, (res) => {
 				let body = '';
 				res.on('data', chunk => body += chunk);
@@ -115,7 +115,7 @@ export class NodeProcessRunner implements IProcessRunner {
 	async run(command: string, args: string[], cwd?: string, env?: Record<string, string>): Promise<IProcessRunnerResult> {
 		return new Promise((resolve) => {
 			const actualCommand = command === 'node' ? process.execPath : command;
-			const child = spawn(actualCommand, args, { cwd: cwd || process.cwd(), env: env || (process.env as any) });
+			const child = spawn(actualCommand, args, { cwd: cwd || process.cwd(), env: env || (process.env as unknown) });
 			let stdout = '';
 			let stderr = '';
 			child.stdout.on('data', (data) => stdout += data.toString());

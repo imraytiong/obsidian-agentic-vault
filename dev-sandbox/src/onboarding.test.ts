@@ -20,7 +20,7 @@ import path from 'path';
 describe('AntiGravity Headless Engine: Onboarding Flow', () => {
 	let chatService: ChatService;
 	let context: AgenticContext;
-	let mockApp: any;
+	let mockApp: unknown;
 	let provider: MockLLMProvider;
 	const vaultPath = path.resolve(__dirname, '../../test-vault-headless');
 
@@ -52,11 +52,11 @@ describe('AntiGravity Headless Engine: Onboarding Flow', () => {
 		mockApp = new ObsidianApp();
 		
 		// Wire up mockApp to our NodeFileSystem
-		const getAllFiles = async (dir: string): Promise<any[]> => {
-			let results: any[] = [];
+		const getAllFiles = async (dir: string): Promise<unknown[]> => {
+			let results: unknown[] = [];
 			const list = await context.fs.listFiles(dir);
 			for (const p of list) {
-				const fullPath = context.fs.resolvePath ? (context.fs as any).resolvePath(p) : path.join(vaultPath, p);
+				const fullPath = context.fs.resolvePath ? (context.fs as unknown).resolvePath(p) : path.join(vaultPath, p);
 				if (fs.statSync(fullPath).isDirectory()) {
 					results = results.concat(await getAllFiles(p));
 				} else {
@@ -73,8 +73,8 @@ describe('AntiGravity Headless Engine: Onboarding Flow', () => {
 		mockApp.vault.getFiles = () => {
 			// We need a sync-like interface for getFiles, but since we are running in Node,
 			// we can just read the whole tree synchronously for testing purposes.
-			const readDirRecursiveSync = (dir: string, base: string = ''): any[] => {
-				let results: any[] = [];
+			const readDirRecursiveSync = (dir: string, base: string = ''): unknown[] => {
+				let results: unknown[] = [];
 				const list = fs.readdirSync(dir);
 				for (const f of list) {
 					const fullPath = path.join(dir, f);
@@ -95,7 +95,7 @@ describe('AntiGravity Headless Engine: Onboarding Flow', () => {
 			return readDirRecursiveSync(vaultPath);
 		};
 
-		mockApp.vault.read = async (file: any) => {
+		mockApp.vault.read = async (file: unknown) => {
 			return await context.fs.readText(file.path);
 		};
 		
@@ -140,14 +140,14 @@ describe('AntiGravity Headless Engine: Onboarding Flow', () => {
 			await context.fs.writeText(p, c);
 			const file = new TFile(); file.path = p; return file;
 		};
-		mockApp.vault.append = async (file: any, text: string) => {
+		mockApp.vault.append = async (file: unknown, text: string) => {
 			const current = await context.fs.readText(file.path);
 			await context.fs.writeText(file.path, current + text);
 		};
 		mockApp.vault.createFolder = async (p: string) => {
 			fs.mkdirSync(path.join(vaultPath, p), { recursive: true });
 		};
-		mockApp.vault.copy = async (file: any, destPath: string) => {
+		mockApp.vault.copy = async (file: unknown, destPath: string) => {
 			const destFull = path.join(vaultPath, destPath);
 			const srcFull = path.join(vaultPath, file.path);
 			fs.mkdirSync(path.dirname(destFull), { recursive: true });
@@ -164,14 +164,14 @@ describe('AntiGravity Headless Engine: Onboarding Flow', () => {
 		const mcpEngine = new McpEngine(mockApp, settings.agenticVaultPath, settings.customEnvPath);
 		const skillsEngine = new SkillsEngine(mockApp, settings.agenticVaultPath);
 
-		const pluginMock: any = {
+		const pluginMock: unknown = {
 			settings, app: mockApp, logger, personaEngine, toolRegistry,
 			executionSandbox, routineManager, approvalQueue, mcpEngine, skillsEngine,
 			context, saveData: async () => {}, saveSettings: async () => {}
 		};
 
 		provider = new MockLLMProvider();
-		chatService = new ChatService(pluginMock as any, provider);
+		chatService = new ChatService(pluginMock, provider);
 		pluginMock.chatService = chatService;
 		new TriggerParser(mockApp, logger, executionSandbox, routineManager, chatService);
 

@@ -185,7 +185,7 @@ export class GeminiProvider implements LLMProvider {
 					try {
 						let resStatus: number;
 						let resText: string;
-						let resJson: any = null;
+						let resJson: unknown = null;
 
 						const fetchPromise = (async () => {
 							if (this.network) {

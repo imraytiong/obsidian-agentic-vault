@@ -1,0 +1,1869 @@
+
+ RUN  v4.1.5 /Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Onboarding The Business of You
+Connected to MCP Server: google_workspace with 49 tools.
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Onboarding The Business of You
+Connected to MCP Server: mock_server with 1 tools.
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Onboarding The Business of You > should execute the scenario successfully
+Using configured provider: MockLLMProvider
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Onboarding The Business of You > should execute the scenario successfully
+AVAILABLE TOOLS: [
+  'google_workspace___auth.clear',
+  'google_workspace___auth.refreshToken',
+  'google_workspace___docs.create',
+  'google_workspace___docs.insertText',
+  'google_workspace___docs.find',
+  'google_workspace___drive.findFolder',
+  'google_workspace___docs.move',
+  'google_workspace___docs.getText',
+  'google_workspace___docs.appendText',
+  'google_workspace___docs.replaceText',
+  'google_workspace___docs.extractIdFromUrl',
+  'google_workspace___slides.getText',
+  'google_workspace___slides.find',
+  'google_workspace___slides.getMetadata',
+  'google_workspace___sheets.getText',
+  'google_workspace___sheets.getRange',
+  'google_workspace___sheets.find',
+  'google_workspace___sheets.getMetadata',
+  'google_workspace___drive.search',
+  'google_workspace___drive.downloadFile',
+  'google_workspace___calendar.list',
+  'google_workspace___calendar.createEvent',
+  'google_workspace___calendar.listEvents',
+  'google_workspace___calendar.getEvent',
+  'google_workspace___calendar.findFreeTime',
+  'google_workspace___calendar.updateEvent',
+  'google_workspace___calendar.respondToEvent',
+  'google_workspace___calendar.deleteEvent',
+  'google_workspace___chat.listSpaces',
+  'google_workspace___chat.findSpaceByName',
+  'google_workspace___chat.sendMessage',
+  'google_workspace___chat.getMessages',
+  'google_workspace___chat.sendDm',
+  'google_workspace___chat.findDmByEmail',
+  'google_workspace___chat.listThreads',
+  'google_workspace___chat.setUpSpace',
+  'google_workspace___gmail.search',
+  'google_workspace___gmail.get',
+  'google_workspace___gmail.get_batch',
+  'google_workspace___gmail.downloadAttachment',
+  'google_workspace___gmail.modify',
+  'google_workspace___gmail.send',
+  'google_workspace___gmail.createDraft',
+  'google_workspace___gmail.sendDraft',
+  'google_workspace___gmail.listLabels',
+  'google_workspace___time.getCurrentDate',
+  'google_workspace___time.getCurrentTime',
+  'google_workspace___time.getTimeZone',
+  'google_workspace___people.getUserProfile',
+  'google_workspace___people.getMe',
+  'mock_server___mock_network_tool'
+] TC NAME: install_fleet
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Onboarding The Business of You > should execute the scenario successfully
+YAML String: name: "The Business of You"
+system_version: 0.0.1
+description: "A suite of agents to help you manage your professional career or job like a business."
+status: active
+onboarding:
+  trigger_agent: Concierge
+  welcome_message: "Welcome to 'The Business of You'. The suite is fully installed and your personal board of directors is waiting. To calibrate the system, we need to establish your baseline. How would you like to begin?"
+  pathways:
+    - id: guided_full_cycle
+      label: "0. The Virtuous Cycle (Guided Full Setup)"
+      description: "Walk through the entire setup step-by-step: Identity -> Strategy & Stakeholders -> Operations -> Execution -> (Optional) Team Management."
+      target_agent: "Executive Coach"
+      handoff_context: "[GUIDED MODE ACTIVE - FULL CYCLE (STEP 1/5)]: The user wants to complete the full Business of You lifecycle. You are Step 1. First, initiate the Socratic interview to build their `Me.md` file. Second, after `Me.md` is defined, ask them about their current challenges, anxieties, excitements, and opportunities to help shape their mindset before strategy formulation. When you have successfully completed this emotional and strategic baseline, you MUST use the 'transfer_session' tool to hand the user to the 'Chief Strategist' with the context: '[GUIDED MODE ACTIVE - FULL CYCLE (STEP 2/5)]: The user has established their identity and baseline. You are Step 2. First, guide them to define 3 OKRs based on their vision and current challenges. Second, help them map out their critical non-report stakeholders (managers, peers, matrix partners) necessary to achieve those OKRs into the network zone. When finished, transfer them to the Chief Operating Officer with the context: [GUIDED MODE ACTIVE - FULL CYCLE (STEP 3/5)]: The user has defined their strategy and mapped stakeholders. You are Step 3. Help them atomize these OKRs into actionable tickets in the queue. When finished, transfer them to the Chief of Staff with the context: [GUIDED MODE ACTIVE - FULL CYCLE (STEP 4/5)]: The user has atomized their strategy. You are Step 4. Help them brain dump any immediate daily fires onto the execution Kanban. When finished, check if the user has management duties (by reviewing their profile or asking). If they DO have management duties, transfer them to the Chief People Officer with the context: [GUIDED MODE ACTIVE - FULL CYCLE (STEP 5/5)]: The user has organized their tasks. You are the final step. Help them map their direct reports and team structure into the network zone. When finished, transfer them BACK to the Concierge. If they DO NOT have management duties, you are the final step, so transfer them directly BACK to the Concierge.'"
+
+    - id: identity_and_vision
+      label: "1. Establish my core Identity & Vision (Start Here)"
+      description: "Build your `Me.md` profile and define your 5-10 year horizon."
+      target_agent: "Executive Coach"
+      handoff_context: "[GUIDED MODE ACTIVE]: The user has elected to establish their core identity. Please initiate the Socratic interview to build their `Me.md` file in the strategy folder, focusing on their 5-10 year career vision. When you have successfully completed your specific onboarding task, you MUST automatically use the 'transfer_session' tool to hand the user BACK to the Concierge, including a summary of what you achieved."
+
+    - id: define_strategy
+      label: "2. Draft my 6-month Strategy & OKRs"
+      description: "Translate your long-term vision into actionable quarterly objectives."
+      target_agent: "Strategist"
+      handoff_context: "[GUIDED MODE ACTIVE]: The user wants to draft their 6-12 month strategy. Please review their `Me.md` (if it exists) and help them define 3 OKRs, saving them as a formal document in the `strategy` zone. When you have successfully completed your specific onboarding task, you MUST automatically use the 'transfer_session' tool to hand the user BACK to the Concierge, including a summary of what you achieved."
+
+    - id: execution_fires
+      label: "3. Clear my immediate tasks & 'fires'"
+      description: "Do a quick brain dump to populate your Kanban board for the week."
+      target_agent: "Chief of Staff"
+      handoff_context: "[GUIDED MODE ACTIVE]: The user needs to organize their immediate operational execution. Ask them for a brain dump of their top 3 'fires' and translate them into tasks on the `execution` Kanban board. When you have successfully completed your specific onboarding task, you MUST automatically use the 'transfer_session' tool to hand the user BACK to the Concierge, including a summary of what you achieved."
+
+    - id: crm_stakeholders
+      label: "4. Map my critical stakeholders"
+      description: "Set up your relationship tracker for key managers and peers."
+      target_agent: "Chief People Officer"
+      handoff_context: "[GUIDED MODE ACTIVE]: The user wants to set up their CRM. Ask them for the names and roles of their 3 most critical stakeholders right now, and generate relationship tracking files in the `network` zone. When you have successfully completed your specific onboarding task, you MUST automatically use the 'transfer_session' tool to hand the user BACK to the Concierge, including a summary of what you achieved."
+
+    - id: strategy_pivot
+      label: "5. Pivot my strategy based on challenges"
+      description: "Socratically break down perceived challenges and shift your strategy."
+      target_agent: "Executive Coach"
+      handoff_context: "[GUIDED MODE ACTIVE]: The user is perceiving challenges and wants to evaluate a shift in strategy. Please act as a Socratic sounding board to break down these challenges. Use the `file_manager` tool to output a `Strategic_Pivot_Log.md` file in the `journal` zone, or update their existing documents in the `strategy` zone if the pivot results in new formal OKRs. When you have successfully completed your specific onboarding task, you MUST automatically use the 'transfer_session' tool to hand the user BACK to the Concierge, including a summary of what you achieved."
+required_zones:
+  - zone_id: inbox
+    vault_path: 00_Inbox
+    description: "The drop zone for raw thoughts and web clippings."
+  - zone_id: strategy
+    vault_path: 10_Strategy
+    description: "Contains formal OKRs and project briefs."
+  - zone_id: execution
+    vault_path: 20_Execution
+    description: "Contains the tasks.jsonl queue and sprint boards."
+  - zone_id: briefings
+    vault_path: 30_Briefings
+    description: "Contains unified Daily Notes."
+  - zone_id: agendas
+    vault_path: 35_Agendas
+    description: "Staging ground for upcoming meeting agendas, talking points, and 1:1 structures."
+  - zone_id: network
+    vault_path: 40_Network
+    description: "CRM tracking relationships, featuring YAML trackers for rhythms (consecutive-tactical-meetings) and relationship-tiers (manager, peer)."
+  - zone_id: radar
+    vault_path: 50_Radar
+    description: "Watchlist for emerging trends and research."
+  - zone_id: journal
+    vault_path: 60_Journal
+    description: "Private boardroom for raw dumps and post-mortems."
+  - zone_id: rubrics
+    vault_path: 80_Company_Rubrics
+    description: "Reference folder containing official HR rubrics, promotion packets, and leveling docs."
+  - zone_id: templates
+    vault_path: 90_Templates
+    description: "The repository of dynamic templates owned and iteratively updated by the personas."
+  - zone_id: workspace
+    vault_path: 99_Agent_Workspace
+    description: "Scratchpad for Specialists and Researchers."
+Parsed YAML: {
+  name: 'The Business of You',
+  system_version: '0.0.1',
+  description: 'A suite of agents to help you manage your professional career or job like a business.',
+  status: 'active',
+  onboarding: {
+    trigger_agent: 'Concierge',
+    welcome_message: "Welcome to 'The Business of You'. The suite is fully installed and your personal board of directors is waiting. To calibrate the system, we need to establish your baseline. How would you like to begin?",
+    pathways: [ [Object], [Object], [Object], [Object], [Object], [Object] ]
+  },
+  required_zones: [
+    {
+      zone_id: 'inbox',
+      vault_path: '00_Inbox',
+      description: 'The drop zone for raw thoughts and web clippings.'
+    },
+    {
+      zone_id: 'strategy',
+      vault_path: '10_Strategy',
+      description: 'Contains formal OKRs and project briefs.'
+    },
+    {
+      zone_id: 'execution',
+      vault_path: '20_Execution',
+      description: 'Contains the tasks.jsonl queue and sprint boards.'
+    },
+    {
+      zone_id: 'briefings',
+      vault_path: '30_Briefings',
+      description: 'Contains unified Daily Notes.'
+    },
+    {
+      zone_id: 'agendas',
+      vault_path: '35_Agendas',
+      description: 'Staging ground for upcoming meeting agendas, talking points, and 1:1 structures.'
+    },
+    {
+      zone_id: 'network',
+      vault_path: '40_Network',
+      description: 'CRM tracking relationships, featuring YAML trackers for rhythms (consecutive-tactical-meetings) and relationship-tiers (manager, peer).'
+    },
+    {
+      zone_id: 'radar',
+      vault_path: '50_Radar',
+      description: 'Watchlist for emerging trends and research.'
+    },
+    {
+      zone_id: 'journal',
+      vault_path: '60_Journal',
+      description: 'Private boardroom for raw dumps and post-mortems.'
+    },
+    {
+      zone_id: 'rubrics',
+      vault_path: '80_Company_Rubrics',
+      description: 'Reference folder containing official HR rubrics, promotion packets, and leveling docs.'
+    },
+    {
+      zone_id: 'templates',
+      vault_path: '90_Templates',
+      description: 'The repository of dynamic templates owned and iteratively updated by the personas.'
+    },
+    {
+      zone_id: 'workspace',
+      vault_path: '99_Agent_Workspace',
+      description: 'Scratchpad for Specialists and Researchers.'
+    }
+  ]
+}
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Onboarding The Business of You > should execute the scenario successfully
+AVAILABLE TOOLS: [
+  'google_workspace___auth.clear',
+  'google_workspace___auth.refreshToken',
+  'google_workspace___docs.create',
+  'google_workspace___docs.insertText',
+  'google_workspace___docs.find',
+  'google_workspace___drive.findFolder',
+  'google_workspace___docs.move',
+  'google_workspace___docs.getText',
+  'google_workspace___docs.appendText',
+  'google_workspace___docs.replaceText',
+  'google_workspace___docs.extractIdFromUrl',
+  'google_workspace___slides.getText',
+  'google_workspace___slides.find',
+  'google_workspace___slides.getMetadata',
+  'google_workspace___sheets.getText',
+  'google_workspace___sheets.getRange',
+  'google_workspace___sheets.find',
+  'google_workspace___sheets.getMetadata',
+  'google_workspace___drive.search',
+  'google_workspace___drive.downloadFile',
+  'google_workspace___calendar.list',
+  'google_workspace___calendar.createEvent',
+  'google_workspace___calendar.listEvents',
+  'google_workspace___calendar.getEvent',
+  'google_workspace___calendar.findFreeTime',
+  'google_workspace___calendar.updateEvent',
+  'google_workspace___calendar.respondToEvent',
+  'google_workspace___calendar.deleteEvent',
+  'google_workspace___chat.listSpaces',
+  'google_workspace___chat.findSpaceByName',
+  'google_workspace___chat.sendMessage',
+  'google_workspace___chat.getMessages',
+  'google_workspace___chat.sendDm',
+  'google_workspace___chat.findDmByEmail',
+  'google_workspace___chat.listThreads',
+  'google_workspace___chat.setUpSpace',
+  'google_workspace___gmail.search',
+  'google_workspace___gmail.get',
+  'google_workspace___gmail.get_batch',
+  'google_workspace___gmail.downloadAttachment',
+  'google_workspace___gmail.modify',
+  'google_workspace___gmail.send',
+  'google_workspace___gmail.createDraft',
+  'google_workspace___gmail.sendDraft',
+  'google_workspace___gmail.listLabels',
+  'google_workspace___time.getCurrentDate',
+  'google_workspace___time.getCurrentTime',
+  'google_workspace___time.getTimeZone',
+  'google_workspace___people.getUserProfile',
+  'google_workspace___people.getMe',
+  'mock_server___mock_network_tool'
+] TC NAME: allocate_zone
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Onboarding The Business of You > should execute the scenario successfully
+AVAILABLE TOOLS: [
+  'google_workspace___auth.clear',
+  'google_workspace___auth.refreshToken',
+  'google_workspace___docs.create',
+  'google_workspace___docs.insertText',
+  'google_workspace___docs.find',
+  'google_workspace___drive.findFolder',
+  'google_workspace___docs.move',
+  'google_workspace___docs.getText',
+  'google_workspace___docs.appendText',
+  'google_workspace___docs.replaceText',
+  'google_workspace___docs.extractIdFromUrl',
+  'google_workspace___slides.getText',
+  'google_workspace___slides.find',
+  'google_workspace___slides.getMetadata',
+  'google_workspace___sheets.getText',
+  'google_workspace___sheets.getRange',
+  'google_workspace___sheets.find',
+  'google_workspace___sheets.getMetadata',
+  'google_workspace___drive.search',
+  'google_workspace___drive.downloadFile',
+  'google_workspace___calendar.list',
+  'google_workspace___calendar.createEvent',
+  'google_workspace___calendar.listEvents',
+  'google_workspace___calendar.getEvent',
+  'google_workspace___calendar.findFreeTime',
+  'google_workspace___calendar.updateEvent',
+  'google_workspace___calendar.respondToEvent',
+  'google_workspace___calendar.deleteEvent',
+  'google_workspace___chat.listSpaces',
+  'google_workspace___chat.findSpaceByName',
+  'google_workspace___chat.sendMessage',
+  'google_workspace___chat.getMessages',
+  'google_workspace___chat.sendDm',
+  'google_workspace___chat.findDmByEmail',
+  'google_workspace___chat.listThreads',
+  'google_workspace___chat.setUpSpace',
+  'google_workspace___gmail.search',
+  'google_workspace___gmail.get',
+  'google_workspace___gmail.get_batch',
+  'google_workspace___gmail.downloadAttachment',
+  'google_workspace___gmail.modify',
+  'google_workspace___gmail.send',
+  'google_workspace___gmail.createDraft',
+  'google_workspace___gmail.sendDraft',
+  'google_workspace___gmail.listLabels',
+  'google_workspace___time.getCurrentDate',
+  'google_workspace___time.getCurrentTime',
+  'google_workspace___time.getTimeZone',
+  'google_workspace___people.getUserProfile',
+  'google_workspace___people.getMe',
+  'mock_server___mock_network_tool'
+] TC NAME: allocate_zone
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Onboarding The Business of You > should execute the scenario successfully
+SEND_MESSAGE_RESULT: Awaiting user selection...
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Chief Strategist OKR Generation
+Connected to MCP Server: google_workspace with 49 tools.
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Chief Strategist OKR Generation
+Connected to MCP Server: mock_server with 1 tools.
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Chief Strategist OKR Generation
+LOADED TOOLS FOR Chief Strategist OKR Generation : [
+  'business_of_you.crm_query',
+  'business_of_you.manage_queue',
+  'business_of_you.read_calendar',
+  'core.allocate_zone',
+  'core.echo',
+  'core.file_manager',
+  'core.install_fleet',
+  'core.system_diagnostic',
+  'core.update_memory',
+  'core.update_profile',
+  'para_career.map_vault',
+  'para_career.unreliable_math',
+  'para_career.web_search'
+]
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Chief Strategist OKR Generation > should execute the scenario successfully
+Using configured provider: MockLLMProvider
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Chief Strategist OKR Generation > should execute the scenario successfully
+AVAILABLE TOOLS: [
+  'google_workspace___auth.clear',
+  'google_workspace___auth.refreshToken',
+  'google_workspace___docs.create',
+  'google_workspace___docs.insertText',
+  'google_workspace___docs.find',
+  'google_workspace___drive.findFolder',
+  'google_workspace___docs.move',
+  'google_workspace___docs.getText',
+  'google_workspace___docs.appendText',
+  'google_workspace___docs.replaceText',
+  'google_workspace___docs.extractIdFromUrl',
+  'google_workspace___slides.getText',
+  'google_workspace___slides.find',
+  'google_workspace___slides.getMetadata',
+  'google_workspace___sheets.getText',
+  'google_workspace___sheets.getRange',
+  'google_workspace___sheets.find',
+  'google_workspace___sheets.getMetadata',
+  'google_workspace___drive.search',
+  'google_workspace___drive.downloadFile',
+  'google_workspace___calendar.list',
+  'google_workspace___calendar.createEvent',
+  'google_workspace___calendar.listEvents',
+  'google_workspace___calendar.getEvent',
+  'google_workspace___calendar.findFreeTime',
+  'google_workspace___calendar.updateEvent',
+  'google_workspace___calendar.respondToEvent',
+  'google_workspace___calendar.deleteEvent',
+  'google_workspace___chat.listSpaces',
+  'google_workspace___chat.findSpaceByName',
+  'google_workspace___chat.sendMessage',
+  'google_workspace___chat.getMessages',
+  'google_workspace___chat.sendDm',
+  'google_workspace___chat.findDmByEmail',
+  'google_workspace___chat.listThreads',
+  'google_workspace___chat.setUpSpace',
+  'google_workspace___gmail.search',
+  'google_workspace___gmail.get',
+  'google_workspace___gmail.get_batch',
+  'google_workspace___gmail.downloadAttachment',
+  'google_workspace___gmail.modify',
+  'google_workspace___gmail.send',
+  'google_workspace___gmail.createDraft',
+  'google_workspace___gmail.sendDraft',
+  'google_workspace___gmail.listLabels',
+  'google_workspace___time.getCurrentDate',
+  'google_workspace___time.getCurrentTime',
+  'google_workspace___time.getTimeZone',
+  'google_workspace___people.getUserProfile',
+  'google_workspace___people.getMe',
+  'mock_server___mock_network_tool'
+] TC NAME: file_manager
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Chief Strategist OKR Generation > should execute the scenario successfully
+SEND_MESSAGE_RESULT: 
+
+<details><summary>⚙️ Executed tool: file_manager</summary>
+
+```text
+{"status":"success","message":"File written to zone strategy: Q3_Agentic_Vault_OKRs.md","side_effects":[{"type":"write","path":"10_Strategy/Q3_Agentic_Vault_OKRs.md"}]}
+```
+</details>
+
+I have created your Q3 OKR document in the Strategy zone.
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Chief Quality Officer Sprint Review
+Connected to MCP Server: google_workspace with 49 tools.
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Chief Quality Officer Sprint Review
+Connected to MCP Server: mock_server with 1 tools.
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Chief Quality Officer Sprint Review
+LOADED TOOLS FOR Chief Quality Officer Sprint Review : [
+  'business_of_you.crm_query',
+  'business_of_you.manage_queue',
+  'business_of_you.read_calendar',
+  'core.allocate_zone',
+  'core.echo',
+  'core.file_manager',
+  'core.install_fleet',
+  'core.system_diagnostic',
+  'core.update_memory',
+  'core.update_profile',
+  'para_career.map_vault',
+  'para_career.unreliable_math',
+  'para_career.web_search'
+]
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Chief Quality Officer Sprint Review > should execute the scenario successfully
+Using configured provider: MockLLMProvider
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Chief Quality Officer Sprint Review > should execute the scenario successfully
+AVAILABLE TOOLS: [
+  'google_workspace___auth.clear',
+  'google_workspace___auth.refreshToken',
+  'google_workspace___docs.create',
+  'google_workspace___docs.insertText',
+  'google_workspace___docs.find',
+  'google_workspace___drive.findFolder',
+  'google_workspace___docs.move',
+  'google_workspace___docs.getText',
+  'google_workspace___docs.appendText',
+  'google_workspace___docs.replaceText',
+  'google_workspace___docs.extractIdFromUrl',
+  'google_workspace___slides.getText',
+  'google_workspace___slides.find',
+  'google_workspace___slides.getMetadata',
+  'google_workspace___sheets.getText',
+  'google_workspace___sheets.getRange',
+  'google_workspace___sheets.find',
+  'google_workspace___sheets.getMetadata',
+  'google_workspace___drive.search',
+  'google_workspace___drive.downloadFile',
+  'google_workspace___calendar.list',
+  'google_workspace___calendar.createEvent',
+  'google_workspace___calendar.listEvents',
+  'google_workspace___calendar.getEvent',
+  'google_workspace___calendar.findFreeTime',
+  'google_workspace___calendar.updateEvent',
+  'google_workspace___calendar.respondToEvent',
+  'google_workspace___calendar.deleteEvent',
+  'google_workspace___chat.listSpaces',
+  'google_workspace___chat.findSpaceByName',
+  'google_workspace___chat.sendMessage',
+  'google_workspace___chat.getMessages',
+  'google_workspace___chat.sendDm',
+  'google_workspace___chat.findDmByEmail',
+  'google_workspace___chat.listThreads',
+  'google_workspace___chat.setUpSpace',
+  'google_workspace___gmail.search',
+  'google_workspace___gmail.get',
+  'google_workspace___gmail.get_batch',
+  'google_workspace___gmail.downloadAttachment',
+  'google_workspace___gmail.modify',
+  'google_workspace___gmail.send',
+  'google_workspace___gmail.createDraft',
+  'google_workspace___gmail.sendDraft',
+  'google_workspace___gmail.listLabels',
+  'google_workspace___time.getCurrentDate',
+  'google_workspace___time.getCurrentTime',
+  'google_workspace___time.getTimeZone',
+  'google_workspace___people.getUserProfile',
+  'google_workspace___people.getMe',
+  'mock_server___mock_network_tool'
+] TC NAME: file_manager
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Chief Quality Officer Sprint Review > should execute the scenario successfully
+AVAILABLE TOOLS: [
+  'google_workspace___auth.clear',
+  'google_workspace___auth.refreshToken',
+  'google_workspace___docs.create',
+  'google_workspace___docs.insertText',
+  'google_workspace___docs.find',
+  'google_workspace___drive.findFolder',
+  'google_workspace___docs.move',
+  'google_workspace___docs.getText',
+  'google_workspace___docs.appendText',
+  'google_workspace___docs.replaceText',
+  'google_workspace___docs.extractIdFromUrl',
+  'google_workspace___slides.getText',
+  'google_workspace___slides.find',
+  'google_workspace___slides.getMetadata',
+  'google_workspace___sheets.getText',
+  'google_workspace___sheets.getRange',
+  'google_workspace___sheets.find',
+  'google_workspace___sheets.getMetadata',
+  'google_workspace___drive.search',
+  'google_workspace___drive.downloadFile',
+  'google_workspace___calendar.list',
+  'google_workspace___calendar.createEvent',
+  'google_workspace___calendar.listEvents',
+  'google_workspace___calendar.getEvent',
+  'google_workspace___calendar.findFreeTime',
+  'google_workspace___calendar.updateEvent',
+  'google_workspace___calendar.respondToEvent',
+  'google_workspace___calendar.deleteEvent',
+  'google_workspace___chat.listSpaces',
+  'google_workspace___chat.findSpaceByName',
+  'google_workspace___chat.sendMessage',
+  'google_workspace___chat.getMessages',
+  'google_workspace___chat.sendDm',
+  'google_workspace___chat.findDmByEmail',
+  'google_workspace___chat.listThreads',
+  'google_workspace___chat.setUpSpace',
+  'google_workspace___gmail.search',
+  'google_workspace___gmail.get',
+  'google_workspace___gmail.get_batch',
+  'google_workspace___gmail.downloadAttachment',
+  'google_workspace___gmail.modify',
+  'google_workspace___gmail.send',
+  'google_workspace___gmail.createDraft',
+  'google_workspace___gmail.sendDraft',
+  'google_workspace___gmail.listLabels',
+  'google_workspace___time.getCurrentDate',
+  'google_workspace___time.getCurrentTime',
+  'google_workspace___time.getTimeZone',
+  'google_workspace___people.getUserProfile',
+  'google_workspace___people.getMe',
+  'mock_server___mock_network_tool'
+] TC NAME: file_manager
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Chief Quality Officer Sprint Review > should execute the scenario successfully
+SEND_MESSAGE_RESULT: 
+
+<details><summary>⚙️ Executed tool: file_manager</summary>
+
+```text
+{"error":"File not found in zone execution: tasks.jsonl"}
+```
+</details>
+
+<details><summary>⚙️ Executed tool: file_manager</summary>
+
+```text
+{"status":"success","message":"File written to zone execution: Sprint_Deviation_Report.md","side_effects":[{"type":"write","path":"20_Execution/Sprint_Deviation_Report.md"}]}
+```
+</details>
+
+The deviation report has been generated.
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: HITL Approval Flow
+Connected to MCP Server: google_workspace with 49 tools.
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: HITL Approval Flow
+Connected to MCP Server: mock_server with 1 tools.
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: HITL Approval Flow > should execute the scenario successfully
+Using configured provider: MockLLMProvider
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: HITL Approval Flow > should execute the scenario successfully
+SEND_MESSAGE_RESULT: ⚠️ **Approval Requested:**
+- **Action:** Delete the production database
+- **Reason:** You asked me to delete it, but this is a destructive action.
+
+*The system has paused and added this request to the HITL queue.*
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Present Options Flow
+Connected to MCP Server: google_workspace with 49 tools.
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Present Options Flow
+Connected to MCP Server: mock_server with 1 tools.
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Present Options Flow > should execute the scenario successfully
+Using configured provider: MockLLMProvider
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Present Options Flow > should execute the scenario successfully
+SEND_MESSAGE_RESULT: Awaiting user selection...
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Skill Loading Flow
+Connected to MCP Server: google_workspace with 49 tools.
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Skill Loading Flow
+Connected to MCP Server: mock_server with 1 tools.
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Skill Loading Flow > should execute the scenario successfully
+Using configured provider: MockLLMProvider
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Skill Loading Flow > should execute the scenario successfully
+SEND_MESSAGE_RESULT: <details><summary>🧠 Loaded Skill: project_planning</summary>
+
+```text
+Error: Skill 'project_planning' not found.
+```
+</details>
+
+I have loaded the skill instructions.
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Routine Morning Briefing
+Connected to MCP Server: google_workspace with 49 tools.
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Routine Morning Briefing
+Connected to MCP Server: mock_server with 1 tools.
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Routine Morning Briefing
+LOADED TOOLS FOR Routine Morning Briefing : [
+  'business_of_you.crm_query',
+  'business_of_you.manage_queue',
+  'business_of_you.read_calendar',
+  'core.allocate_zone',
+  'core.echo',
+  'core.file_manager',
+  'core.install_fleet',
+  'core.system_diagnostic',
+  'core.update_memory',
+  'core.update_profile',
+  'para_career.map_vault',
+  'para_career.unreliable_math',
+  'para_career.web_search'
+]
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Routine Morning Briefing > should execute the scenario successfully
+Using configured provider: MockLLMProvider
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Routine Morning Briefing > should execute the scenario successfully
+SEND_MESSAGE_RESULT: <details><summary>⚙️ Routine Manager: trigger</summary>
+
+```text
+Error: Routine 'morning_briefing' not found.
+```
+</details>
+
+I have triggered the morning briefing routine.
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Manage Tasks Queue
+Connected to MCP Server: google_workspace with 49 tools.
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Manage Tasks Queue
+Connected to MCP Server: mock_server with 1 tools.
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Manage Tasks Queue
+LOADED TOOLS FOR Manage Tasks Queue : [
+  'business_of_you.crm_query',
+  'business_of_you.manage_queue',
+  'business_of_you.read_calendar',
+  'core.allocate_zone',
+  'core.echo',
+  'core.file_manager',
+  'core.install_fleet',
+  'core.system_diagnostic',
+  'core.update_memory',
+  'core.update_profile',
+  'para_career.map_vault',
+  'para_career.unreliable_math',
+  'para_career.web_search'
+]
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Manage Tasks Queue > should execute the scenario successfully
+Using configured provider: MockLLMProvider
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Manage Tasks Queue > should execute the scenario successfully
+AVAILABLE TOOLS: [
+  'google_workspace___auth.clear',
+  'google_workspace___auth.refreshToken',
+  'google_workspace___docs.create',
+  'google_workspace___docs.insertText',
+  'google_workspace___docs.find',
+  'google_workspace___drive.findFolder',
+  'google_workspace___docs.move',
+  'google_workspace___docs.getText',
+  'google_workspace___docs.appendText',
+  'google_workspace___docs.replaceText',
+  'google_workspace___docs.extractIdFromUrl',
+  'google_workspace___slides.getText',
+  'google_workspace___slides.find',
+  'google_workspace___slides.getMetadata',
+  'google_workspace___sheets.getText',
+  'google_workspace___sheets.getRange',
+  'google_workspace___sheets.find',
+  'google_workspace___sheets.getMetadata',
+  'google_workspace___drive.search',
+  'google_workspace___drive.downloadFile',
+  'google_workspace___calendar.list',
+  'google_workspace___calendar.createEvent',
+  'google_workspace___calendar.listEvents',
+  'google_workspace___calendar.getEvent',
+  'google_workspace___calendar.findFreeTime',
+  'google_workspace___calendar.updateEvent',
+  'google_workspace___calendar.respondToEvent',
+  'google_workspace___calendar.deleteEvent',
+  'google_workspace___chat.listSpaces',
+  'google_workspace___chat.findSpaceByName',
+  'google_workspace___chat.sendMessage',
+  'google_workspace___chat.getMessages',
+  'google_workspace___chat.sendDm',
+  'google_workspace___chat.findDmByEmail',
+  'google_workspace___chat.listThreads',
+  'google_workspace___chat.setUpSpace',
+  'google_workspace___gmail.search',
+  'google_workspace___gmail.get',
+  'google_workspace___gmail.get_batch',
+  'google_workspace___gmail.downloadAttachment',
+  'google_workspace___gmail.modify',
+  'google_workspace___gmail.send',
+  'google_workspace___gmail.createDraft',
+  'google_workspace___gmail.sendDraft',
+  'google_workspace___gmail.listLabels',
+  'google_workspace___time.getCurrentDate',
+  'google_workspace___time.getCurrentTime',
+  'google_workspace___time.getTimeZone',
+  'google_workspace___people.getUserProfile',
+  'google_workspace___people.getMe',
+  'mock_server___mock_network_tool'
+] TC NAME: manage_queue
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Manage Tasks Queue > should execute the scenario successfully
+SEND_MESSAGE_RESULT: 
+
+<details><summary>⚙️ Executed tool: manage_queue</summary>
+
+```text
+ERROR: Permission Denied: Tool 'manage_queue' is not in your capabilities.
+
+[SYSTEM DIRECTIVE]: Tool execution failed. Do NOT report this failure to the user yet. You must autonomously analyze the error, correct your arguments or approach, and retry.
+```
+</details>
+
+I have added the task to your queue.
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Coach Socratic Session
+Connected to MCP Server: google_workspace with 49 tools.
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Coach Socratic Session
+Connected to MCP Server: mock_server with 1 tools.
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Coach Socratic Session
+LOADED TOOLS FOR Coach Socratic Session : [
+  'business_of_you.crm_query',
+  'business_of_you.manage_queue',
+  'business_of_you.read_calendar',
+  'core.allocate_zone',
+  'core.echo',
+  'core.file_manager',
+  'core.install_fleet',
+  'core.system_diagnostic',
+  'core.update_memory',
+  'core.update_profile',
+  'para_career.map_vault',
+  'para_career.unreliable_math',
+  'para_career.web_search'
+]
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Coach Socratic Session > should execute the scenario successfully
+Using configured provider: MockLLMProvider
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Coach Socratic Session > should execute the scenario successfully
+AVAILABLE TOOLS: [
+  'google_workspace___auth.clear',
+  'google_workspace___auth.refreshToken',
+  'google_workspace___docs.create',
+  'google_workspace___docs.insertText',
+  'google_workspace___docs.find',
+  'google_workspace___drive.findFolder',
+  'google_workspace___docs.move',
+  'google_workspace___docs.getText',
+  'google_workspace___docs.appendText',
+  'google_workspace___docs.replaceText',
+  'google_workspace___docs.extractIdFromUrl',
+  'google_workspace___slides.getText',
+  'google_workspace___slides.find',
+  'google_workspace___slides.getMetadata',
+  'google_workspace___sheets.getText',
+  'google_workspace___sheets.getRange',
+  'google_workspace___sheets.find',
+  'google_workspace___sheets.getMetadata',
+  'google_workspace___drive.search',
+  'google_workspace___drive.downloadFile',
+  'google_workspace___calendar.list',
+  'google_workspace___calendar.createEvent',
+  'google_workspace___calendar.listEvents',
+  'google_workspace___calendar.getEvent',
+  'google_workspace___calendar.findFreeTime',
+  'google_workspace___calendar.updateEvent',
+  'google_workspace___calendar.respondToEvent',
+  'google_workspace___calendar.deleteEvent',
+  'google_workspace___chat.listSpaces',
+  'google_workspace___chat.findSpaceByName',
+  'google_workspace___chat.sendMessage',
+  'google_workspace___chat.getMessages',
+  'google_workspace___chat.sendDm',
+  'google_workspace___chat.findDmByEmail',
+  'google_workspace___chat.listThreads',
+  'google_workspace___chat.setUpSpace',
+  'google_workspace___gmail.search',
+  'google_workspace___gmail.get',
+  'google_workspace___gmail.get_batch',
+  'google_workspace___gmail.downloadAttachment',
+  'google_workspace___gmail.modify',
+  'google_workspace___gmail.send',
+  'google_workspace___gmail.createDraft',
+  'google_workspace___gmail.sendDraft',
+  'google_workspace___gmail.listLabels',
+  'google_workspace___time.getCurrentDate',
+  'google_workspace___time.getCurrentTime',
+  'google_workspace___time.getTimeZone',
+  'google_workspace___people.getUserProfile',
+  'google_workspace___people.getMe',
+  'mock_server___mock_network_tool'
+] TC NAME: file_manager
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Coach Socratic Session > should execute the scenario successfully
+SEND_MESSAGE_RESULT: 
+
+<details><summary>⚙️ Executed tool: file_manager</summary>
+
+```text
+ERROR: Permission Denied: Tool 'file_manager' is not in your capabilities.
+
+[SYSTEM DIRECTIVE]: Tool execution failed. Do NOT report this failure to the user yet. You must autonomously analyze the error, correct your arguments or approach, and retry.
+```
+</details>
+
+Let's talk about the team conflict. What do you think is the root cause?
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Comms CRM Outreach
+Connected to MCP Server: google_workspace with 49 tools.
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Comms CRM Outreach
+Connected to MCP Server: mock_server with 1 tools.
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Comms CRM Outreach
+LOADED TOOLS FOR Comms CRM Outreach : [
+  'business_of_you.crm_query',
+  'business_of_you.manage_queue',
+  'business_of_you.read_calendar',
+  'core.allocate_zone',
+  'core.echo',
+  'core.file_manager',
+  'core.install_fleet',
+  'core.system_diagnostic',
+  'core.update_memory',
+  'core.update_profile',
+  'para_career.map_vault',
+  'para_career.unreliable_math',
+  'para_career.web_search'
+]
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Comms CRM Outreach > should execute the scenario successfully
+Using configured provider: MockLLMProvider
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Comms CRM Outreach > should execute the scenario successfully
+AVAILABLE TOOLS: [
+  'google_workspace___auth.clear',
+  'google_workspace___auth.refreshToken',
+  'google_workspace___docs.create',
+  'google_workspace___docs.insertText',
+  'google_workspace___docs.find',
+  'google_workspace___drive.findFolder',
+  'google_workspace___docs.move',
+  'google_workspace___docs.getText',
+  'google_workspace___docs.appendText',
+  'google_workspace___docs.replaceText',
+  'google_workspace___docs.extractIdFromUrl',
+  'google_workspace___slides.getText',
+  'google_workspace___slides.find',
+  'google_workspace___slides.getMetadata',
+  'google_workspace___sheets.getText',
+  'google_workspace___sheets.getRange',
+  'google_workspace___sheets.find',
+  'google_workspace___sheets.getMetadata',
+  'google_workspace___drive.search',
+  'google_workspace___drive.downloadFile',
+  'google_workspace___calendar.list',
+  'google_workspace___calendar.createEvent',
+  'google_workspace___calendar.listEvents',
+  'google_workspace___calendar.getEvent',
+  'google_workspace___calendar.findFreeTime',
+  'google_workspace___calendar.updateEvent',
+  'google_workspace___calendar.respondToEvent',
+  'google_workspace___calendar.deleteEvent',
+  'google_workspace___chat.listSpaces',
+  'google_workspace___chat.findSpaceByName',
+  'google_workspace___chat.sendMessage',
+  'google_workspace___chat.getMessages',
+  'google_workspace___chat.sendDm',
+  'google_workspace___chat.findDmByEmail',
+  'google_workspace___chat.listThreads',
+  'google_workspace___chat.setUpSpace',
+  'google_workspace___gmail.search',
+  'google_workspace___gmail.get',
+  'google_workspace___gmail.get_batch',
+  'google_workspace___gmail.downloadAttachment',
+  'google_workspace___gmail.modify',
+  'google_workspace___gmail.send',
+  'google_workspace___gmail.createDraft',
+  'google_workspace___gmail.sendDraft',
+  'google_workspace___gmail.listLabels',
+  'google_workspace___time.getCurrentDate',
+  'google_workspace___time.getCurrentTime',
+  'google_workspace___time.getTimeZone',
+  'google_workspace___people.getUserProfile',
+  'google_workspace___people.getMe',
+  'mock_server___mock_network_tool'
+] TC NAME: file_manager
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Comms CRM Outreach > should execute the scenario successfully
+AVAILABLE TOOLS: [
+  'google_workspace___auth.clear',
+  'google_workspace___auth.refreshToken',
+  'google_workspace___docs.create',
+  'google_workspace___docs.insertText',
+  'google_workspace___docs.find',
+  'google_workspace___drive.findFolder',
+  'google_workspace___docs.move',
+  'google_workspace___docs.getText',
+  'google_workspace___docs.appendText',
+  'google_workspace___docs.replaceText',
+  'google_workspace___docs.extractIdFromUrl',
+  'google_workspace___slides.getText',
+  'google_workspace___slides.find',
+  'google_workspace___slides.getMetadata',
+  'google_workspace___sheets.getText',
+  'google_workspace___sheets.getRange',
+  'google_workspace___sheets.find',
+  'google_workspace___sheets.getMetadata',
+  'google_workspace___drive.search',
+  'google_workspace___drive.downloadFile',
+  'google_workspace___calendar.list',
+  'google_workspace___calendar.createEvent',
+  'google_workspace___calendar.listEvents',
+  'google_workspace___calendar.getEvent',
+  'google_workspace___calendar.findFreeTime',
+  'google_workspace___calendar.updateEvent',
+  'google_workspace___calendar.respondToEvent',
+  'google_workspace___calendar.deleteEvent',
+  'google_workspace___chat.listSpaces',
+  'google_workspace___chat.findSpaceByName',
+  'google_workspace___chat.sendMessage',
+  'google_workspace___chat.getMessages',
+  'google_workspace___chat.sendDm',
+  'google_workspace___chat.findDmByEmail',
+  'google_workspace___chat.listThreads',
+  'google_workspace___chat.setUpSpace',
+  'google_workspace___gmail.search',
+  'google_workspace___gmail.get',
+  'google_workspace___gmail.get_batch',
+  'google_workspace___gmail.downloadAttachment',
+  'google_workspace___gmail.modify',
+  'google_workspace___gmail.send',
+  'google_workspace___gmail.createDraft',
+  'google_workspace___gmail.sendDraft',
+  'google_workspace___gmail.listLabels',
+  'google_workspace___time.getCurrentDate',
+  'google_workspace___time.getCurrentTime',
+  'google_workspace___time.getTimeZone',
+  'google_workspace___people.getUserProfile',
+  'google_workspace___people.getMe',
+  'mock_server___mock_network_tool'
+] TC NAME: file_manager
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Comms CRM Outreach > should execute the scenario successfully
+SEND_MESSAGE_RESULT: 
+
+<details><summary>⚙️ Executed tool: file_manager</summary>
+
+```text
+{"error":"File not found in zone network: Sarah.md"}
+```
+</details>
+
+<details><summary>⚙️ Executed tool: file_manager</summary>
+
+```text
+{"status":"success","message":"File written to zone workspace: Draft_Email_Sarah.md","side_effects":[{"type":"write","path":"99_Agent_Workspace/Draft_Email_Sarah.md"}]}
+```
+</details>
+
+I have drafted the email for Sarah in your workspace.
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Automatic Template Installation
+Connected to MCP Server: google_workspace with 49 tools.
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Automatic Template Installation
+Connected to MCP Server: mock_server with 1 tools.
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Automatic Template Installation > should execute the scenario successfully
+Using configured provider: MockLLMProvider
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Automatic Template Installation > should execute the scenario successfully
+AVAILABLE TOOLS: [
+  'google_workspace___auth.clear',
+  'google_workspace___auth.refreshToken',
+  'google_workspace___docs.create',
+  'google_workspace___docs.insertText',
+  'google_workspace___docs.find',
+  'google_workspace___drive.findFolder',
+  'google_workspace___docs.move',
+  'google_workspace___docs.getText',
+  'google_workspace___docs.appendText',
+  'google_workspace___docs.replaceText',
+  'google_workspace___docs.extractIdFromUrl',
+  'google_workspace___slides.getText',
+  'google_workspace___slides.find',
+  'google_workspace___slides.getMetadata',
+  'google_workspace___sheets.getText',
+  'google_workspace___sheets.getRange',
+  'google_workspace___sheets.find',
+  'google_workspace___sheets.getMetadata',
+  'google_workspace___drive.search',
+  'google_workspace___drive.downloadFile',
+  'google_workspace___calendar.list',
+  'google_workspace___calendar.createEvent',
+  'google_workspace___calendar.listEvents',
+  'google_workspace___calendar.getEvent',
+  'google_workspace___calendar.findFreeTime',
+  'google_workspace___calendar.updateEvent',
+  'google_workspace___calendar.respondToEvent',
+  'google_workspace___calendar.deleteEvent',
+  'google_workspace___chat.listSpaces',
+  'google_workspace___chat.findSpaceByName',
+  'google_workspace___chat.sendMessage',
+  'google_workspace___chat.getMessages',
+  'google_workspace___chat.sendDm',
+  'google_workspace___chat.findDmByEmail',
+  'google_workspace___chat.listThreads',
+  'google_workspace___chat.setUpSpace',
+  'google_workspace___gmail.search',
+  'google_workspace___gmail.get',
+  'google_workspace___gmail.get_batch',
+  'google_workspace___gmail.downloadAttachment',
+  'google_workspace___gmail.modify',
+  'google_workspace___gmail.send',
+  'google_workspace___gmail.createDraft',
+  'google_workspace___gmail.sendDraft',
+  'google_workspace___gmail.listLabels',
+  'google_workspace___time.getCurrentDate',
+  'google_workspace___time.getCurrentTime',
+  'google_workspace___time.getTimeZone',
+  'google_workspace___people.getUserProfile',
+  'google_workspace___people.getMe',
+  'mock_server___mock_network_tool'
+] TC NAME: install_fleet
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Automatic Template Installation > should execute the scenario successfully
+YAML String: name: "The Business of You"
+system_version: 0.0.1
+description: "A suite of agents to help you manage your professional career or job like a business."
+status: active
+onboarding:
+  trigger_agent: Concierge
+  welcome_message: "Welcome to 'The Business of You'. The suite is fully installed and your personal board of directors is waiting. To calibrate the system, we need to establish your baseline. How would you like to begin?"
+  pathways:
+    - id: guided_full_cycle
+      label: "0. The Virtuous Cycle (Guided Full Setup)"
+      description: "Walk through the entire setup step-by-step: Identity -> Strategy & Stakeholders -> Operations -> Execution -> (Optional) Team Management."
+      target_agent: "Executive Coach"
+      handoff_context: "[GUIDED MODE ACTIVE - FULL CYCLE (STEP 1/5)]: The user wants to complete the full Business of You lifecycle. You are Step 1. First, initiate the Socratic interview to build their `Me.md` file. Second, after `Me.md` is defined, ask them about their current challenges, anxieties, excitements, and opportunities to help shape their mindset before strategy formulation. When you have successfully completed this emotional and strategic baseline, you MUST use the 'transfer_session' tool to hand the user to the 'Chief Strategist' with the context: '[GUIDED MODE ACTIVE - FULL CYCLE (STEP 2/5)]: The user has established their identity and baseline. You are Step 2. First, guide them to define 3 OKRs based on their vision and current challenges. Second, help them map out their critical non-report stakeholders (managers, peers, matrix partners) necessary to achieve those OKRs into the network zone. When finished, transfer them to the Chief Operating Officer with the context: [GUIDED MODE ACTIVE - FULL CYCLE (STEP 3/5)]: The user has defined their strategy and mapped stakeholders. You are Step 3. Help them atomize these OKRs into actionable tickets in the queue. When finished, transfer them to the Chief of Staff with the context: [GUIDED MODE ACTIVE - FULL CYCLE (STEP 4/5)]: The user has atomized their strategy. You are Step 4. Help them brain dump any immediate daily fires onto the execution Kanban. When finished, check if the user has management duties (by reviewing their profile or asking). If they DO have management duties, transfer them to the Chief People Officer with the context: [GUIDED MODE ACTIVE - FULL CYCLE (STEP 5/5)]: The user has organized their tasks. You are the final step. Help them map their direct reports and team structure into the network zone. When finished, transfer them BACK to the Concierge. If they DO NOT have management duties, you are the final step, so transfer them directly BACK to the Concierge.'"
+
+    - id: identity_and_vision
+      label: "1. Establish my core Identity & Vision (Start Here)"
+      description: "Build your `Me.md` profile and define your 5-10 year horizon."
+      target_agent: "Executive Coach"
+      handoff_context: "[GUIDED MODE ACTIVE]: The user has elected to establish their core identity. Please initiate the Socratic interview to build their `Me.md` file in the strategy folder, focusing on their 5-10 year career vision. When you have successfully completed your specific onboarding task, you MUST automatically use the 'transfer_session' tool to hand the user BACK to the Concierge, including a summary of what you achieved."
+
+    - id: define_strategy
+      label: "2. Draft my 6-month Strategy & OKRs"
+      description: "Translate your long-term vision into actionable quarterly objectives."
+      target_agent: "Strategist"
+      handoff_context: "[GUIDED MODE ACTIVE]: The user wants to draft their 6-12 month strategy. Please review their `Me.md` (if it exists) and help them define 3 OKRs, saving them as a formal document in the `strategy` zone. When you have successfully completed your specific onboarding task, you MUST automatically use the 'transfer_session' tool to hand the user BACK to the Concierge, including a summary of what you achieved."
+
+    - id: execution_fires
+      label: "3. Clear my immediate tasks & 'fires'"
+      description: "Do a quick brain dump to populate your Kanban board for the week."
+      target_agent: "Chief of Staff"
+      handoff_context: "[GUIDED MODE ACTIVE]: The user needs to organize their immediate operational execution. Ask them for a brain dump of their top 3 'fires' and translate them into tasks on the `execution` Kanban board. When you have successfully completed your specific onboarding task, you MUST automatically use the 'transfer_session' tool to hand the user BACK to the Concierge, including a summary of what you achieved."
+
+    - id: crm_stakeholders
+      label: "4. Map my critical stakeholders"
+      description: "Set up your relationship tracker for key managers and peers."
+      target_agent: "Chief People Officer"
+      handoff_context: "[GUIDED MODE ACTIVE]: The user wants to set up their CRM. Ask them for the names and roles of their 3 most critical stakeholders right now, and generate relationship tracking files in the `network` zone. When you have successfully completed your specific onboarding task, you MUST automatically use the 'transfer_session' tool to hand the user BACK to the Concierge, including a summary of what you achieved."
+
+    - id: strategy_pivot
+      label: "5. Pivot my strategy based on challenges"
+      description: "Socratically break down perceived challenges and shift your strategy."
+      target_agent: "Executive Coach"
+      handoff_context: "[GUIDED MODE ACTIVE]: The user is perceiving challenges and wants to evaluate a shift in strategy. Please act as a Socratic sounding board to break down these challenges. Use the `file_manager` tool to output a `Strategic_Pivot_Log.md` file in the `journal` zone, or update their existing documents in the `strategy` zone if the pivot results in new formal OKRs. When you have successfully completed your specific onboarding task, you MUST automatically use the 'transfer_session' tool to hand the user BACK to the Concierge, including a summary of what you achieved."
+required_zones:
+  - zone_id: inbox
+    vault_path: 00_Inbox
+    description: "The drop zone for raw thoughts and web clippings."
+  - zone_id: strategy
+    vault_path: 10_Strategy
+    description: "Contains formal OKRs and project briefs."
+  - zone_id: execution
+    vault_path: 20_Execution
+    description: "Contains the tasks.jsonl queue and sprint boards."
+  - zone_id: briefings
+    vault_path: 30_Briefings
+    description: "Contains unified Daily Notes."
+  - zone_id: agendas
+    vault_path: 35_Agendas
+    description: "Staging ground for upcoming meeting agendas, talking points, and 1:1 structures."
+  - zone_id: network
+    vault_path: 40_Network
+    description: "CRM tracking relationships, featuring YAML trackers for rhythms (consecutive-tactical-meetings) and relationship-tiers (manager, peer)."
+  - zone_id: radar
+    vault_path: 50_Radar
+    description: "Watchlist for emerging trends and research."
+  - zone_id: journal
+    vault_path: 60_Journal
+    description: "Private boardroom for raw dumps and post-mortems."
+  - zone_id: rubrics
+    vault_path: 80_Company_Rubrics
+    description: "Reference folder containing official HR rubrics, promotion packets, and leveling docs."
+  - zone_id: templates
+    vault_path: 90_Templates
+    description: "The repository of dynamic templates owned and iteratively updated by the personas."
+  - zone_id: workspace
+    vault_path: 99_Agent_Workspace
+    description: "Scratchpad for Specialists and Researchers."
+Parsed YAML: {
+  name: 'The Business of You',
+  system_version: '0.0.1',
+  description: 'A suite of agents to help you manage your professional career or job like a business.',
+  status: 'active',
+  onboarding: {
+    trigger_agent: 'Concierge',
+    welcome_message: "Welcome to 'The Business of You'. The suite is fully installed and your personal board of directors is waiting. To calibrate the system, we need to establish your baseline. How would you like to begin?",
+    pathways: [ [Object], [Object], [Object], [Object], [Object], [Object] ]
+  },
+  required_zones: [
+    {
+      zone_id: 'inbox',
+      vault_path: '00_Inbox',
+      description: 'The drop zone for raw thoughts and web clippings.'
+    },
+    {
+      zone_id: 'strategy',
+      vault_path: '10_Strategy',
+      description: 'Contains formal OKRs and project briefs.'
+    },
+    {
+      zone_id: 'execution',
+      vault_path: '20_Execution',
+      description: 'Contains the tasks.jsonl queue and sprint boards.'
+    },
+    {
+      zone_id: 'briefings',
+      vault_path: '30_Briefings',
+      description: 'Contains unified Daily Notes.'
+    },
+    {
+      zone_id: 'agendas',
+      vault_path: '35_Agendas',
+      description: 'Staging ground for upcoming meeting agendas, talking points, and 1:1 structures.'
+    },
+    {
+      zone_id: 'network',
+      vault_path: '40_Network',
+      description: 'CRM tracking relationships, featuring YAML trackers for rhythms (consecutive-tactical-meetings) and relationship-tiers (manager, peer).'
+    },
+    {
+      zone_id: 'radar',
+      vault_path: '50_Radar',
+      description: 'Watchlist for emerging trends and research.'
+    },
+    {
+      zone_id: 'journal',
+      vault_path: '60_Journal',
+      description: 'Private boardroom for raw dumps and post-mortems.'
+    },
+    {
+      zone_id: 'rubrics',
+      vault_path: '80_Company_Rubrics',
+      description: 'Reference folder containing official HR rubrics, promotion packets, and leveling docs.'
+    },
+    {
+      zone_id: 'templates',
+      vault_path: '90_Templates',
+      description: 'The repository of dynamic templates owned and iteratively updated by the personas.'
+    },
+    {
+      zone_id: 'workspace',
+      vault_path: '99_Agent_Workspace',
+      description: 'Scratchpad for Specialists and Researchers.'
+    }
+  ]
+}
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Automatic Template Installation > should execute the scenario successfully
+AVAILABLE TOOLS: [
+  'google_workspace___auth.clear',
+  'google_workspace___auth.refreshToken',
+  'google_workspace___docs.create',
+  'google_workspace___docs.insertText',
+  'google_workspace___docs.find',
+  'google_workspace___drive.findFolder',
+  'google_workspace___docs.move',
+  'google_workspace___docs.getText',
+  'google_workspace___docs.appendText',
+  'google_workspace___docs.replaceText',
+  'google_workspace___docs.extractIdFromUrl',
+  'google_workspace___slides.getText',
+  'google_workspace___slides.find',
+  'google_workspace___slides.getMetadata',
+  'google_workspace___sheets.getText',
+  'google_workspace___sheets.getRange',
+  'google_workspace___sheets.find',
+  'google_workspace___sheets.getMetadata',
+  'google_workspace___drive.search',
+  'google_workspace___drive.downloadFile',
+  'google_workspace___calendar.list',
+  'google_workspace___calendar.createEvent',
+  'google_workspace___calendar.listEvents',
+  'google_workspace___calendar.getEvent',
+  'google_workspace___calendar.findFreeTime',
+  'google_workspace___calendar.updateEvent',
+  'google_workspace___calendar.respondToEvent',
+  'google_workspace___calendar.deleteEvent',
+  'google_workspace___chat.listSpaces',
+  'google_workspace___chat.findSpaceByName',
+  'google_workspace___chat.sendMessage',
+  'google_workspace___chat.getMessages',
+  'google_workspace___chat.sendDm',
+  'google_workspace___chat.findDmByEmail',
+  'google_workspace___chat.listThreads',
+  'google_workspace___chat.setUpSpace',
+  'google_workspace___gmail.search',
+  'google_workspace___gmail.get',
+  'google_workspace___gmail.get_batch',
+  'google_workspace___gmail.downloadAttachment',
+  'google_workspace___gmail.modify',
+  'google_workspace___gmail.send',
+  'google_workspace___gmail.createDraft',
+  'google_workspace___gmail.sendDraft',
+  'google_workspace___gmail.listLabels',
+  'google_workspace___time.getCurrentDate',
+  'google_workspace___time.getCurrentTime',
+  'google_workspace___time.getTimeZone',
+  'google_workspace___people.getUserProfile',
+  'google_workspace___people.getMe',
+  'mock_server___mock_network_tool'
+] TC NAME: allocate_zone
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Automatic Template Installation > should execute the scenario successfully
+SEND_MESSAGE_RESULT: 
+
+<details><summary>⚙️ Executed tool: install_fleet</summary>
+
+```text
+{"status":"success","message":"Triggering installation for fleet 'business_of_you'...","_INTERNAL_INSTALL_FLEET_TRIGGER":{"fleet_name":"business_of_you"}}
+
+SUCCESS! Fleet installed. 
+[SYSTEM DIRECTIVE]: This fleet REQUIRES the following zones to be mapped. You MUST now call the `allocate_zone` tool multiple times (once for each zone) with the following configurations:
+[
+  {
+    "zone_id": "inbox",
+    "vault_path": "00_Inbox",
+    "description": "The drop zone for raw thoughts and web clippings."
+  },
+  {
+    "zone_id": "strategy",
+    "vault_path": "10_Strategy",
+    "description": "Contains formal OKRs and project briefs."
+  },
+  {
+    "zone_id": "execution",
+    "vault_path": "20_Execution",
+    "description": "Contains the tasks.jsonl queue and sprint boards."
+  },
+  {
+    "zone_id": "briefings",
+    "vault_path": "30_Briefings",
+    "description": "Contains unified Daily Notes."
+  },
+  {
+    "zone_id": "agendas",
+    "vault_path": "35_Agendas",
+    "description": "Staging ground for upcoming meeting agendas, talking points, and 1:1 structures."
+  },
+  {
+    "zone_id": "network",
+    "vault_path": "40_Network",
+    "description": "CRM tracking relationships, featuring YAML trackers for rhythms (consecutive-tactical-meetings) and relationship-tiers (manager, peer)."
+  },
+  {
+    "zone_id": "radar",
+    "vault_path": "50_Radar",
+    "description": "Watchlist for emerging trends and research."
+  },
+  {
+    "zone_id": "journal",
+    "vault_path": "60_Journal",
+    "description": "Private boardroom for raw dumps and post-mortems."
+  },
+  {
+    "zone_id": "rubrics",
+    "vault_path": "80_Company_Rubrics",
+    "description": "Reference folder containing official HR rubrics, promotion packets, and leveling docs."
+  },
+  {
+    "zone_id": "templates",
+    "vault_path": "90_Templates",
+    "description": "The repository of dynamic templates owned and iteratively updated by the personas."
+  },
+  {
+    "zone_id": "workspace",
+    "vault_path": "99_Agent_Workspace",
+    "description": "Scratchpad for Specialists and Researchers."
+  }
+]
+
+[SYSTEM DIRECTIVE]: After you have successfully allocated all required zones, you MUST initiate the onboarding flow. Present the pathways defined below using your 'present_options' tool. You MUST always automatically append a final option: 'Bypass (I will explore manually)'.
+{
+  "trigger_agent": "Concierge",
+  "welcome_message": "Welcome to 'The Business of You'. The suite is fully installed and your personal board of directors is waiting. To calibrate the system, we need to establish your baseline. How would you like to begin?",
+  "pathways": [
+    {
+      "id": "guided_full_cycle",
+      "label": "0. The Virtuous Cycle (Guided Full Setup)",
+      "description": "Walk through the entire setup step-by-step: Identity -> Strategy & Stakeholders -> Operations -> Execution -> (Optional) Team Management.",
+      "target_agent": "Executive Coach",
+      "handoff_context": "[GUIDED MODE ACTIVE - FULL CYCLE (STEP 1/5)]: The user wants to complete the full Business of You lifecycle. You are Step 1. First, initiate the Socratic interview to build their `Me.md` file. Second, after `Me.md` is defined, ask them about their current challenges, anxieties, excitements, and opportunities to help shape their mindset before strategy formulation. When you have successfully completed this emotional and strategic baseline, you MUST use the 'transfer_session' tool to hand the user to the 'Chief Strategist' with the context: '[GUIDED MODE ACTIVE - FULL CYCLE (STEP 2/5)]: The user has established their identity and baseline. You are Step 2. First, guide them to define 3 OKRs based on their vision and current challenges. Second, help them map out their critical non-report stakeholders (managers, peers, matrix partners) necessary to achieve those OKRs into the network zone. When finished, transfer them to the Chief Operating Officer with the context: [GUIDED MODE ACTIVE - FULL CYCLE (STEP 3/5)]: The user has defined their strategy and mapped stakeholders. You are Step 3. Help them atomize these OKRs into actionable tickets in the queue. When finished, transfer them to the Chief of Staff with the context: [GUIDED MODE ACTIVE - FULL CYCLE (STEP 4/5)]: The user has atomized their strategy. You are Step 4. Help them brain dump any immediate daily fires onto the execution Kanban. When finished, check if the user has management duties (by reviewing their profile or asking). If they DO have management duties, transfer them to the Chief People Officer with the context: [GUIDED MODE ACTIVE - FULL CYCLE (STEP 5/5)]: The user has organized their tasks. You are the final step. Help them map their direct reports and team structure into the network zone. When finished, transfer them BACK to the Concierge. If they DO NOT have management duties, you are the final step, so transfer them directly BACK to the Concierge.'"
+    },
+    {
+      "id": "identity_and_vision",
+      "label": "1. Establish my core Identity & Vision (Start Here)",
+      "description": "Build your `Me.md` profile and define your 5-10 year horizon.",
+      "target_agent": "Executive Coach",
+      "handoff_context": "[GUIDED MODE ACTIVE]: The user has elected to establish their core identity. Please initiate the Socratic interview to build their `Me.md` file in the strategy folder, focusing on their 5-10 year career vision. When you have successfully completed your specific onboarding task, you MUST automatically use the 'transfer_session' tool to hand the user BACK to the Concierge, including a summary of what you achieved."
+    },
+    {
+      "id": "define_strategy",
+      "label": "2. Draft my 6-month Strategy & OKRs",
+      "description": "Translate your long-term vision into actionable quarterly objectives.",
+      "target_agent": "Strategist",
+      "handoff_context": "[GUIDED MODE ACTIVE]: The user wants to draft their 6-12 month strategy. Please review their `Me.md` (if it exists) and help them define 3 OKRs, saving them as a formal document in the `strategy` zone. When you have successfully completed your specific onboarding task, you MUST automatically use the 'transfer_session' tool to hand the user BACK to the Concierge, including a summary of what you achieved."
+    },
+    {
+      "id": "execution_fires",
+      "label": "3. Clear my immediate tasks & 'fires'",
+      "description": "Do a quick brain dump to populate your Kanban board for the week.",
+      "target_agent": "Chief of Staff",
+      "handoff_context": "[GUIDED MODE ACTIVE]: The user needs to organize their immediate operational execution. Ask them for a brain dump of their top 3 'fires' and translate them into tasks on the `execution` Kanban board. When you have successfully completed your specific onboarding task, you MUST automatically use the 'transfer_session' tool to hand the user BACK to the Concierge, including a summary of what you achieved."
+    },
+    {
+      "id": "crm_stakeholders",
+      "label": "4. Map my critical stakeholders",
+      "description": "Set up your relationship tracker for key managers and peers.",
+      "target_agent": "Chief People Officer",
+      "handoff_context": "[GUIDED MODE ACTIVE]: The user wants to set up their CRM. Ask them for the names and roles of their 3 most critical stakeholders right now, and generate relationship tracking files in the `network` zone. When you have successfully completed your specific onboarding task, you MUST automatically use the 'transfer_session' tool to hand the user BACK to the Concierge, including a summary of what you achieved."
+    },
+    {
+      "id": "strategy_pivot",
+      "label": "5. Pivot my strategy based on challenges",
+      "description": "Socratically break down perceived challenges and shift your strategy.",
+      "target_agent": "Executive Coach",
+      "handoff_context": "[GUIDED MODE ACTIVE]: The user is perceiving challenges and wants to evaluate a shift in strategy. Please act as a Socratic sounding board to break down these challenges. Use the `file_manager` tool to output a `Strategic_Pivot_Log.md` file in the `journal` zone, or update their existing documents in the `strategy` zone if the pivot results in new formal OKRs. When you have successfully completed your specific onboarding task, you MUST automatically use the 'transfer_session' tool to hand the user BACK to the Concierge, including a summary of what you achieved."
+    }
+  ]
+}
+```
+</details>
+
+<details><summary>⚙️ Executed tool: allocate_zone</summary>
+
+```text
+{"status":"success","message":"Zone 'templates' allocated to path '90_Templates'.","_INTERNAL_ALLOCATE_ZONE_TRIGGER":{"zone_id":"templates","path":"90_Templates","description":"The repository of dynamic templates owned and iteratively updated by the personas."}}
+```
+</details>
+
+The Business of You fleet has been successfully installed, and your templates have been automatically synced to the new templates zone.
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: 
+Connected to MCP Server: google_workspace with 49 tools.
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: 
+Connected to MCP Server: mock_server with 1 tools.
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario:  > should execute the scenario successfully
+Using configured provider: MockLLMProvider
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario:  > should execute the scenario successfully
+SEND_MESSAGE_RESULT: [Empty response]
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: RBAC Restrictions and Capability Sandbox Enforcement
+Connected to MCP Server: google_workspace with 49 tools.
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: RBAC Restrictions and Capability Sandbox Enforcement
+Connected to MCP Server: mock_server with 1 tools.
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: RBAC Restrictions and Capability Sandbox Enforcement
+LOADED TOOLS FOR RBAC Restrictions and Capability Sandbox Enforcement : [
+  'business_of_you.crm_query',
+  'business_of_you.manage_queue',
+  'business_of_you.read_calendar',
+  'core.allocate_zone',
+  'core.echo',
+  'core.file_manager',
+  'core.install_fleet',
+  'core.system_diagnostic',
+  'core.update_memory',
+  'core.update_profile',
+  'para_career.map_vault',
+  'para_career.unreliable_math',
+  'para_career.web_search'
+]
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: RBAC Restrictions and Capability Sandbox Enforcement > should execute the scenario successfully
+Using configured provider: MockLLMProvider
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: RBAC Restrictions and Capability Sandbox Enforcement > should execute the scenario successfully
+AVAILABLE TOOLS: [
+  'google_workspace___auth.clear',
+  'google_workspace___auth.refreshToken',
+  'google_workspace___docs.create',
+  'google_workspace___docs.insertText',
+  'google_workspace___docs.find',
+  'google_workspace___drive.findFolder',
+  'google_workspace___docs.move',
+  'google_workspace___docs.getText',
+  'google_workspace___docs.appendText',
+  'google_workspace___docs.replaceText',
+  'google_workspace___docs.extractIdFromUrl',
+  'google_workspace___slides.getText',
+  'google_workspace___slides.find',
+  'google_workspace___slides.getMetadata',
+  'google_workspace___sheets.getText',
+  'google_workspace___sheets.getRange',
+  'google_workspace___sheets.find',
+  'google_workspace___sheets.getMetadata',
+  'google_workspace___drive.search',
+  'google_workspace___drive.downloadFile',
+  'google_workspace___calendar.list',
+  'google_workspace___calendar.createEvent',
+  'google_workspace___calendar.listEvents',
+  'google_workspace___calendar.getEvent',
+  'google_workspace___calendar.findFreeTime',
+  'google_workspace___calendar.updateEvent',
+  'google_workspace___calendar.respondToEvent',
+  'google_workspace___calendar.deleteEvent',
+  'google_workspace___chat.listSpaces',
+  'google_workspace___chat.findSpaceByName',
+  'google_workspace___chat.sendMessage',
+  'google_workspace___chat.getMessages',
+  'google_workspace___chat.sendDm',
+  'google_workspace___chat.findDmByEmail',
+  'google_workspace___chat.listThreads',
+  'google_workspace___chat.setUpSpace',
+  'google_workspace___gmail.search',
+  'google_workspace___gmail.get',
+  'google_workspace___gmail.get_batch',
+  'google_workspace___gmail.downloadAttachment',
+  'google_workspace___gmail.modify',
+  'google_workspace___gmail.send',
+  'google_workspace___gmail.createDraft',
+  'google_workspace___gmail.sendDraft',
+  'google_workspace___gmail.listLabels',
+  'google_workspace___time.getCurrentDate',
+  'google_workspace___time.getCurrentTime',
+  'google_workspace___time.getTimeZone',
+  'google_workspace___people.getUserProfile',
+  'google_workspace___people.getMe',
+  'mock_server___mock_network_tool'
+] TC NAME: file_manager
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: RBAC Restrictions and Capability Sandbox Enforcement > should execute the scenario successfully
+AVAILABLE TOOLS: [
+  'google_workspace___auth.clear',
+  'google_workspace___auth.refreshToken',
+  'google_workspace___docs.create',
+  'google_workspace___docs.insertText',
+  'google_workspace___docs.find',
+  'google_workspace___drive.findFolder',
+  'google_workspace___docs.move',
+  'google_workspace___docs.getText',
+  'google_workspace___docs.appendText',
+  'google_workspace___docs.replaceText',
+  'google_workspace___docs.extractIdFromUrl',
+  'google_workspace___slides.getText',
+  'google_workspace___slides.find',
+  'google_workspace___slides.getMetadata',
+  'google_workspace___sheets.getText',
+  'google_workspace___sheets.getRange',
+  'google_workspace___sheets.find',
+  'google_workspace___sheets.getMetadata',
+  'google_workspace___drive.search',
+  'google_workspace___drive.downloadFile',
+  'google_workspace___calendar.list',
+  'google_workspace___calendar.createEvent',
+  'google_workspace___calendar.listEvents',
+  'google_workspace___calendar.getEvent',
+  'google_workspace___calendar.findFreeTime',
+  'google_workspace___calendar.updateEvent',
+  'google_workspace___calendar.respondToEvent',
+  'google_workspace___calendar.deleteEvent',
+  'google_workspace___chat.listSpaces',
+  'google_workspace___chat.findSpaceByName',
+  'google_workspace___chat.sendMessage',
+  'google_workspace___chat.getMessages',
+  'google_workspace___chat.sendDm',
+  'google_workspace___chat.findDmByEmail',
+  'google_workspace___chat.listThreads',
+  'google_workspace___chat.setUpSpace',
+  'google_workspace___gmail.search',
+  'google_workspace___gmail.get',
+  'google_workspace___gmail.get_batch',
+  'google_workspace___gmail.downloadAttachment',
+  'google_workspace___gmail.modify',
+  'google_workspace___gmail.send',
+  'google_workspace___gmail.createDraft',
+  'google_workspace___gmail.sendDraft',
+  'google_workspace___gmail.listLabels',
+  'google_workspace___time.getCurrentDate',
+  'google_workspace___time.getCurrentTime',
+  'google_workspace___time.getTimeZone',
+  'google_workspace___people.getUserProfile',
+  'google_workspace___people.getMe',
+  'mock_server___mock_network_tool'
+] TC NAME: file_manager
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: RBAC Restrictions and Capability Sandbox Enforcement > should execute the scenario successfully
+SEND_MESSAGE_RESULT: 
+
+<details><summary>⚙️ Executed tool: file_manager</summary>
+
+```text
+ERROR: Permission Denied: You only have 'read_preferred' access to the 'strategy' zone, but the action 'write_file' requires 'full_read_write'.
+
+[SYSTEM DIRECTIVE]: Tool execution failed. Do NOT report this failure to the user yet. You must autonomously analyze the error, correct your arguments or approach, and retry.
+```
+</details>
+
+<details><summary>⚙️ Executed tool: file_manager</summary>
+
+```text
+ERROR: Permission Denied: You do not have access to the 'AgenticVault' zone.
+
+[SYSTEM DIRECTIVE]: Tool execution failed. Do NOT report this failure to the user yet. You must autonomously analyze the error, correct your arguments or approach, and retry.
+```
+</details>
+
+I attempted to perform those actions, but my access was denied by the Sandbox. I am not allowed to write to the strategy zone, nor am I permitted to delete system files.
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: MCP Network Timeout Resilience
+Connected to MCP Server: google_workspace with 49 tools.
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: MCP Network Timeout Resilience
+Connected to MCP Server: mock_server with 1 tools.
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: MCP Network Timeout Resilience
+LOADED TOOLS FOR MCP Network Timeout Resilience : [
+  'business_of_you.crm_query',
+  'business_of_you.manage_queue',
+  'business_of_you.read_calendar',
+  'core.allocate_zone',
+  'core.echo',
+  'core.file_manager',
+  'core.install_fleet',
+  'core.system_diagnostic',
+  'core.update_memory',
+  'core.update_profile',
+  'para_career.map_vault',
+  'para_career.unreliable_math',
+  'para_career.web_search'
+]
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: MCP Network Timeout Resilience > should execute the scenario successfully
+Using configured provider: MockLLMProvider
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: MCP Network Timeout Resilience > should execute the scenario successfully
+AVAILABLE TOOLS: [
+  'google_workspace___auth.clear',
+  'google_workspace___auth.refreshToken',
+  'google_workspace___docs.create',
+  'google_workspace___docs.insertText',
+  'google_workspace___docs.find',
+  'google_workspace___drive.findFolder',
+  'google_workspace___docs.move',
+  'google_workspace___docs.getText',
+  'google_workspace___docs.appendText',
+  'google_workspace___docs.replaceText',
+  'google_workspace___docs.extractIdFromUrl',
+  'google_workspace___slides.getText',
+  'google_workspace___slides.find',
+  'google_workspace___slides.getMetadata',
+  'google_workspace___sheets.getText',
+  'google_workspace___sheets.getRange',
+  'google_workspace___sheets.find',
+  'google_workspace___sheets.getMetadata',
+  'google_workspace___drive.search',
+  'google_workspace___drive.downloadFile',
+  'google_workspace___calendar.list',
+  'google_workspace___calendar.createEvent',
+  'google_workspace___calendar.listEvents',
+  'google_workspace___calendar.getEvent',
+  'google_workspace___calendar.findFreeTime',
+  'google_workspace___calendar.updateEvent',
+  'google_workspace___calendar.respondToEvent',
+  'google_workspace___calendar.deleteEvent',
+  'google_workspace___chat.listSpaces',
+  'google_workspace___chat.findSpaceByName',
+  'google_workspace___chat.sendMessage',
+  'google_workspace___chat.getMessages',
+  'google_workspace___chat.sendDm',
+  'google_workspace___chat.findDmByEmail',
+  'google_workspace___chat.listThreads',
+  'google_workspace___chat.setUpSpace',
+  'google_workspace___gmail.search',
+  'google_workspace___gmail.get',
+  'google_workspace___gmail.get_batch',
+  'google_workspace___gmail.downloadAttachment',
+  'google_workspace___gmail.modify',
+  'google_workspace___gmail.send',
+  'google_workspace___gmail.createDraft',
+  'google_workspace___gmail.sendDraft',
+  'google_workspace___gmail.listLabels',
+  'google_workspace___time.getCurrentDate',
+  'google_workspace___time.getCurrentTime',
+  'google_workspace___time.getTimeZone',
+  'google_workspace___people.getUserProfile',
+  'google_workspace___people.getMe',
+  'mock_server___mock_network_tool'
+] TC NAME: mock_server___mock_network_tool
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: MCP Network Timeout Resilience > should execute the scenario successfully
+SEND_MESSAGE_RESULT: 
+
+<details><summary>⚙️ Executed MCP tool: mock_server___mock_network_tool</summary>
+
+```text
+ERROR: Timeout Error: The network request took too long and was aborted.
+
+[SYSTEM DIRECTIVE]: Tool execution failed. Do NOT report this failure to the user yet. You must autonomously analyze the error, correct your arguments or approach, and retry.
+```
+</details>
+
+**Tool Error (mock_server___mock_network_tool):** Timeout Error: The network request took too long and was aborted.
+I apologize, but the network request timed out while trying to fetch the payload.
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: MCP Network Offline Resilience
+Connected to MCP Server: google_workspace with 49 tools.
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: MCP Network Offline Resilience
+Connected to MCP Server: mock_server with 1 tools.
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: MCP Network Offline Resilience
+LOADED TOOLS FOR MCP Network Offline Resilience : [
+  'business_of_you.crm_query',
+  'business_of_you.manage_queue',
+  'business_of_you.read_calendar',
+  'core.allocate_zone',
+  'core.echo',
+  'core.file_manager',
+  'core.install_fleet',
+  'core.system_diagnostic',
+  'core.update_memory',
+  'core.update_profile',
+  'para_career.map_vault',
+  'para_career.unreliable_math',
+  'para_career.web_search'
+]
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: MCP Network Offline Resilience > should execute the scenario successfully
+Using configured provider: MockLLMProvider
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: MCP Network Offline Resilience > should execute the scenario successfully
+AVAILABLE TOOLS: [
+  'google_workspace___auth.clear',
+  'google_workspace___auth.refreshToken',
+  'google_workspace___docs.create',
+  'google_workspace___docs.insertText',
+  'google_workspace___docs.find',
+  'google_workspace___drive.findFolder',
+  'google_workspace___docs.move',
+  'google_workspace___docs.getText',
+  'google_workspace___docs.appendText',
+  'google_workspace___docs.replaceText',
+  'google_workspace___docs.extractIdFromUrl',
+  'google_workspace___slides.getText',
+  'google_workspace___slides.find',
+  'google_workspace___slides.getMetadata',
+  'google_workspace___sheets.getText',
+  'google_workspace___sheets.getRange',
+  'google_workspace___sheets.find',
+  'google_workspace___sheets.getMetadata',
+  'google_workspace___drive.search',
+  'google_workspace___drive.downloadFile',
+  'google_workspace___calendar.list',
+  'google_workspace___calendar.createEvent',
+  'google_workspace___calendar.listEvents',
+  'google_workspace___calendar.getEvent',
+  'google_workspace___calendar.findFreeTime',
+  'google_workspace___calendar.updateEvent',
+  'google_workspace___calendar.respondToEvent',
+  'google_workspace___calendar.deleteEvent',
+  'google_workspace___chat.listSpaces',
+  'google_workspace___chat.findSpaceByName',
+  'google_workspace___chat.sendMessage',
+  'google_workspace___chat.getMessages',
+  'google_workspace___chat.sendDm',
+  'google_workspace___chat.findDmByEmail',
+  'google_workspace___chat.listThreads',
+  'google_workspace___chat.setUpSpace',
+  'google_workspace___gmail.search',
+  'google_workspace___gmail.get',
+  'google_workspace___gmail.get_batch',
+  'google_workspace___gmail.downloadAttachment',
+  'google_workspace___gmail.modify',
+  'google_workspace___gmail.send',
+  'google_workspace___gmail.createDraft',
+  'google_workspace___gmail.sendDraft',
+  'google_workspace___gmail.listLabels',
+  'google_workspace___time.getCurrentDate',
+  'google_workspace___time.getCurrentTime',
+  'google_workspace___time.getTimeZone',
+  'google_workspace___people.getUserProfile',
+  'google_workspace___people.getMe',
+  'mock_server___mock_network_tool'
+] TC NAME: mock_server___mock_network_tool
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: MCP Network Offline Resilience > should execute the scenario successfully
+SEND_MESSAGE_RESULT: 
+
+<details><summary>⚙️ Executed MCP tool: mock_server___mock_network_tool</summary>
+
+```text
+ERROR: Network Disconnect: Offline mode is enabled.
+
+[SYSTEM DIRECTIVE]: Tool execution failed. Do NOT report this failure to the user yet. You must autonomously analyze the error, correct your arguments or approach, and retry.
+```
+</details>
+
+**Tool Error (mock_server___mock_network_tool):** Network Disconnect: Offline mode is enabled.
+I apologize, but I am currently in offline mode and cannot fetch the payload.
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: MCP Network Success
+Connected to MCP Server: google_workspace with 49 tools.
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: MCP Network Success
+Connected to MCP Server: mock_server with 1 tools.
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: MCP Network Success
+LOADED TOOLS FOR MCP Network Success : [
+  'business_of_you.crm_query',
+  'business_of_you.manage_queue',
+  'business_of_you.read_calendar',
+  'core.allocate_zone',
+  'core.echo',
+  'core.file_manager',
+  'core.install_fleet',
+  'core.system_diagnostic',
+  'core.update_memory',
+  'core.update_profile',
+  'para_career.map_vault',
+  'para_career.unreliable_math',
+  'para_career.web_search'
+]
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: MCP Network Success > should execute the scenario successfully
+Using configured provider: MockLLMProvider
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: MCP Network Success > should execute the scenario successfully
+AVAILABLE TOOLS: [
+  'google_workspace___auth.clear',
+  'google_workspace___auth.refreshToken',
+  'google_workspace___docs.create',
+  'google_workspace___docs.insertText',
+  'google_workspace___docs.find',
+  'google_workspace___drive.findFolder',
+  'google_workspace___docs.move',
+  'google_workspace___docs.getText',
+  'google_workspace___docs.appendText',
+  'google_workspace___docs.replaceText',
+  'google_workspace___docs.extractIdFromUrl',
+  'google_workspace___slides.getText',
+  'google_workspace___slides.find',
+  'google_workspace___slides.getMetadata',
+  'google_workspace___sheets.getText',
+  'google_workspace___sheets.getRange',
+  'google_workspace___sheets.find',
+  'google_workspace___sheets.getMetadata',
+  'google_workspace___drive.search',
+  'google_workspace___drive.downloadFile',
+  'google_workspace___calendar.list',
+  'google_workspace___calendar.createEvent',
+  'google_workspace___calendar.listEvents',
+  'google_workspace___calendar.getEvent',
+  'google_workspace___calendar.findFreeTime',
+  'google_workspace___calendar.updateEvent',
+  'google_workspace___calendar.respondToEvent',
+  'google_workspace___calendar.deleteEvent',
+  'google_workspace___chat.listSpaces',
+  'google_workspace___chat.findSpaceByName',
+  'google_workspace___chat.sendMessage',
+  'google_workspace___chat.getMessages',
+  'google_workspace___chat.sendDm',
+  'google_workspace___chat.findDmByEmail',
+  'google_workspace___chat.listThreads',
+  'google_workspace___chat.setUpSpace',
+  'google_workspace___gmail.search',
+  'google_workspace___gmail.get',
+  'google_workspace___gmail.get_batch',
+  'google_workspace___gmail.downloadAttachment',
+  'google_workspace___gmail.modify',
+  'google_workspace___gmail.send',
+  'google_workspace___gmail.createDraft',
+  'google_workspace___gmail.sendDraft',
+  'google_workspace___gmail.listLabels',
+  'google_workspace___time.getCurrentDate',
+  'google_workspace___time.getCurrentTime',
+  'google_workspace___time.getTimeZone',
+  'google_workspace___people.getUserProfile',
+  'google_workspace___people.getMe',
+  'mock_server___mock_network_tool'
+] TC NAME: mock_server___mock_network_tool
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: MCP Network Success > should execute the scenario successfully
+SEND_MESSAGE_RESULT: 
+
+<details><summary>⚙️ Executed MCP tool: mock_server___mock_network_tool</summary>
+
+```text
+{
+  "content": [
+    {
+      "type": "text",
+      "text": "{\"status\":\"success\",\"data\":\"Mock payload response\"}"
+    }
+  ]
+}
+```
+</details>
+
+I have successfully fetched the mock payload.
+
+ ✓ src/run_markdown_e2e.test.ts (16 tests) 39099ms
+       ✓ should execute the scenario successfully  15003ms
+
+ Test Files  1 passed (1)
+      Tests  16 passed (16)
+   Start at  07:44:56
+   Duration  39.34s (transform 88ms, setup 0ms, import 177ms, tests 39.10s, environment 0ms)
+

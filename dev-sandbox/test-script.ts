@@ -49,7 +49,7 @@ async function runTest() {
 	const mcpEngine = new McpEngine(mockApp, settings.agenticVaultPath, settings.customEnvPath);
 	const skillsEngine = new SkillsEngine(mockApp, settings.agenticVaultPath);
 
-	const pluginMock: any = {
+	const pluginMock: unknown = {
 		settings,
 		app: mockApp,
 		logger,

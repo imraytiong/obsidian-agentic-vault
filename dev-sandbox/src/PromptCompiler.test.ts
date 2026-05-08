@@ -3,7 +3,7 @@ import { PromptCompiler } from '../../src/core/PromptCompiler';
 
 describe('PromptCompiler', () => {
 	it('should compile system prompt correctly with minimal data', async () => {
-		const mockPlugin: any = {
+		const mockPlugin: unknown = {
 			settings: { zones: {} },
 			personaEngine: {
 				getPersonaByName: vi.fn().mockReturnValue({ systemPrompt: 'Test Prompt' }),
@@ -30,7 +30,7 @@ describe('PromptCompiler', () => {
 	});
 
 	it('should include shared and persona memory if files exist', async () => {
-		const mockPlugin: any = {
+		const mockPlugin: unknown = {
 			settings: { zones: {} },
 			personaEngine: {
 				getPersonaByName: vi.fn().mockReturnValue({ systemPrompt: 'Test Prompt' }),
@@ -44,7 +44,7 @@ describe('PromptCompiler', () => {
 					adapter: {
 						exists: vi.fn().mockResolvedValue(true),
 						read: vi.fn((path) => {
-							if (path.includes('shared_memory')) return Promise.resolve('Global Fact 1');
+							if (path.includes('Me.md')) return Promise.resolve('Global Fact 1');
 							if (path.includes('bob_memory')) return Promise.resolve('Bob Fact 1');
 							return Promise.resolve('');
 						})
@@ -62,7 +62,7 @@ describe('PromptCompiler', () => {
 	});
 
 	it('should list available skills if any exist', async () => {
-		const mockPlugin: any = {
+		const mockPlugin: unknown = {
 			settings: { zones: {} },
 			personaEngine: {
 				getPersonaByName: vi.fn().mockReturnValue(null),

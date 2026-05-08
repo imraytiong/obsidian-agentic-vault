@@ -31,7 +31,7 @@ export class InitializationEngine {
 
 	public async deployFleet(fleetName: string, fleetObj?: unknown) {
 		if (!fleetObj) {
-			fleetObj = (BundledFleets as Record<string, any>)[fleetName];
+			fleetObj = (BundledFleets as Record<string, unknown>)[fleetName];
 			if (!fleetObj) return;
 		}
 

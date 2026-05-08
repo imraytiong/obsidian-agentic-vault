@@ -5,7 +5,9 @@
 ## Features
 - **Multi-Agent Architecture**: Configure different personas (e.g., Researcher, Editor, Manager) with unique system prompts and capabilities.
 - **Autonomous Tool Execution**: Agents can securely execute registered tools to read files, search the web, and modify vault contents.
+- **MCP Tool Integration**: Connect to local Model Context Protocol servers to securely interact with local applications and remote APIs (e.g., Google Workspace). Includes robust offline mode and connection resiliency.
 - **Dynamic Context Routing**: A built-in "Pager" agent automatically routes tasks and queries to the most appropriate specialized agent based on context.
+- **"The Business of You" Suite**: A pre-bundled fleet of agents (Concierge, Executive Coach, Chief Strategist) designed to manage your career like a business, featuring automated onboarding and zone-based memory.
 
 ## Installation
 

@@ -46,17 +46,17 @@ function App() {
 
         // Initialize Engines
         const mockApp = new ObsidianApp();
-        const logger = new LoggerService(mockApp as any, settings.agenticVaultPath);
-        const personaEngine = new PersonaEngine(mockApp as any, settings.agenticVaultPath);
-        const toolRegistry = new ToolRegistry(mockApp as any, settings);
+        const logger = new LoggerService(mockApp as unknown, settings.agenticVaultPath);
+        const personaEngine = new PersonaEngine(mockApp as unknown, settings.agenticVaultPath);
+        const toolRegistry = new ToolRegistry(mockApp as unknown, settings);
         const executionSandbox = new ExecutionSandbox(context, logger, toolRegistry, settings);
-        const routineManager = new RoutineManager(mockApp as any, settings.agenticVaultPath);
-        const approvalQueue = new ApprovalQueueManager(mockApp as any, settings.agenticVaultPath);
-        const mcpEngine = new McpEngine(mockApp as any, settings.agenticVaultPath, settings.customEnvPath);
-        const skillsEngine = new SkillsEngine(mockApp as any, settings.agenticVaultPath);
+        const routineManager = new RoutineManager(mockApp as unknown, settings.agenticVaultPath);
+        const approvalQueue = new ApprovalQueueManager(mockApp as unknown, settings.agenticVaultPath);
+        const mcpEngine = new McpEngine(mockApp as unknown, settings.agenticVaultPath, settings.customEnvPath);
+        const skillsEngine = new SkillsEngine(mockApp as unknown, settings.agenticVaultPath);
         
         // Mock plugin object for ChatService backward compatibility where not fully decoupled
-        const pluginMock: any = {
+        const pluginMock: unknown = {
           settings,
           app: mockApp,
           logger,
@@ -79,7 +79,7 @@ function App() {
           setIsProcessing(chat.isProcessing);
         };
         
-        const triggerParser = new TriggerParser(mockApp as any, logger, executionSandbox, routineManager, chat);
+        const triggerParser = new TriggerParser(mockApp as unknown, logger, executionSandbox, routineManager, chat);
 
         context.logger = logger;
         context.personaEngine = personaEngine;
@@ -100,7 +100,7 @@ function App() {
         await skillsEngine.loadSkills();
 
         setStatus('Sandbox Ready');
-      } catch (err: any) {
+      } catch (err: unknown) {
         setStatus(`Error initializing sandbox: ${err.message}`);
         console.error(err);
       }
@@ -115,7 +115,7 @@ function App() {
     setInput('');
     try {
       await chatService.sendMessage(msg, 'Concierge');
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
     }
   };

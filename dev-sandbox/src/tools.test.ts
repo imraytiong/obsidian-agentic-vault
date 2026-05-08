@@ -12,7 +12,7 @@ import fs from 'fs';
 describe('Phase 4: Isolated Tool Efficacy Tests', () => {
 	let sandbox: ExecutionSandbox;
 	let context: AgenticContext;
-	let mockApp: any;
+	let mockApp: unknown;
 	const vaultPath = path.resolve(__dirname, '../../test-vault-tools');
 
 	beforeAll(async () => {
@@ -44,7 +44,7 @@ describe('Phase 4: Isolated Tool Efficacy Tests', () => {
 
 		mockApp = new ObsidianApp();
 		
-		mockApp.vault.read = async (file: any) => {
+		mockApp.vault.read = async (file: unknown) => {
 			return await context.fs.readText(file.path);
 		};
 		
@@ -90,7 +90,7 @@ describe('Phase 4: Isolated Tool Efficacy Tests', () => {
 			await context.fs.writeText(p, c);
 			const file = new TFile(); file.path = p; return file;
 		};
-		mockApp.vault.append = async (file: any, text: string) => {
+		mockApp.vault.append = async (file: unknown, text: string) => {
 			const current = await context.fs.readText(file.path);
 			await context.fs.writeText(file.path, current + text);
 		};

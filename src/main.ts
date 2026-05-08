@@ -243,7 +243,7 @@ export default class AgenticVaultPlugin extends Plugin {
 		if (leaves.length > 0) {
 			leaf = leaves[0] || null;
 		} else {
-			leaf = workspace.getRightLeaf(false) as import('obsidian').WorkspaceLeaf | null;
+			leaf = workspace.getRightLeaf(false);
 			if (leaf) {
 				await leaf.setViewState({ type: VIEW_TYPE_FLEET_DASHBOARD, active: true });
 			}

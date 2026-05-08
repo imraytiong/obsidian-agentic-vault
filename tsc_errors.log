@@ -1,0 +1,71 @@
+src/core/InitializationEngine.ts(156,62): error TS18046: 'templateFile' is of type 'unknown'.
+src/core/InitializationEngine.ts(159,35): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'TAbstractFile'.
+src/core/PersonaEngine.ts(93,8): error TS2322: Type '{ target?: string | undefined; allow_fallback?: boolean | undefined; } | undefined' is not assignable to type '{ target: string; allow_fallback: boolean; } | undefined'.
+  Type '{ target?: string | undefined; allow_fallback?: boolean | undefined; }' is not assignable to type '{ target: string; allow_fallback: boolean; }'.
+    Types of property 'target' are incompatible.
+      Type 'string | undefined' is not assignable to type 'string'.
+        Type 'undefined' is not assignable to type 'string'.
+src/core/TriggerParser.ts(91,60): error TS2345: Argument of type '"last_run"' is not assignable to parameter of type '"trigger" | "timeout" | "agent" | "skill" | "retries"'.
+src/main.ts(244,4): error TS2322: Type 'WorkspaceLeaf | undefined' is not assignable to type 'WorkspaceLeaf | null'.
+  Type 'undefined' is not assignable to type 'WorkspaceLeaf | null'.
+src/ui/ChatView.ts(79,35): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(timeoutId: string | number | Timeout | undefined): void', gave the following error.
+    Argument of type '{}' is not assignable to parameter of type 'string | number | Timeout | undefined'.
+  Overload 2 of 2, '(id: number | undefined): void', gave the following error.
+    Argument of type '{}' is not assignable to parameter of type 'number'.
+src/ui/ChatView.ts(113,8): error TS18048: 'select' is possibly 'undefined'.
+src/ui/ChatView.ts(114,28): error TS18048: 'select' is possibly 'undefined'.
+src/ui/ChatView.ts(118,9): error TS18048: 'select' is possibly 'undefined'.
+src/ui/ChatView.ts(122,8): error TS18048: 'select' is possibly 'undefined'.
+src/ui/ChatView.ts(123,49): error TS18048: 'select' is possibly 'undefined'.
+src/ui/ChatView.ts(136,39): error TS18046: 'e' is of type 'unknown'.
+src/ui/ChatView.ts(165,6): error TS2322: Type 'unknown' is not assignable to type 'string'.
+src/ui/ChatView.ts(187,38): error TS18046: 'e' is of type 'unknown'.
+src/ui/ChatView.ts(188,62): error TS18046: 'e' is of type 'unknown'.
+src/ui/ChatView.ts(188,80): error TS18046: 'e' is of type 'unknown'.
+src/ui/ChatView.ts(289,70): error TS18046: 'e' is of type 'unknown'.
+src/ui/ChatView.ts(290,55): error TS18046: 'e' is of type 'unknown'.
+src/ui/ChatView.ts(297,45): error TS18046: 'error' is of type 'unknown'.
+src/ui/ChatView.ts(298,58): error TS18046: 'error' is of type 'unknown'.
+src/ui/ChatView.ts(298,80): error TS18046: 'error' is of type 'unknown'.
+src/ui/ChatView.ts(689,104): error TS2554: Expected 2-6 arguments, but got 7.
+src/ui/ChatView.ts(704,127): error TS2554: Expected 2-6 arguments, but got 7.
+src/ui/ChatView.ts(708,16): error TS18046: 'e' is of type 'unknown'.
+src/ui/ChatView.ts(784,7): error TS2367: This comparison appears to be unintentional because the types '"user" | "system" | "assistant" | "tool"' and '"tool-progress"' have no overlap.
+src/ui/ChatView.ts(852,36): error TS2339: Property 'debugMode' does not exist on type 'AgenticVaultSettings'.
+src/ui/ChatView.ts(936,118): error TS2554: Expected 2-6 arguments, but got 7.
+src/ui/ChatView.ts(1151,10): error TS18048: 'prevMsg' is possibly 'undefined'.
+src/ui/ChatView.ts(1151,31): error TS18048: 'prevMsg' is possibly 'undefined'.
+src/ui/ChatView.ts(1152,20): error TS18048: 'prevMsg' is possibly 'undefined'.
+src/ui/ChatView.ts(1217,63): error TS18046: 'field' is of type 'unknown'.
+src/ui/ChatView.ts(1222,11): error TS18046: 'field' is of type 'unknown'.
+src/ui/ChatView.ts(1223,69): error TS18046: 'field' is of type 'unknown'.
+src/ui/ChatView.ts(1227,80): error TS18046: 'field' is of type 'unknown'.
+src/ui/ChatView.ts(1238,28): error TS18046: 'field' is of type 'unknown'.
+src/ui/ChatView.ts(1277,131): error TS2554: Expected 2-6 arguments, but got 7.
+src/ui/FleetDashboardView.ts(161,23): error TS2532: Object is possibly 'undefined'.
+src/ui/FleetDashboardView.ts(161,57): error TS2532: Object is possibly 'undefined'.
+src/ui/FleetDashboardView.ts(194,41): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/ui/FleetDashboardView.ts(194,63): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/ui/FleetDashboardView.ts(305,37): error TS18046: 'log' is of type 'unknown'.
+src/ui/FleetDashboardView.ts(307,33): error TS18046: 'log' is of type 'unknown'.
+src/ui/FleetDashboardView.ts(310,54): error TS18046: 'log' is of type 'unknown'.
+src/ui/FleetDashboardView.ts(314,7): error TS18046: 'log' is of type 'unknown'.
+src/ui/FleetDashboardView.ts(315,7): error TS18046: 'log' is of type 'unknown'.
+src/ui/FleetDashboardView.ts(316,7): error TS18046: 'log' is of type 'unknown'.
+src/ui/FleetDashboardView.ts(319,10): error TS18046: 'log' is of type 'unknown'.
+src/ui/FleetDashboardView.ts(324,51): error TS18046: 'log' is of type 'unknown'.
+src/ui/FleetDashboardView.ts(329,22): error TS18046: 'log' is of type 'unknown'.
+src/ui/FleetDashboardView.ts(329,47): error TS18046: 'log' is of type 'unknown'.
+src/ui/FleetDashboardView.ts(363,22): error TS18046: 'error' is of type 'unknown'.
+src/ui/FleetDashboardView.ts(365,32): error TS2322: Type 'string | null' is not assignable to type 'string | DocumentFragment | undefined'.
+  Type 'null' is not assignable to type 'string | DocumentFragment | undefined'.
+src/ui/TaskBoardView.ts(61,85): error TS2339: Property 'lastError' does not exist on type 'RoutineTask'.
+src/ui/TaskBoardView.ts(90,18): error TS2339: Property 'status' does not exist on type '{}'.
+src/ui/TaskBoardView.ts(109,16): error TS2339: Property 'lastRunTime' does not exist on type '{}'.
+src/ui/TaskBoardView.ts(110,34): error TS2339: Property 'lastRunTime' does not exist on type '{}'.
+src/ui/TaskBoardView.ts(114,16): error TS2339: Property 'status' does not exist on type '{}'.
+src/ui/TaskBoardView.ts(114,45): error TS2339: Property 'lastError' does not exist on type '{}'.
+src/ui/TaskBoardView.ts(115,53): error TS2339: Property 'lastError' does not exist on type '{}'.

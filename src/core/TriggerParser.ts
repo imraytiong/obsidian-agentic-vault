@@ -1,6 +1,7 @@
 import { App, TFile, Notice } from 'obsidian';
 import { LoggerService } from '../services/LoggerService';
 import { ExecutionSandbox } from '../sandbox/ExecutionSandbox';
+import { getErrorMessage } from '../utils/ErrorUtils';
 import { RoutineManager, RoutineDefinition } from './RoutineManager';
 import { ChatService } from '../services/ChatService';
 import { CronExpressionParser } from 'cron-parser';
@@ -24,6 +25,7 @@ export class TriggerParser {
 	registerTriggers() {
 		// Event-based triggers
 		this.app.workspace.on('file-open', async (file: TFile | null) => {
+			if (!this.chatService.plugin.settings.routinesEnabled) return;
 			if (!file) return;
 			const routines = this.routineManager.getRoutines();
 			for (const r of routines) {
@@ -35,6 +37,7 @@ export class TriggerParser {
 
 		// Cron-based triggers
 		const evaluateCrons = () => {
+			if (!this.chatService.plugin?.settings?.routinesEnabled) return;
 			const routines = this.routineManager.getRoutines();
 			for (const r of routines) {
 				if (r.status === 'active' && r.trigger.startsWith('cron(')) {
@@ -71,8 +74,8 @@ export class TriggerParser {
 			if (prevTime > (lastRunTime + 5000)) {
 				return true;
 			}
-		} catch (e: any) {
-			void this.logger.log('CRON_PARSE_ERROR', { routine: routine.id, error: e.message });
+		} catch (e: unknown) {
+			void this.logger.log('CRON_PARSE_ERROR', { routine: routine.id, error: getErrorMessage(e) });
 		}
 		return false;
 	}
@@ -85,7 +88,7 @@ export class TriggerParser {
 		}
 		const now = Date.now();
 		routine.last_run = now;
-		await this.routineManager.updateRoutineField(routine.id, 'last_run', now.toString());
+		await this.routineManager.updateRoutineField(routine.id, 'last_run', now);
 
 		const task = this.routineManager.spawnTask(routine);
 		
@@ -118,9 +121,10 @@ export class TriggerParser {
 				void this.logger.log('ROUTINE_COMPLETED', { routine: routine.id, taskId: task.id });
 				success = true;
 				break;
-			} catch (e: any) {
-				lastError = e.message;
-				if (e.message.includes('timed out')) {
+			} catch (e: unknown) {
+				const errMsg = getErrorMessage(e);
+				lastError = errMsg;
+				if (errMsg.includes('timed out')) {
 					this.chatService.abortBackgroundTask(task.id);
 				}
 				void this.logger.log('ROUTINE_ATTEMPT_FAILED', { routine: routine.id, attempt, error: lastError });

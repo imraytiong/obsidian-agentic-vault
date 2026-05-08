@@ -1,0 +1,345 @@
+
+ RUN  v4.1.5 /Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Onboarding The Business of You > should execute the scenario successfully
+Using configured provider: MockLLMProvider
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Onboarding The Business of You > should execute the scenario successfully
+SEND_MESSAGE_RESULT: Awaiting user selection...
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Chief Strategist OKR Generation
+LOADED TOOLS FOR Chief Strategist OKR Generation : [
+  'business_of_you.crm_query',
+  'business_of_you.manage_queue',
+  'business_of_you.read_calendar',
+  'core.allocate_zone',
+  'core.echo',
+  'core.file_manager',
+  'core.install_fleet',
+  'core.system_diagnostic',
+  'core.update_memory',
+  'core.update_profile',
+  'para_career.map_vault',
+  'para_career.unreliable_math',
+  'para_career.web_search'
+]
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Chief Strategist OKR Generation > should execute the scenario successfully
+Using configured provider: MockLLMProvider
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Chief Strategist OKR Generation > should execute the scenario successfully
+SEND_MESSAGE_RESULT: 
+
+<details><summary>⚙️ Executed tool: file_manager</summary>
+
+```text
+{"status":"success","message":"File written to zone strategy: Q3_Agentic_Vault_OKRs.md","side_effects":[{"type":"write","path":"10_Strategy/Q3_Agentic_Vault_OKRs.md"}]}
+```
+</details>
+
+I have created your Q3 OKR document in the Strategy zone.
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Chief Quality Officer Sprint Review
+LOADED TOOLS FOR Chief Quality Officer Sprint Review : [
+  'business_of_you.crm_query',
+  'business_of_you.manage_queue',
+  'business_of_you.read_calendar',
+  'core.allocate_zone',
+  'core.echo',
+  'core.file_manager',
+  'core.install_fleet',
+  'core.system_diagnostic',
+  'core.update_memory',
+  'core.update_profile',
+  'para_career.map_vault',
+  'para_career.unreliable_math',
+  'para_career.web_search'
+]
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Chief Quality Officer Sprint Review > should execute the scenario successfully
+Using configured provider: MockLLMProvider
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Chief Quality Officer Sprint Review > should execute the scenario successfully
+SEND_MESSAGE_RESULT: 
+
+<details><summary>⚙️ Executed tool: file_manager</summary>
+
+```text
+{"error":"File not found in zone execution: tasks.jsonl"}
+```
+</details>
+
+<details><summary>⚙️ Executed tool: file_manager</summary>
+
+```text
+{"status":"success","message":"File written to zone execution: Sprint_Deviation_Report.md","side_effects":[{"type":"write","path":"20_Execution/Sprint_Deviation_Report.md"}]}
+```
+</details>
+
+The deviation report has been generated.
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: HITL Approval Flow > should execute the scenario successfully
+Using configured provider: MockLLMProvider
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: HITL Approval Flow > should execute the scenario successfully
+SEND_MESSAGE_RESULT: ⚠️ **Approval Requested:**
+- **Action:** Delete the production database
+- **Reason:** You asked me to delete it, but this is a destructive action.
+
+*The system has paused and added this request to the HITL queue.*
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Present Options Flow > should execute the scenario successfully
+Using configured provider: MockLLMProvider
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Present Options Flow > should execute the scenario successfully
+SEND_MESSAGE_RESULT: Awaiting user selection...
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Skill Loading Flow > should execute the scenario successfully
+Using configured provider: MockLLMProvider
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Skill Loading Flow > should execute the scenario successfully
+SEND_MESSAGE_RESULT: <details><summary>🧠 Loaded Skill: project_planning</summary>
+
+```text
+Error: Skill 'project_planning' not found.
+```
+</details>
+
+I have loaded the skill instructions.
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Routine Morning Briefing
+LOADED TOOLS FOR Routine Morning Briefing : [
+  'business_of_you.crm_query',
+  'business_of_you.manage_queue',
+  'business_of_you.read_calendar',
+  'core.allocate_zone',
+  'core.echo',
+  'core.file_manager',
+  'core.install_fleet',
+  'core.system_diagnostic',
+  'core.update_memory',
+  'core.update_profile',
+  'para_career.map_vault',
+  'para_career.unreliable_math',
+  'para_career.web_search'
+]
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Routine Morning Briefing > should execute the scenario successfully
+Using configured provider: MockLLMProvider
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Routine Morning Briefing > should execute the scenario successfully
+SEND_MESSAGE_RESULT: <details><summary>⚙️ Routine Manager: trigger</summary>
+
+```text
+Error: Routine 'morning_briefing' not found.
+```
+</details>
+
+I have triggered the morning briefing routine.
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Manage Tasks Queue
+LOADED TOOLS FOR Manage Tasks Queue : [
+  'business_of_you.crm_query',
+  'business_of_you.manage_queue',
+  'business_of_you.read_calendar',
+  'core.allocate_zone',
+  'core.echo',
+  'core.file_manager',
+  'core.install_fleet',
+  'core.system_diagnostic',
+  'core.update_memory',
+  'core.update_profile',
+  'para_career.map_vault',
+  'para_career.unreliable_math',
+  'para_career.web_search'
+]
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Manage Tasks Queue > should execute the scenario successfully
+Using configured provider: MockLLMProvider
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Manage Tasks Queue > should execute the scenario successfully
+SEND_MESSAGE_RESULT: 
+
+<details><summary>⚙️ Executed tool: manage_queue</summary>
+
+```text
+ERROR: Permission Denied: Tool 'manage_queue' is not in your capabilities.
+
+[SYSTEM DIRECTIVE]: Tool execution failed. Do NOT report this failure to the user yet. You must autonomously analyze the error, correct your arguments or approach, and retry.
+```
+</details>
+
+I have added the task to your queue.
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Coach Socratic Session
+LOADED TOOLS FOR Coach Socratic Session : [
+  'business_of_you.crm_query',
+  'business_of_you.manage_queue',
+  'business_of_you.read_calendar',
+  'core.allocate_zone',
+  'core.echo',
+  'core.file_manager',
+  'core.install_fleet',
+  'core.system_diagnostic',
+  'core.update_memory',
+  'core.update_profile',
+  'para_career.map_vault',
+  'para_career.unreliable_math',
+  'para_career.web_search'
+]
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Coach Socratic Session > should execute the scenario successfully
+Using configured provider: MockLLMProvider
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Coach Socratic Session > should execute the scenario successfully
+SEND_MESSAGE_RESULT: 
+
+<details><summary>⚙️ Executed tool: file_manager</summary>
+
+```text
+ERROR: Permission Denied: Tool 'file_manager' is not in your capabilities.
+
+[SYSTEM DIRECTIVE]: Tool execution failed. Do NOT report this failure to the user yet. You must autonomously analyze the error, correct your arguments or approach, and retry.
+```
+</details>
+
+Let's talk about the team conflict. What do you think is the root cause?
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Comms CRM Outreach
+LOADED TOOLS FOR Comms CRM Outreach : [
+  'business_of_you.crm_query',
+  'business_of_you.manage_queue',
+  'business_of_you.read_calendar',
+  'core.allocate_zone',
+  'core.echo',
+  'core.file_manager',
+  'core.install_fleet',
+  'core.system_diagnostic',
+  'core.update_memory',
+  'core.update_profile',
+  'para_career.map_vault',
+  'para_career.unreliable_math',
+  'para_career.web_search'
+]
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Comms CRM Outreach > should execute the scenario successfully
+Using configured provider: MockLLMProvider
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Comms CRM Outreach > should execute the scenario successfully
+SEND_MESSAGE_RESULT: 
+
+<details><summary>⚙️ Executed tool: crm_query</summary>
+
+```text
+ERROR: Permission Denied: Tool 'crm_query' is not in your capabilities.
+
+[SYSTEM DIRECTIVE]: Tool execution failed. Do NOT report this failure to the user yet. You must autonomously analyze the error, correct your arguments or approach, and retry.
+```
+</details>
+
+<details><summary>⚙️ Executed tool: file_manager</summary>
+
+```text
+ERROR: Permission Denied: Tool 'file_manager' is not in your capabilities.
+
+[SYSTEM DIRECTIVE]: Tool execution failed. Do NOT report this failure to the user yet. You must autonomously analyze the error, correct your arguments or approach, and retry.
+```
+</details>
+
+I have drafted the email for Sarah in your workspace.
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Automatic Template Installation > should execute the scenario successfully
+Using configured provider: MockLLMProvider
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Automatic Template Installation > should execute the scenario successfully
+SEND_MESSAGE_RESULT: 
+
+<details><summary>⚙️ Executed tool: install_fleet</summary>
+
+```text
+ERROR: Permission Denied: Tool 'install_fleet' is not in your capabilities.
+
+[SYSTEM DIRECTIVE]: Tool execution failed. Do NOT report this failure to the user yet. You must autonomously analyze the error, correct your arguments or approach, and retry.
+```
+</details>
+
+<details><summary>⚙️ Executed tool: allocate_zone</summary>
+
+```text
+ERROR: Permission Denied: Tool 'allocate_zone' is not in your capabilities.
+
+[SYSTEM DIRECTIVE]: Tool execution failed. Do NOT report this failure to the user yet. You must autonomously analyze the error, correct your arguments or approach, and retry.
+```
+</details>
+
+The Business of You fleet has been successfully installed, and your templates have been automatically synced to the new templates zone.
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario:  > should execute the scenario successfully
+Using configured provider: MockLLMProvider
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario:  > should execute the scenario successfully
+SEND_MESSAGE_RESULT: [Empty response]
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: RBAC Restrictions and Capability Sandbox Enforcement
+LOADED TOOLS FOR RBAC Restrictions and Capability Sandbox Enforcement : [
+  'business_of_you.crm_query',
+  'business_of_you.manage_queue',
+  'business_of_you.read_calendar',
+  'core.allocate_zone',
+  'core.echo',
+  'core.file_manager',
+  'core.install_fleet',
+  'core.system_diagnostic',
+  'core.update_memory',
+  'core.update_profile',
+  'para_career.map_vault',
+  'para_career.unreliable_math',
+  'para_career.web_search'
+]
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: RBAC Restrictions and Capability Sandbox Enforcement > should execute the scenario successfully
+Using configured provider: MockLLMProvider
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: RBAC Restrictions and Capability Sandbox Enforcement > should execute the scenario successfully
+SEND_MESSAGE_RESULT: 
+
+<details><summary>⚙️ Executed tool: file_manager</summary>
+
+```text
+ERROR: Permission Denied: Tool 'file_manager' is not in your capabilities.
+
+[SYSTEM DIRECTIVE]: Tool execution failed. Do NOT report this failure to the user yet. You must autonomously analyze the error, correct your arguments or approach, and retry.
+```
+</details>
+
+<details><summary>⚙️ Executed tool: file_manager</summary>
+
+```text
+ERROR: Permission Denied: Tool 'file_manager' is not in your capabilities.
+
+[SYSTEM DIRECTIVE]: Tool execution failed. Do NOT report this failure to the user yet. You must autonomously analyze the error, correct your arguments or approach, and retry.
+```
+</details>
+
+I attempted to perform those actions, but my access was denied by the Sandbox. I am not allowed to write to the strategy zone, nor am I permitted to delete system files.
+
+ ❯ src/run_markdown_e2e.test.ts (13 tests | 4 failed) 360ms
+       × should execute the scenario successfully 12ms
+       ✓ should execute the scenario successfully 26ms
+       ✓ should execute the scenario successfully 50ms
+       ✓ should execute the scenario successfully 0ms
+       ✓ should execute the scenario successfully 0ms
+       ✓ should execute the scenario successfully 0ms
+       ✓ should execute the scenario successfully 0ms
+       ✓ should execute the scenario successfully 0ms
+       ✓ should execute the scenario successfully 0ms
+       × should execute the scenario successfully 1ms
+       × should execute the scenario successfully 1ms
+       ✓ should execute the scenario successfully 0ms
+       × should execute the scenario successfully 0ms
+
+ Test Files  1 failed (1)
+      Tests  4 failed | 9 passed (13)
+   Start at  07:23:49
+   Duration  576ms (transform 77ms, setup 0ms, import 156ms, tests 360ms, environment 0ms)
+

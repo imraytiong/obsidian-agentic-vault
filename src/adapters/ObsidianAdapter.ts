@@ -1,4 +1,5 @@
 import { spawn } from 'child_process';
+import { App, TFile, TFolder, requestUrl, normalizePath, Notice } from 'obsidian';
 import type { IFileSystem, INetwork, INetworkRequestOptions, INetworkResponse, IUI, IProcessRunner, IProcessRunnerResult } from '../core/interfaces/Environment';
 
 export class ObsidianNetwork implements INetwork {
@@ -7,7 +8,8 @@ export class ObsidianNetwork implements INetwork {
 			url: options.url,
 			method: options.method,
 			headers: options.headers,
-			body: options.body
+			body: options.body,
+			throw: false
 		});
 		return {
 			status: res.status,
@@ -32,8 +34,8 @@ export class ObsidianProcessRunner implements IProcessRunner {
 			const child = spawn(exe, args, { cwd, env });
 			let stdout = '';
 			let stderr = '';
-			child.stdout.on('data', (d: unknown) => stdout += d.toString());
-			child.stderr.on('data', (d: unknown) => stderr += d.toString());
+			child.stdout.on('data', (d: { toString: () => string }) => stdout += d.toString());
+			child.stderr.on('data', (d: { toString: () => string }) => stderr += d.toString());
 			child.on('close', (code: number) => {
 				if (code === 0) resolve({ stdout, stderr });
 				else reject(new Error(stdout || stderr || `Process exited with code ${code}`));
@@ -116,7 +118,7 @@ export class ObsidianFileSystem implements IFileSystem {
 	}
 	
 	getBasePath(): string {
-		return (this.app.vault.adapter as any).getBasePath();
+		return (this.app.vault.adapter as unknown as { getBasePath: () => string }).getBasePath();
 	}
 	
 	getConfigDir(): string {

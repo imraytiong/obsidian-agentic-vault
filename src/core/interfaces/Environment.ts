@@ -20,7 +20,7 @@ export interface INetworkRequestOptions {
 
 export interface INetworkResponse {
 	status: number;
-	json: any;
+	json: unknown;
 	text: string;
 }
 
@@ -49,16 +49,16 @@ export interface AgenticContext {
 	runner: IProcessRunner;
 	// We will gradually move plugin references (settings, logger, engines) into this context
 	// to completely remove the Plugin class dependency.
-	settings: any; // Temporarily any to avoid circular imports during transition
+	settings: unknown; // Temporarily any to avoid circular imports during transition
 	saveSettings: () => Promise<void>;
 	
 	// Engines
-	logger?: any;
-	personaEngine?: any;
-	toolRegistry?: any;
-	routineManager?: any;
-	approvalQueue?: any;
-	executionSandbox?: any;
-	mcpEngine?: any;
-	chatService?: any;
+	logger?: unknown;
+	personaEngine?: unknown;
+	toolRegistry?: unknown;
+	routineManager?: unknown;
+	approvalQueue?: unknown;
+	executionSandbox?: unknown;
+	mcpEngine?: unknown;
+	chatService?: unknown;
 }

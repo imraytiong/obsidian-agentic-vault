@@ -13,10 +13,11 @@ export class PromptCompiler {
 			.join('\n');
 		systemPrompt += `\n\n[Active Semantic Zones]\nThe vault is organized into these authorized zones:\n${zonesStr}\nIf you need to read or write files, ALWAYS use one of these zone IDs in your tools. Do not hallucinate paths outside of these zones.`;
 
-		const sharedMemoryPath = 'AgenticVault/memory/shared_memory.md';
-		if (await plugin.app.vault.adapter.exists(sharedMemoryPath)) {
-			const sharedMemoryContent = await plugin.app.vault.adapter.read(sharedMemoryPath);
-			systemPrompt += `\n\n[Global User Profile (Core Identity)]\n${sharedMemoryContent}`;
+		const strategyPath = plugin.settings.zones['strategy']?.path || '10_Strategy';
+		const meMdPath = `${strategyPath}/Me.md`;
+		if (await plugin.app.vault.adapter.exists(meMdPath)) {
+			const meMdContent = await plugin.app.vault.adapter.read(meMdPath);
+			systemPrompt += `\n\n[Global User Profile (Core Identity)]\n${meMdContent}`;
 		}
 
 		const personaMemoryPath = `AgenticVault/memory/personas/${personaName.toLowerCase().replace(/ /g, '_')}_memory.md`;
@@ -25,7 +26,7 @@ export class PromptCompiler {
 			systemPrompt += `\n\n[Persona-Specific Context]\n${personaMemoryContent}`;
 		}
 
-		systemPrompt += `\n\n[System Rules]\n- When referring to files in the vault, ALWAYS use Obsidian wiki-link syntax: [[File Name]].\n- When asking the user a structured list of questions, DO NOT ask them in plain text. Instead, output a JSON block tagged with \`\`\`json-form\`\`\` that defines the form. The JSON must follow this exact schema: { "title": "Form Title", "fields": [ { "id": "field_id", "label": "Question Text", "type": "textarea", "placeholder": "Example answer..." } ] }\n- You have access to a permanent memory system via the \`update_memory\` tool. If the user explicitly states a preference, makes a major decision, or reveals a long-term goal, you MUST use the \`update_memory\` tool to permanently record it.\n- Hierarchy of Truth: The [Global User Profile (Core Identity)] block represents the user's current true identity. Vault documents represent Project State. If a Vault document contradicts the Core Identity, the Core Identity takes precedence. You MUST explicitly ask the user if the Vault document needs to be updated to match their new identity.\n- [VERIFICATION RULE]: You are strictly prohibited from confirming a task is complete based solely on your intent. You MUST receive a successful output receipt from a tool before telling the user it is done.`;
+		systemPrompt += `\n\n[System Rules]\n- When referring to files in the vault, ALWAYS use Obsidian wiki-link syntax: [[File Name]].\n- When you successfully create or update a file, you MUST inform the user of the exact location and provide a clickable Obsidian wiki-link to it in your final response.\n- When asking the user a structured list of questions, DO NOT ask them in plain text. Instead, output a JSON block tagged with \`\`\`json-form\`\`\` that defines the form. The JSON must follow this exact schema: { "title": "Form Title", "fields": [ { "id": "field_id", "label": "Question Text", "type": "textarea", "placeholder": "Example answer..." } ] }\n- You have access to a permanent profile system via the \`update_profile\` tool. If the user explicitly states a preference, makes a major decision, or reveals a long-term goal, you MUST use the \`update_profile\` tool to permanently record it in their Me.md file.\n- Hierarchy of Truth: The [Global User Profile (Core Identity)] block represents the user's current true identity. Vault documents represent Project State. If a Vault document contradicts the Core Identity, the Core Identity takes precedence. You MUST explicitly ask the user if the Vault document needs to be updated to match their new identity.\n- [ACTION HALLUCINATION RULE]: Do NOT narrate that you are taking an action (e.g. "I am saving this to your vault" or "I am transferring you"). You MUST actually execute the provided tools (e.g., \`file_manager\`, \`update_profile\`, \`transfer_session\`) to perform the action.\n- [TOOL CHAINING RULE]: If you need to perform multiple tool actions (e.g., writing a file and then transferring a session), you MUST complete the file writing tool calls FIRST, wait for their successful output receipts, and ONLY THEN execute the \`transfer_session\` tool.\n- [VERIFICATION RULE]: You are strictly prohibited from confirming a task is complete based solely on your intent. You MUST receive a successful output receipt from a tool before telling the user it is done.`;
 
 		const allPersonas = plugin.personaEngine.getAllPersonas();
 		const personaRegistry = allPersonas.map(p => `- **${p.name}**: ${p.description || 'A helpful specialized agent.'}`).join('\n');

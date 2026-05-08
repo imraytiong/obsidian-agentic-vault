@@ -16,13 +16,31 @@ export class ExecutionSandbox {
 		this.settings = settings;
 	}
 
-	async executeTool(toolName: string, payload: unknown, executionFleet?: string): Promise<{ success: boolean, output: string }> {
+	async executeTool(toolName: string, payload: unknown, executionFleet?: string, allowedZones?: Record<string, string>): Promise<{ success: boolean, output: string }> {
 		const tool = this.toolRegistry.getTool(toolName, executionFleet);
 		if (!tool) {
 			return { success: false, output: `Tool not found: ${toolName}` };
 		}
 
 		this.logger.log('SANDBOX_EXECUTION_STARTED', { tool: toolName, engine: this.settings.sandboxEngine, payload });
+
+		// RBAC Pre-Flight Check
+		if (allowedZones && typeof payload === 'object' && payload !== null && 'zone_id' in payload) {
+			const requestedZone = (payload as Record<string, unknown>).zone_id as string;
+			if (requestedZone && !allowedZones[requestedZone]) {
+				return { success: false, output: `Permission Denied: You do not have access to the '${requestedZone}' zone.` };
+			}
+			
+			// Check write permissions
+			const action = (payload as Record<string, unknown>).action as string;
+			if (action) {
+				const isWriteAction = ['write_file', 'append', 'delete', 'create_folder', 'push', 'overwrite', 'append_to_section'].includes(action);
+				const perm = allowedZones[requestedZone];
+				if (isWriteAction && perm !== 'full_read_write') {
+					return { success: false, output: `Permission Denied: You only have '${perm}' access to the '${requestedZone}' zone, but the action '${action}' requires 'full_read_write'.` };
+				}
+			}
+		}
 
 		try {
 			let enrichedPayload = payload;
@@ -65,7 +83,7 @@ export class ExecutionSandbox {
 					exe = 'bash';
 					args = ['-c', tool.scriptContent, payloadString];
 				} else {
-					exe = this.sandboxEngine;
+					exe = this.settings.sandboxEngine;
 					args = ['run', '--rm', '-i', 'alpine', 'sh', '-c', tool.scriptContent, payloadString];
 				}
 			} else {
@@ -81,15 +99,15 @@ export class ExecutionSandbox {
 			}
 
 			// Side-Effect Verification Middleware
-			let parsedOutput: any;
+			let parsedOutput: { side_effects?: unknown[] } | null = null;
 			try {
-				parsedOutput = JSON.parse(output.stdout.trim());
+				parsedOutput = JSON.parse(output.stdout.trim()) as { side_effects?: unknown[] };
 			} catch (e) {
 				// Not JSON, just skip
 			}
 			
 			if (parsedOutput && Array.isArray(parsedOutput.side_effects)) {
-				for (const effect of parsedOutput.side_effects) {
+				for (const effect of parsedOutput.side_effects as { path?: string, type?: string }[]) {
 					if (!effect.path) continue;
 					const exists = await this.context.fs.exists(effect.path);
 					if (effect.type === 'write' || effect.type === 'mkdir') {
@@ -111,8 +129,9 @@ export class ExecutionSandbox {
 			this.logger.log('SANDBOX_EXECUTION_SUCCESS', { tool: toolName, stdout: output.stdout.trim() });
 			return { success: true, output: output.stdout.trim() };
 		} catch (error: unknown) {
-			this.logger.log('SANDBOX_EXECUTION_ERROR', { tool: toolName, error: error.message });
-			return { success: false, output: `Execution failed: ${error.message}` };
+			const errMsg = import('../utils/ErrorUtils').then(m => m.getErrorMessage(error));
+			this.logger.log('SANDBOX_EXECUTION_ERROR', { tool: toolName, error: String(error) });
+			return { success: false, output: `Execution failed: ${String(error)}` };
 		}
 	}
 }

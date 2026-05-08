@@ -21,12 +21,27 @@ persona: Concierge
   {
     "name": "allocate_zone",
     "arguments": { "zone_id": "execution", "vault_path": "20_Execution", "description": "Contains the tasks.jsonl queue and sprint boards." }
+  },
+  {
+    "name": "present_options",
+    "arguments": { 
+      "message": "Welcome to 'The Business of You'. The suite is fully installed and your personal board of directors is waiting. To calibrate the system, we need to establish your baseline. How would you like to begin?", 
+      "options": [
+        "1. Establish my core Identity & Vision (Start Here)",
+        "2. Draft my 6-month Strategy & OKRs",
+        "3. Clear my immediate tasks & 'fires'",
+        "4. Map my critical stakeholders",
+        "Bypass (I will explore manually)"
+      ],
+      "selection_type": "single",
+      "allow_custom": false
+    }
   }
 ]
 ```
 
 ### Expected Output
-The Business of You fleet has been successfully installed
+Awaiting user selection...
 
 ### Expected File System State
 - **Directory Exists:** AgenticVault/fleets/business_of_you/templates

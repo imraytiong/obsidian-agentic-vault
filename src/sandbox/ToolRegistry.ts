@@ -3,7 +3,7 @@ import { App, TFile, TFolder, parseYaml } from 'obsidian';
 export interface ToolDefinition {
 	name: string;
 	description: string;
-	parameters: unknown[];
+	parameters: unknown;
 	language: string;
 	scriptContent: string;
 	fleet: string;
@@ -47,19 +47,19 @@ export class ToolRegistry {
 			for (const file of folder.children) {
 				if (file instanceof TFile && file.extension === 'md') {
 					const content = await this.app.vault.read(file);
-					let frontmatter: any = null;
+					let frontmatter: Record<string, unknown> | null = null;
 					
 					// Manually extract frontmatter to avoid cache race conditions on first boot
 					const fmMatch = content.match(/^---\n([\s\S]*?)\n---/);
 					if (fmMatch) {
 						try {
-							frontmatter = parseYaml(fmMatch[1]);
+							frontmatter = parseYaml(fmMatch[1] || '') as Record<string, unknown>;
 						} catch (e) {
 							console.error(`Failed to parse YAML for tool ${file.path}`, e);
 						}
 					}
 					
-					if (frontmatter && frontmatter.name) {
+					if (frontmatter && typeof frontmatter.name === 'string') {
 						// Ignore MCP server definition files (McpEngine handles them)
 						if (frontmatter.mcp_server === true) continue;
 						
@@ -84,7 +84,7 @@ export class ToolRegistry {
 					}
 
 					// Dynamically inject ZONES_ENUM
-					let parameters = frontmatter.parameters || [];
+					let parameters = (frontmatter.parameters as Record<string, unknown>[] | undefined) || [];
 					if (parameters.length > 0) {
 						let paramString = JSON.stringify(parameters);
 						if (paramString.includes('{{ZONES_ENUM}}')) {
@@ -96,8 +96,8 @@ export class ToolRegistry {
 
 					this.tools[`${fleetName}.${frontmatter.name}`] = {
 						name: frontmatter.name,
-						description: frontmatter.description || '',
-						parameters: parameters,
+						description: String(frontmatter.description || ''),
+						parameters: parameters as { name: string, type?: string, description?: string, required?: boolean, items?: { type?: string, properties?: unknown } }[],
 						language: language,
 						scriptContent: scriptContent,
 						fleet: fleetName

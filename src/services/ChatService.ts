@@ -3,9 +3,12 @@ import { LLMMessage, LLMProvider } from "../llm/LLMProvider";
 import { parseYaml, normalizePath } from "obsidian";
 import { GeminiProvider } from "../llm/GeminiProvider";
 import { OpenAIProvider } from "../llm/OpenAIProvider";
+import { ModelResolver } from "../llm/ModelResolver";
+import { getErrorMessage } from "../utils/ErrorUtils";
 
 import { PromptCompiler } from "../core/PromptCompiler";
 import { NativeToolHandler } from "../core/NativeToolHandler";
+import { InitializationEngine } from "../core/InitializationEngine";
 
 export type { LLMMessage as ChatMessage } from "../llm/LLMProvider";
 
@@ -81,7 +84,7 @@ export class ChatService {
 		this.backgroundTasks.delete(taskId);
 	}
 
-	async sendMessage(message: string, personaName: string, senderOverride?: string, taskId?: string, isInternalHandoff: boolean = false, roleOverride?: 'system' | 'user'): Promise<string> {
+	async sendMessage(message: string, personaName: string, senderOverride?: string, taskId?: string, isInternalHandoff: boolean = false, roleOverride?: 'system' | 'user', modelOverride?: string): Promise<string> {
 		if (taskId) {
 			this.backgroundTasks.add(taskId);
 		} else {
@@ -147,8 +150,8 @@ export class ChatService {
 			let payload = {};
 			try { payload = JSON.parse(payloadString); } catch (e) { payload = { raw: payloadString }; }
 			let response = `[${personaName}] Initiating local sandbox execution for tool: **${toolName}**...\n\n`;
-			const executionFleet = this.plugin.personaEngine.getPersonaByName(personaName)?.fleet;
-			const result = await this.plugin.executionSandbox.executeTool(toolName, payload, executionFleet);
+			const personaObj = this.plugin.personaEngine.getPersonaByName(personaName);
+			const result = await this.plugin.executionSandbox.executeTool(toolName, payload, personaObj?.fleet, personaObj?.allowed_zones);
 			if (result.success) response += `**Sandbox Output:**\n\`\`\`json\n${result.output}\n\`\`\``;
 			else response += `**Sandbox Error:**\n\`\`\`text\n${result.output}\n\`\`\``;
 			
@@ -166,24 +169,24 @@ export class ChatService {
 				...this.plugin.mcpEngine.getMcpToolsAsRegistryFormat()
 			];
 			
-			let tools = [];
+			let tools: import('../sandbox/ToolRegistry').ToolDefinition[] = [];
 			
-			if (persona && persona.skills) {
-				if (persona.skills.includes('all')) {
+			if (persona && persona.capabilities) {
+				if (persona.capabilities.includes('all')) {
 					tools = allTools;
 				} else {
 					tools = allTools.filter(t => {
-						if (t.name === 'update_memory') return true;
-						if (persona.skills?.includes(t.name)) return true;
+						if (t.name === 'update_profile') return true;
+						if (persona.capabilities?.includes(t.name)) return true;
 						
 						// If the tool is an MCP tool, allow it if the persona has the server name as a skill
-						const mcpPrefixMatch = persona.skills?.some(skill => t.name.startsWith(`${skill}___`));
+						const mcpPrefixMatch = persona.capabilities?.some(skill => t.name.startsWith(`${skill}___`));
 						return mcpPrefixMatch;
 					});
 				}
 			} else {
 				// If no skills defined, only give them the core memory tool
-				tools = allTools.filter(t => t.name === 'update_memory');
+				tools = allTools.filter(t => t.name === 'update_profile');
 			}
 			
 			
@@ -193,6 +196,7 @@ export class ChatService {
 				description: 'Transfer the user to a different persona/agent. Use this when the user needs help from a specific expert. CRITICAL: The target agent CANNOT see the conversation history. You MUST include all relevant requirements, code, and context explicitly in the handoff_context.',
 				language: 'native',
 				scriptContent: '',
+				fleet: 'core',
 				parameters: [
 					{ name: 'target_persona', type: 'string', description: 'The exact name of the persona to transfer to.', required: true },
 					{ name: 'handoff_context', type: 'string', description: 'A highly detailed summary of the conversation, all requirements, and exactly what the target agent needs to do.', required: true }
@@ -205,6 +209,7 @@ export class ChatService {
 				description: 'Load the full Standard Operating Procedure (SOP) instructions for a specific skill. You MUST do this before attempting to execute a skill.',
 				language: 'native',
 				scriptContent: '',
+				fleet: 'core',
 				parameters: [
 					{ name: 'skill_id', type: 'string', description: 'The exact ID (folder name) of the skill to load.', required: true }
 				]
@@ -216,6 +221,7 @@ export class ChatService {
 				description: 'Request human approval before performing a high-stakes or destructive action. The system will pause and wait for the user to approve or reject the request.',
 				language: 'native',
 				scriptContent: '',
+				fleet: 'core',
 				parameters: [
 					{ name: 'action_summary', type: 'string', description: 'A short summary of what you are about to do.', required: true },
 					{ name: 'reason', type: 'string', description: 'Why you are requesting approval for this action.', required: true }
@@ -228,6 +234,7 @@ export class ChatService {
 				description: 'Present the user with a set of interactive choices. The system will halt and wait for the user to make a selection or type a custom response.',
 				language: 'native',
 				scriptContent: '',
+				fleet: 'core',
 				parameters: [
 					{ name: 'options', type: 'array', description: 'The list of choices to present to the user (array of strings).', required: true },
 					{ name: 'selection_type', type: 'string', description: 'Either "single" (default) or "multiple". If single, renders as instant-action buttons. If multiple, renders as checkboxes.', required: false },
@@ -241,9 +248,21 @@ export class ChatService {
 				description: 'View the status of the background task queue, list available routines, or manually trigger a routine.',
 				language: 'native',
 				scriptContent: '',
+				fleet: 'core',
 				parameters: [
 					{ name: 'action', type: 'string', description: 'What to do: "list_routines" (to see all configured routines), "view_queue" (to see the recent tasks), or "trigger" (to spawn a new task).', required: true },
 					{ name: 'routine_id', type: 'string', description: 'Required only if action is "trigger". The ID of the routine to spawn.', required: false }
+				]
+			});
+
+			tools.push({
+				name: 'toggle_background_routines',
+				description: 'Enable or disable the global execution of all background routines (cron jobs and event triggers). Use this to turn on automated routines for the user if they ask for it.',
+				language: 'native',
+				scriptContent: '',
+				fleet: 'core',
+				parameters: [
+					{ name: 'enabled', type: 'boolean', description: 'Set to true to enable background routines, or false to disable them.', required: true }
 				]
 			});
 			
@@ -258,8 +277,17 @@ export class ChatService {
 				if (this.onTimelineUpdated) this.onTimelineUpdated();
 			}
 
-			let llmResponse = await provider.generateResponse(payload, tools, this.abortController?.signal);
-			this.plugin.logger.log('LLM_RAW_RESPONSE', llmResponse);
+			const llmOptions = {
+				signal: this.abortController?.signal,
+				modelOverride: ModelResolver.resolveTargetModel(modelOverride || persona?.model_preference?.target || 'Fast', this.plugin.settings.availableModels, this.plugin.settings.tierModels),
+				tierModels: this.plugin.settings.tierModels,
+				availableModels: this.plugin.settings.availableModels,
+				allowFallback: persona?.model_preference?.allow_fallback
+			};
+
+			const startTime = Date.now();
+			let llmResponse = await provider.generateResponse(payload, tools, llmOptions);
+			this.plugin.logger.log('LLM_RAW_RESPONSE', llmResponse as unknown as Record<string, unknown>);
 
 			if (!isStillActive()) return 'Aborted.';
 
@@ -269,7 +297,7 @@ export class ChatService {
 			const toolCallHistory: Record<string, number> = {};
 
 			// Create a single active assistant message
-			const activeAssistantMessage: any = { role: 'assistant', content: '', persona: personaName };
+			const activeAssistantMessage: LLMMessage = { role: 'assistant', content: '', persona: personaName };
 			
 			if (!taskId) {
 				this.unifiedTimeline.push(activeAssistantMessage);
@@ -333,7 +361,8 @@ export class ChatService {
 							const mcpRes = await this.plugin.mcpEngine.executeTool(tc.name, tc.arguments);
 							toolOutputStr = JSON.stringify(mcpRes, null, 2);
 						} catch (e: unknown) {
-							toolOutputStr = `ERROR: ${(e as Error).message}\n\n[SYSTEM DIRECTIVE]: Tool execution failed. Do NOT report this failure to the user yet. You must autonomously analyze the error, correct your arguments or approach, and retry.`;
+							const errMsg = getErrorMessage(e);
+							toolOutputStr = `ERROR: ${errMsg}\n\n[SYSTEM DIRECTIVE]: Tool execution failed. Do NOT report this failure to the user yet. You must autonomously analyze the error, correct your arguments or approach, and retry.`;
 						}
 
 						const finishedToken = `\n\n<details><summary>⚙️ Executed MCP tool: ${tc.name}</summary>\n\n\`\`\`text\n${toolOutputStr}\n\`\`\`\n</details>`;
@@ -359,7 +388,15 @@ export class ChatService {
 
 					// Execute Sandbox for standard tools
 					const executionFleet = persona?.fleet;
-					const sandboxRes = await this.plugin.executionSandbox.executeTool(tc.name, tc.arguments, executionFleet);
+					
+					// Pre-flight check: Is the tool in capabilities?
+					const isAllowed = tools.some(t => t.name === tc.name);
+					let sandboxRes: { success: boolean, output: string };
+					if (!isAllowed) {
+						sandboxRes = { success: false, output: `Permission Denied: Tool '${tc.name}' is not in your capabilities.` };
+					} else {
+						sandboxRes = await this.plugin.executionSandbox.executeTool(tc.name, tc.arguments, executionFleet, persona?.allowed_zones);
+					}
 					
 					// Intercept dynamic zone allocation
 					if (sandboxRes.success) {
@@ -386,6 +423,16 @@ export class ChatService {
 									this.plugin.settings.zones[zone_id] = { path, description };
 									await this.plugin.saveSettings();
 									this.plugin.logger.log('SYSTEM_INFO', { message: `Dynamically allocated zone: ${zone_id} -> ${path}` });
+									
+									if (zone_id === 'templates') {
+										try {
+											const engine = new InitializationEngine(this.plugin);
+											await engine.syncTemplatesToZone(path);
+											this.plugin.logger.log('SYSTEM_INFO', { message: `Synced templates to zone: ${path}` });
+										} catch (syncErr) {
+											console.error('[DEBUG ChatService] ERROR in syncTemplatesToZone:', syncErr);
+										}
+									}
 								}
 							}
 							if (parsed._INTERNAL_ALLOCATE_ZONES_TRIGGER) {
@@ -409,7 +456,7 @@ export class ChatService {
 													this.plugin.settings.agenticVaultPath = path;
 													this.plugin.logger.agenticVaultPath = normalizePath(newPath);
 													this.plugin.logger.log('SYSTEM_INFO', { message: `Renamed agentic_vault to ${path}` });
-												} catch (err: any) {
+												} catch (err: unknown) {
 													this.plugin.logger.log('SYSTEM_ERROR', { message: `Failed to rename agentic_vault: ${err}` });
 												}
 											} else {
@@ -418,6 +465,16 @@ export class ChatService {
 										} else {
 											this.plugin.settings.zones[zone_id] = { path, description };
 											this.plugin.logger.log('SYSTEM_INFO', { message: `Dynamically allocated zone: ${zone_id} -> ${path}` });
+											
+											if (zone_id === 'templates') {
+												try {
+													const engine = new InitializationEngine(this.plugin);
+													await engine.syncTemplatesToZone(path);
+													this.plugin.logger.log('SYSTEM_INFO', { message: `Synced templates to zone: ${path}` });
+												} catch (syncErr) {
+													console.error('[DEBUG ChatService] ERROR in syncTemplatesToZone:', syncErr);
+												}
+											}
 										}
 									}
 									await this.plugin.saveSettings();
@@ -425,7 +482,6 @@ export class ChatService {
 							}
 							if (parsed._INTERNAL_INSTALL_FLEET_TRIGGER) {
 								const { fleet_name } = parsed._INTERNAL_INSTALL_FLEET_TRIGGER;
-								const { InitializationEngine } = await import('../core/InitializationEngine');
 								const engine = new InitializationEngine(this.plugin);
 								await engine.deployFleet(fleet_name);
 								await this.plugin.personaEngine.loadPersonas();
@@ -440,20 +496,25 @@ export class ChatService {
 									if (fleetFile) {
 										const match = fleetFile.content.match(/---\n([\s\S]*?)\n---/);
 										if (match) {
-											const fm = parseYaml(match[1]);
+											const fm = parseYaml(match[1] || '');
 											console.log("YAML String:", match[1]);
 											console.log("Parsed YAML:", fm);
 											if (fm && fm.required_zones) {
 												const zonesJson = JSON.stringify(fm.required_zones, null, 2);
 												sandboxRes.output += `\n\nSUCCESS! Fleet installed. \n[SYSTEM DIRECTIVE]: This fleet REQUIRES the following zones to be mapped. You MUST now call the \`allocate_zone\` tool multiple times (once for each zone) with the following configurations:\n${zonesJson}`;
 											}
+											if (fm && fm.onboarding) {
+												const onboardingJson = JSON.stringify(fm.onboarding, null, 2);
+												sandboxRes.output += `\n\n[SYSTEM DIRECTIVE]: After you have successfully allocated all required zones, you MUST initiate the onboarding flow. Present the pathways defined below using your 'present_options' tool. You MUST always automatically append a final option: 'Bypass (I will explore manually)'.\n${onboardingJson}`;
+											}
 										}
 									}
 								}
 							}
-						} catch (e: any) {
-							if (sandboxRes.metadata && sandboxRes.metadata.stdout && sandboxRes.metadata.stdout.includes('_INTERNAL_')) {
-								this.plugin.logger.log('SYSTEM_ERROR', { message: `Failed to process internal trigger: ${e}` });
+						} catch (e: unknown) {
+							const errMsg = getErrorMessage(e);
+							if (sandboxRes.output && sandboxRes.output.includes('_INTERNAL_')) {
+								this.plugin.logger.log('SYSTEM_ERROR', { message: `Failed to process internal trigger: ${errMsg}` });
 							}
 						}
 					}
@@ -482,8 +543,8 @@ export class ChatService {
 				this.currentStatus = `Analyzing tool execution results...`;
 				if (this.onTimelineUpdated) this.onTimelineUpdated();
 
-				llmResponse = await provider.generateResponse(followupPayload, tools, this.abortController?.signal);
-				this.plugin.logger.log('LLM_FOLLOWUP_RESPONSE', llmResponse);
+				llmResponse = await provider.generateResponse(followupPayload, tools, llmOptions);
+				this.plugin.logger.log('LLM_FOLLOWUP_RESPONSE', llmResponse as unknown as Record<string, unknown>);
 			}
 
 			if (llmResponse.toolCalls && llmResponse.toolCalls.length > 0 && iterations >= maxIterations) {
@@ -502,6 +563,9 @@ export class ChatService {
 				history.push({ role: 'assistant', content: finalContent, persona: personaName });
 			}
 			
+			activeAssistantMessage.modelUsed = llmResponse.modelUsed || llmOptions.modelOverride || 'Unknown Model';
+			activeAssistantMessage.executionTimeMs = Date.now() - startTime;
+
 			if (!activeAssistantMessage.content) {
 				activeAssistantMessage.content = '[Empty response]';
 			}
@@ -525,17 +589,18 @@ export class ChatService {
 			
 			return activeAssistantMessage.content;
 			
-		} catch (error: any) {
-			this.plugin.logger.log('LLM_API_ERROR', { error: error.message });
-			let errResponse = `Error connecting to ${this.plugin.settings.llmProvider}: ${error.message}`;
+		} catch (error: unknown) {
+			const errMsg = getErrorMessage(error);
+			this.plugin.logger.log('LLM_API_ERROR', { error: errMsg });
+			let errResponse = `Error connecting to ${this.plugin.settings.llmProvider}: ${errMsg}`;
 			
-			if (error.message && (
-				error.message.toLowerCase().includes('key') || 
-				error.message.toLowerCase().includes('model') || 
-				error.message.toLowerCase().includes('unauthorized') || 
-				error.message.toLowerCase().includes('not found') ||
-				error.message.toLowerCase().includes('401') ||
-				error.message.toLowerCase().includes('404')
+			if (errMsg && (
+				errMsg.toLowerCase().includes('key') || 
+				errMsg.toLowerCase().includes('model') || 
+				errMsg.toLowerCase().includes('unauthorized') || 
+				errMsg.toLowerCase().includes('not found') ||
+				errMsg.toLowerCase().includes('401') ||
+				errMsg.toLowerCase().includes('404')
 			)) {
 				errResponse += `\n\n⚠️ **Troubleshooting:** It looks like your API key or selected model might be invalid. Please go to **Settings → Community plugins → Agentic Vault** and use the **Test Key & Load Models** button to verify your configuration.`;
 			}

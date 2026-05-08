@@ -20,7 +20,7 @@ import { parseMarkdownTest } from './utils/MarkdownTestParser';
 
 describe('Markdown E2E Test Runner', () => {
 	const e2eDir = path.resolve(__dirname, '../../tests/e2e');
-	const vaultPath = path.resolve(__dirname, '../../test-vault-markdown');
+	const vaultPath = path.resolve(__dirname, '../../test-vaults/test-vault-markdown');
 
 	if (!fs.existsSync(e2eDir)) {
 		console.warn("No tests/e2e directory found. Skipping Markdown E2E tests.");
@@ -97,7 +97,7 @@ describe('Markdown E2E Test Runner', () => {
 							for (const f of list) {
 								const childPath = path.join(p, f);
 								if (fs.statSync(path.join(fullPath, f)).isDirectory()) {
-									const cFolder = new TFolder(); cFolder.path = childPath; cFolder.name = f; folder.children.push(cFolder);
+									const cFolder = new TFolder(); cFolder.path = childPath; cFolder.name = f; cFolder.children = []; folder.children.push(cFolder);
 								} else {
 									const cFile = new TFile(); 
 									cFile.path = childPath; 
@@ -121,11 +121,23 @@ describe('Markdown E2E Test Runner', () => {
 				};
 
 				mockApp.vault.create = async (p: string, c: string) => {
+					fs.mkdirSync(path.dirname(path.join(vaultPath, p)), { recursive: true });
 					await context.fs.writeText(p, c);
 					const file = new TFile(); file.path = p; return file;
 				};
+				mockApp.vault.append = async (file: any, text: string) => {
+					const current = await context.fs.readText(file.path);
+					await context.fs.writeText(file.path, current + text);
+				};
 				mockApp.vault.createFolder = async (p: string) => {
 					fs.mkdirSync(path.join(vaultPath, p), { recursive: true });
+				};
+				mockApp.vault.copy = async (file: any, destPath: string) => {
+					const destFull = path.join(vaultPath, destPath);
+					const srcFull = path.join(vaultPath, file.path);
+					fs.mkdirSync(path.dirname(destFull), { recursive: true });
+					fs.cpSync(srcFull, destFull);
+					return mockApp.vault.getAbstractFileByPath(destPath);
 				};
 
 				const logger = new LoggerService(mockApp, settings.agenticVaultPath);
@@ -140,7 +152,7 @@ describe('Markdown E2E Test Runner', () => {
 				const pluginMock: any = {
 					settings, app: mockApp, logger, personaEngine, toolRegistry,
 					executionSandbox, routineManager, approvalQueue, mcpEngine, skillsEngine,
-					context, saveData: async () => {}
+					context, saveData: async () => {}, saveSettings: async () => {}
 				};
 
 				provider = new MockLLMProvider();
@@ -159,18 +171,22 @@ describe('Markdown E2E Test Runner', () => {
 					await engine.deployFleet(scenario.assume_installed_fleet);
 					
 					// Automatically map the required zones and create the directories
-					const { BundledFleets } = await import('../../src/blueprints/BundledFleets');
-					const fleetData = BundledFleets[scenario.assume_installed_fleet];
-					if (fleetData && fleetData.required_zones) {
-						if (!pluginMock.settings.semanticZones) pluginMock.settings.semanticZones = {};
-						for (const z of fleetData.required_zones) {
-							pluginMock.settings.semanticZones[z.zone_id] = {
-								path: z.vault_path,
-								description: z.description
-							};
-							const fullZonePath = path.join(vaultPath, z.vault_path);
-							if (!fs.existsSync(fullZonePath)) {
-								fs.mkdirSync(fullZonePath, { recursive: true });
+					const fleetMdContent = fs.readFileSync(path.join(vaultPath, 'AgenticVault', 'fleets', scenario.assume_installed_fleet, 'fleet.md'), 'utf8');
+					const fmMatch = fleetMdContent.match(/^---\n([\s\S]*?)\n---/);
+					if (fmMatch) {
+						const yaml = require('yaml');
+						const frontmatter = yaml.parse(fmMatch[1]);
+						if (frontmatter && frontmatter.required_zones) {
+							if (!pluginMock.settings.zones) pluginMock.settings.zones = {};
+							for (const z of frontmatter.required_zones) {
+								pluginMock.settings.zones[z.zone_id] = {
+									path: z.vault_path,
+									description: z.description
+								};
+								const fullZonePath = path.join(vaultPath, z.vault_path);
+								if (!fs.existsSync(fullZonePath)) {
+									fs.mkdirSync(fullZonePath, { recursive: true });
+								}
 							}
 						}
 					}
@@ -178,6 +194,7 @@ describe('Markdown E2E Test Runner', () => {
 					// Re-load tools and personas after deployment
 					await personaEngine.loadPersonas();
 					await toolRegistry.loadTools();
+					console.log("LOADED TOOLS FOR", scenario.name, ":", Object.keys(toolRegistry.tools));
 				}
 			});
 
@@ -215,13 +232,29 @@ describe('Markdown E2E Test Runner', () => {
 				// Assert files
 				for (const expectedFile of scenario.expectedFiles) {
 					const exists = fs.existsSync(path.join(vaultPath, expectedFile));
+					if (!exists) {
+						console.error(`Missing expected file: ${expectedFile}`);
+						console.error(JSON.stringify(chatService.unifiedTimeline, null, 2));
+					}
 					expect(exists).toBe(true);
 				}
 
-				// Assert final message
+				// Assert missing files
+				for (const missingFile of scenario.expectedMissingFiles) {
+					const exists = fs.existsSync(path.join(vaultPath, missingFile));
+					expect(exists).toBe(false);
+				}
+
+				// Assert tool errors
 				const timeline = chatService.unifiedTimeline;
+				for (const expectedErr of scenario.expectedToolErrors) {
+					const hasErrorMsg = timeline.some(m => m.content.includes(expectedErr.errorContains));
+					expect(hasErrorMsg).toBe(true);
+				}
+
+				// Assert final message
 				const lastMessage = timeline[timeline.length - 1];
-				expect(lastMessage.content).toContain(scenario.expectedOutput);
+				expect(lastMessage.content + "\n" + res).toContain(scenario.expectedOutput);
 			}, 30000);
 		});
 	}

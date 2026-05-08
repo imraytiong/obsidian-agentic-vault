@@ -5,7 +5,7 @@ export interface ApprovalRequest {
 	persona: string;
 	summary: string;
 	reason: string;
-	historyPayload: any[];
+	historyPayload: unknown[];
 	timestamp: string;
 	status: 'pending' | 'approved' | 'rejected';
 }

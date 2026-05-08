@@ -1,0 +1,1167 @@
+
+ RUN  v4.1.5 /Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Onboarding The Business of You > should execute the scenario successfully
+Using configured provider: MockLLMProvider
+
+stderr | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Onboarding The Business of You > should execute the scenario successfully
+Agentic Vault Logger Error: TypeError: this.app.vault.append is not a function
+    at LoggerService.processQueue (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:54:27)
+Agentic Vault Logger Error: TypeError: this.app.vault.append is not a function
+    at LoggerService.processQueue (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:54:27)
+Agentic Vault Logger Error: TypeError: this.app.vault.append is not a function
+    at LoggerService.processQueue (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:54:27)
+Agentic Vault Logger Error: TypeError: this.app.vault.append is not a function
+    at LoggerService.processQueue (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:54:27)
+
+stderr | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Onboarding The Business of You > should execute the scenario successfully
+Agentic Vault Logger Error: TypeError: this.app.vault.append is not a function
+    at LoggerService.processQueue (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:54:27)
+    at LoggerService.log (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:19:9)
+    at ExecutionSandbox.executeTool (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/sandbox/ExecutionSandbox.ts:111:16)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at ChatService.sendMessage (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/ChatService.ts:390:25)
+    at /Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox/src/run_markdown_e2e.test.ts:213:17
+    at file:///Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20
+
+stderr | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Onboarding The Business of You > should execute the scenario successfully
+Agentic Vault Logger Error: TypeError: this.app.vault.append is not a function
+    at LoggerService.processQueue (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:54:27)
+    at LoggerService.log (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:19:9)
+    at ChatService.sendMessage (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/ChatService.ts:480:28)
+    at /Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox/src/run_markdown_e2e.test.ts:213:17
+    at file:///Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Onboarding The Business of You > should execute the scenario successfully
+YAML String: name: "The Business of You"
+system_version: 0.0.1
+description: "A suite of agents to help you manage your professional career or job like a business."
+status: active
+onboarding:
+  trigger_agent: Concierge
+  welcome_message: "Welcome to 'The Business of You'. The suite is fully installed and your personal board of directors is waiting. To calibrate the system, we need to establish your baseline. How would you like to begin?"
+  pathways:
+    - id: identity_and_vision
+      label: "1. Establish my core Identity & Vision (Start Here)"
+      description: "Build your `Me.md` profile and define your 5-10 year horizon."
+      target_agent: "Executive Coach"
+      handoff_context: "[GUIDED MODE ACTIVE]: The user has elected to establish their core identity. Please initiate the Socratic interview to build their `Me.md` file in the root folder, focusing on their 5-10 year career vision. When you have successfully completed your specific onboarding task, you MUST automatically use the 'transfer_session' tool to hand the user BACK to the Concierge, including a summary of what you achieved."
+
+    - id: define_strategy
+      label: "2. Draft my 6-month Strategy & OKRs"
+      description: "Translate your long-term vision into actionable quarterly objectives."
+      target_agent: "Strategist"
+      handoff_context: "[GUIDED MODE ACTIVE]: The user wants to draft their 6-12 month strategy. Please review their `Me.md` (if it exists) and help them define 3 OKRs, saving them as a formal document in the `strategy` zone. When you have successfully completed your specific onboarding task, you MUST automatically use the 'transfer_session' tool to hand the user BACK to the Concierge, including a summary of what you achieved."
+
+    - id: execution_fires
+      label: "3. Clear my immediate tasks & 'fires'"
+      description: "Do a quick brain dump to populate your Kanban board for the week."
+      target_agent: "Chief of Staff"
+      handoff_context: "[GUIDED MODE ACTIVE]: The user needs to organize their immediate operational execution. Ask them for a brain dump of their top 3 'fires' and translate them into tasks on the `execution` Kanban board. When you have successfully completed your specific onboarding task, you MUST automatically use the 'transfer_session' tool to hand the user BACK to the Concierge, including a summary of what you achieved."
+
+    - id: crm_stakeholders
+      label: "4. Map my critical stakeholders"
+      description: "Set up your relationship tracker for key managers and peers."
+      target_agent: "Chief People Officer"
+      handoff_context: "[GUIDED MODE ACTIVE]: The user wants to set up their CRM. Ask them for the names and roles of their 3 most critical stakeholders right now, and generate relationship tracking files in the `network` zone. When you have successfully completed your specific onboarding task, you MUST automatically use the 'transfer_session' tool to hand the user BACK to the Concierge, including a summary of what you achieved."
+required_zones:
+  - zone_id: inbox
+    vault_path: 00_Inbox
+    description: "The drop zone for raw thoughts and web clippings."
+  - zone_id: strategy
+    vault_path: 10_Strategy
+    description: "Contains formal OKRs and project briefs."
+  - zone_id: execution
+    vault_path: 20_Execution
+    description: "Contains the tasks.jsonl queue and sprint boards."
+  - zone_id: briefings
+    vault_path: 30_Briefings
+    description: "Contains unified Daily Notes."
+  - zone_id: agendas
+    vault_path: 35_Agendas
+    description: "Staging ground for upcoming meeting agendas, talking points, and 1:1 structures."
+  - zone_id: network
+    vault_path: 40_Network
+    description: "CRM tracking relationships, featuring YAML trackers for rhythms (consecutive-tactical-meetings) and relationship-tiers (manager, peer)."
+  - zone_id: radar
+    vault_path: 50_Radar
+    description: "Watchlist for emerging trends and research."
+  - zone_id: journal
+    vault_path: 60_Journal
+    description: "Private boardroom for raw dumps and post-mortems."
+  - zone_id: rubrics
+    vault_path: 80_Company_Rubrics
+    description: "Reference folder containing official HR rubrics, promotion packets, and leveling docs."
+  - zone_id: templates
+    vault_path: 90_Templates
+    description: "The repository of dynamic templates owned and iteratively updated by the personas."
+  - zone_id: workspace
+    vault_path: 99_Agent_Workspace
+    description: "Scratchpad for Specialists and Researchers."
+Parsed YAML: {
+  name: 'The Business of You',
+  system_version: '0.0.1',
+  description: 'A suite of agents to help you manage your professional career or job like a business.',
+  status: 'active',
+  onboarding: {
+    trigger_agent: 'Concierge',
+    welcome_message: "Welcome to 'The Business of You'. The suite is fully installed and your personal board of directors is waiting. To calibrate the system, we need to establish your baseline. How would you like to begin?",
+    pathways: [ [Object], [Object], [Object], [Object] ]
+  },
+  required_zones: [
+    {
+      zone_id: 'inbox',
+      vault_path: '00_Inbox',
+      description: 'The drop zone for raw thoughts and web clippings.'
+    },
+    {
+      zone_id: 'strategy',
+      vault_path: '10_Strategy',
+      description: 'Contains formal OKRs and project briefs.'
+    },
+    {
+      zone_id: 'execution',
+      vault_path: '20_Execution',
+      description: 'Contains the tasks.jsonl queue and sprint boards.'
+    },
+    {
+      zone_id: 'briefings',
+      vault_path: '30_Briefings',
+      description: 'Contains unified Daily Notes.'
+    },
+    {
+      zone_id: 'agendas',
+      vault_path: '35_Agendas',
+      description: 'Staging ground for upcoming meeting agendas, talking points, and 1:1 structures.'
+    },
+    {
+      zone_id: 'network',
+      vault_path: '40_Network',
+      description: 'CRM tracking relationships, featuring YAML trackers for rhythms (consecutive-tactical-meetings) and relationship-tiers (manager, peer).'
+    },
+    {
+      zone_id: 'radar',
+      vault_path: '50_Radar',
+      description: 'Watchlist for emerging trends and research.'
+    },
+    {
+      zone_id: 'journal',
+      vault_path: '60_Journal',
+      description: 'Private boardroom for raw dumps and post-mortems.'
+    },
+    {
+      zone_id: 'rubrics',
+      vault_path: '80_Company_Rubrics',
+      description: 'Reference folder containing official HR rubrics, promotion packets, and leveling docs.'
+    },
+    {
+      zone_id: 'templates',
+      vault_path: '90_Templates',
+      description: 'The repository of dynamic templates owned and iteratively updated by the personas.'
+    },
+    {
+      zone_id: 'workspace',
+      vault_path: '99_Agent_Workspace',
+      description: 'Scratchpad for Specialists and Researchers.'
+    }
+  ]
+}
+
+stderr | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Onboarding The Business of You > should execute the scenario successfully
+Agentic Vault Logger Error: TypeError: this.app.vault.append is not a function
+    at LoggerService.processQueue (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:54:27)
+    at LoggerService.log (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:19:9)
+    at ChatService.sendMessage (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/ChatService.ts:340:25)
+    at /Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox/src/run_markdown_e2e.test.ts:213:17
+    at file:///Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20
+
+stderr | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Onboarding The Business of You > should execute the scenario successfully
+Agentic Vault Logger Error: TypeError: this.app.vault.append is not a function
+    at LoggerService.processQueue (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:54:27)
+    at LoggerService.log (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:19:9)
+    at ExecutionSandbox.executeTool (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/sandbox/ExecutionSandbox.ts:25:15)
+    at ChatService.sendMessage (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/ChatService.ts:390:60)
+    at /Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox/src/run_markdown_e2e.test.ts:213:17
+    at file:///Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20
+
+stderr | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Onboarding The Business of You > should execute the scenario successfully
+Agentic Vault Logger Error: TypeError: this.app.vault.append is not a function
+    at LoggerService.processQueue (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:54:27)
+    at LoggerService.log (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:19:9)
+    at ExecutionSandbox.executeTool (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/sandbox/ExecutionSandbox.ts:111:16)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at ChatService.sendMessage (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/ChatService.ts:390:25)
+    at /Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox/src/run_markdown_e2e.test.ts:213:17
+    at file:///Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20
+
+stderr | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Onboarding The Business of You > should execute the scenario successfully
+Agentic Vault Logger Error: TypeError: this.app.vault.append is not a function
+    at LoggerService.processQueue (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:54:27)
+    at LoggerService.log (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:19:9)
+    at ChatService.sendMessage (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/ChatService.ts:508:28)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at /Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox/src/run_markdown_e2e.test.ts:213:17
+    at file:///Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20
+Agentic Vault Logger Error: TypeError: this.app.vault.append is not a function
+    at LoggerService.processQueue (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:54:27)
+    at LoggerService.log (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:19:9)
+    at ChatService.sendMessage (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/ChatService.ts:340:25)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at /Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox/src/run_markdown_e2e.test.ts:213:17
+    at file:///Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20
+
+stderr | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Onboarding The Business of You > should execute the scenario successfully
+Agentic Vault Logger Error: TypeError: this.app.vault.append is not a function
+    at LoggerService.processQueue (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:54:27)
+    at LoggerService.log (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:19:9)
+    at ExecutionSandbox.executeTool (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/sandbox/ExecutionSandbox.ts:25:15)
+    at ChatService.sendMessage (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/ChatService.ts:390:60)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at /Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox/src/run_markdown_e2e.test.ts:213:17
+    at file:///Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20
+
+stderr | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Onboarding The Business of You > should execute the scenario successfully
+Agentic Vault Logger Error: TypeError: this.app.vault.append is not a function
+    at LoggerService.processQueue (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:54:27)
+    at LoggerService.log (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:19:9)
+    at ExecutionSandbox.executeTool (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/sandbox/ExecutionSandbox.ts:111:16)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at ChatService.sendMessage (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/ChatService.ts:390:25)
+    at /Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox/src/run_markdown_e2e.test.ts:213:17
+    at file:///Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20
+
+stderr | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Onboarding The Business of You > should execute the scenario successfully
+Agentic Vault Logger Error: TypeError: this.app.vault.append is not a function
+    at LoggerService.processQueue (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:54:27)
+    at LoggerService.log (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:19:9)
+    at ChatService.sendMessage (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/ChatService.ts:508:28)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at /Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox/src/run_markdown_e2e.test.ts:213:17
+    at file:///Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20
+Agentic Vault Logger Error: TypeError: this.app.vault.append is not a function
+    at LoggerService.processQueue (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:54:27)
+    at LoggerService.log (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:19:9)
+    at ChatService.sendMessage (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/ChatService.ts:340:25)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at /Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox/src/run_markdown_e2e.test.ts:213:17
+    at file:///Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Onboarding The Business of You > should execute the scenario successfully
+SEND_MESSAGE_RESULT: Awaiting user selection...
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Chief Strategist OKR Generation
+LOADED TOOLS FOR Chief Strategist OKR Generation : [
+  'business_of_you.crm_query',
+  'business_of_you.manage_queue',
+  'business_of_you.read_calendar',
+  'core.allocate_zone',
+  'core.echo',
+  'core.file_manager',
+  'core.install_fleet',
+  'core.system_diagnostic',
+  'core.update_memory',
+  'core.update_profile',
+  'para_career.map_vault',
+  'para_career.unreliable_math',
+  'para_career.web_search'
+]
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Chief Strategist OKR Generation > should execute the scenario successfully
+Using configured provider: MockLLMProvider
+
+stderr | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Chief Strategist OKR Generation > should execute the scenario successfully
+Agentic Vault Logger Error: TypeError: this.app.vault.append is not a function
+    at LoggerService.processQueue (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:54:27)
+Agentic Vault Logger Error: TypeError: this.app.vault.append is not a function
+    at LoggerService.processQueue (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:54:27)
+Agentic Vault Logger Error: TypeError: this.app.vault.append is not a function
+    at LoggerService.processQueue (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:54:27)
+Agentic Vault Logger Error: TypeError: this.app.vault.append is not a function
+    at LoggerService.processQueue (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:54:27)
+
+stderr | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Chief Strategist OKR Generation > should execute the scenario successfully
+Agentic Vault Logger Error: TypeError: this.app.vault.append is not a function
+    at LoggerService.processQueue (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:54:27)
+    at LoggerService.log (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:19:9)
+    at ExecutionSandbox.executeTool (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/sandbox/ExecutionSandbox.ts:111:16)
+    at ChatService.sendMessage (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/ChatService.ts:390:25)
+    at /Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox/src/run_markdown_e2e.test.ts:213:17
+    at file:///Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20
+
+stderr | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Chief Strategist OKR Generation > should execute the scenario successfully
+Agentic Vault Logger Error: TypeError: this.app.vault.append is not a function
+    at LoggerService.processQueue (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:54:27)
+    at LoggerService.log (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:19:9)
+    at ChatService.sendMessage (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/ChatService.ts:538:24)
+    at /Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox/src/run_markdown_e2e.test.ts:213:17
+    at file:///Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Chief Strategist OKR Generation > should execute the scenario successfully
+SEND_MESSAGE_RESULT: 
+
+<details><summary>⚙️ Executed tool: file_manager</summary>
+
+```text
+{"status":"success","message":"File written to zone strategy: Q3_Agentic_Vault_OKRs.md","side_effects":[{"type":"write","path":"10_Strategy/Q3_Agentic_Vault_OKRs.md"}]}
+```
+</details>
+
+I have created your Q3 OKR document in the Strategy zone.
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Chief Quality Officer Sprint Review
+LOADED TOOLS FOR Chief Quality Officer Sprint Review : [
+  'business_of_you.crm_query',
+  'business_of_you.manage_queue',
+  'business_of_you.read_calendar',
+  'core.allocate_zone',
+  'core.echo',
+  'core.file_manager',
+  'core.install_fleet',
+  'core.system_diagnostic',
+  'core.update_memory',
+  'core.update_profile',
+  'para_career.map_vault',
+  'para_career.unreliable_math',
+  'para_career.web_search'
+]
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Chief Quality Officer Sprint Review > should execute the scenario successfully
+Using configured provider: MockLLMProvider
+
+stderr | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Chief Quality Officer Sprint Review > should execute the scenario successfully
+Agentic Vault Logger Error: TypeError: this.app.vault.append is not a function
+    at LoggerService.processQueue (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:54:27)
+Agentic Vault Logger Error: TypeError: this.app.vault.append is not a function
+    at LoggerService.processQueue (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:54:27)
+Agentic Vault Logger Error: TypeError: this.app.vault.append is not a function
+    at LoggerService.processQueue (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:54:27)
+Agentic Vault Logger Error: TypeError: this.app.vault.append is not a function
+    at LoggerService.processQueue (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:54:27)
+
+stderr | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Chief Quality Officer Sprint Review > should execute the scenario successfully
+Agentic Vault Logger Error: TypeError: this.app.vault.append is not a function
+    at LoggerService.processQueue (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:54:27)
+    at LoggerService.log (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:19:9)
+    at ExecutionSandbox.executeTool (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/sandbox/ExecutionSandbox.ts:111:16)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at ChatService.sendMessage (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/ChatService.ts:390:25)
+    at /Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox/src/run_markdown_e2e.test.ts:213:17
+    at file:///Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20
+
+stderr | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Chief Quality Officer Sprint Review > should execute the scenario successfully
+Agentic Vault Logger Error: TypeError: this.app.vault.append is not a function
+    at LoggerService.processQueue (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:54:27)
+    at LoggerService.log (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:19:9)
+    at ChatService.sendMessage (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/ChatService.ts:340:25)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at /Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox/src/run_markdown_e2e.test.ts:213:17
+    at file:///Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20
+
+stderr | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Chief Quality Officer Sprint Review > should execute the scenario successfully
+Agentic Vault Logger Error: TypeError: this.app.vault.append is not a function
+    at LoggerService.processQueue (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:54:27)
+    at LoggerService.log (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:19:9)
+    at ExecutionSandbox.executeTool (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/sandbox/ExecutionSandbox.ts:25:15)
+    at ChatService.sendMessage (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/ChatService.ts:390:60)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at /Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox/src/run_markdown_e2e.test.ts:213:17
+    at file:///Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20
+
+stderr | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Chief Quality Officer Sprint Review > should execute the scenario successfully
+Agentic Vault Logger Error: TypeError: this.app.vault.append is not a function
+    at LoggerService.processQueue (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:54:27)
+    at LoggerService.log (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:19:9)
+    at ExecutionSandbox.executeTool (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/sandbox/ExecutionSandbox.ts:111:16)
+    at ChatService.sendMessage (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/ChatService.ts:390:25)
+    at /Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox/src/run_markdown_e2e.test.ts:213:17
+    at file:///Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20
+
+stderr | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Chief Quality Officer Sprint Review > should execute the scenario successfully
+Agentic Vault Logger Error: TypeError: this.app.vault.append is not a function
+    at LoggerService.processQueue (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:54:27)
+    at LoggerService.log (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:19:9)
+    at ChatService.sendMessage (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/ChatService.ts:538:24)
+    at /Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox/src/run_markdown_e2e.test.ts:213:17
+    at file:///Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Chief Quality Officer Sprint Review > should execute the scenario successfully
+SEND_MESSAGE_RESULT: 
+
+<details><summary>⚙️ Executed tool: file_manager</summary>
+
+```text
+{"error":"File not found in zone execution: tasks.jsonl"}
+```
+</details>
+
+<details><summary>⚙️ Executed tool: file_manager</summary>
+
+```text
+{"status":"success","message":"File written to zone execution: Sprint_Deviation_Report.md","side_effects":[{"type":"write","path":"20_Execution/Sprint_Deviation_Report.md"}]}
+```
+</details>
+
+The deviation report has been generated.
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: HITL Approval Flow > should execute the scenario successfully
+Using configured provider: MockLLMProvider
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: HITL Approval Flow > should execute the scenario successfully
+SEND_MESSAGE_RESULT: ⚠️ **Approval Requested:**
+- **Action:** Delete the production database
+- **Reason:** You asked me to delete it, but this is a destructive action.
+
+*The system has paused and added this request to the HITL queue.*
+
+stderr | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Present Options Flow
+Agentic Vault Logger Error: Error: ENOENT: no such file or directory, mkdir '/Users/raytiong/projects/obsidian-agentic-vault-dev/test-vaults/test-vault-markdown/AgenticVault/logs'
+    at Object.mkdir (node:internal/fs/promises:861:10)
+    at NodeFileSystem.writeText (/Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox/src/adapters/NodeAdapter.ts:60:3)
+    at Object.mockApp.vault.create (/Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox/src/run_markdown_e2e.test.ts:124:6)
+    at LoggerService.processQueue (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:58:7) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'mkdir',
+  path: '/Users/raytiong/projects/obsidian-agentic-vault-dev/test-vaults/test-vault-markdown/AgenticVault/logs'
+}
+
+stderr | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Present Options Flow
+Agentic Vault Logger Error: TypeError: this.app.vault.append is not a function
+    at LoggerService.processQueue (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:54:27)
+Agentic Vault Logger Error: TypeError: this.app.vault.append is not a function
+    at LoggerService.processQueue (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:54:27)
+
+stderr | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Present Options Flow > should execute the scenario successfully
+Agentic Vault Logger Error: TypeError: this.app.vault.append is not a function
+    at LoggerService.processQueue (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:54:27)
+    at LoggerService.log (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:19:9)
+    at ChatService.sendMessage (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/ChatService.ts:121:25)
+    at /Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox/src/run_markdown_e2e.test.ts:213:35
+    at file:///Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11
+    at file:///Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26
+    at file:///Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20
+    at new Promise (<anonymous>)
+    at runWithCancel (file:///Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)
+    at file:///Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Present Options Flow > should execute the scenario successfully
+Using configured provider: MockLLMProvider
+
+stderr | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Present Options Flow > should execute the scenario successfully
+Agentic Vault Logger Error: TypeError: this.app.vault.append is not a function
+    at LoggerService.processQueue (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:54:27)
+    at LoggerService.log (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:19:9)
+    at ChatService.sendMessage (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/ChatService.ts:134:24)
+    at /Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox/src/run_markdown_e2e.test.ts:213:17
+    at file:///Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20
+
+stderr | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Present Options Flow > should execute the scenario successfully
+Agentic Vault Logger Error: TypeError: this.app.vault.append is not a function
+    at LoggerService.processQueue (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:54:27)
+    at LoggerService.log (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:19:9)
+    at ChatService.sendMessage (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/ChatService.ts:289:23)
+    at /Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox/src/run_markdown_e2e.test.ts:213:17
+    at file:///Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20
+Agentic Vault Logger Error: TypeError: this.app.vault.append is not a function
+    at LoggerService.processQueue (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:54:27)
+    at LoggerService.log (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:19:9)
+    at ChatService.sendMessage (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/ChatService.ts:340:25)
+    at /Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox/src/run_markdown_e2e.test.ts:213:17
+    at file:///Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Present Options Flow > should execute the scenario successfully
+SEND_MESSAGE_RESULT: Awaiting user selection...
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Skill Loading Flow > should execute the scenario successfully
+Using configured provider: MockLLMProvider
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Skill Loading Flow > should execute the scenario successfully
+SEND_MESSAGE_RESULT: <details><summary>🧠 Loaded Skill: project_planning</summary>
+
+```text
+Error: Skill 'project_planning' not found.
+```
+</details>
+
+I have loaded the skill instructions.
+
+stderr | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Routine Morning Briefing
+Agentic Vault Logger Error: Error: ENOENT: no such file or directory, mkdir '/Users/raytiong/projects/obsidian-agentic-vault-dev/test-vaults/test-vault-markdown/AgenticVault/logs'
+    at Object.mkdir (node:internal/fs/promises:861:10)
+    at NodeFileSystem.writeText (/Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox/src/adapters/NodeAdapter.ts:60:3)
+    at Object.mockApp.vault.create (/Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox/src/run_markdown_e2e.test.ts:124:6)
+    at LoggerService.processQueue (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:58:7) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'mkdir',
+  path: '/Users/raytiong/projects/obsidian-agentic-vault-dev/test-vaults/test-vault-markdown/AgenticVault/logs'
+}
+
+stderr | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Routine Morning Briefing
+Agentic Vault Logger Error: TypeError: this.app.vault.append is not a function
+    at LoggerService.processQueue (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:54:27)
+Agentic Vault Logger Error: TypeError: this.app.vault.append is not a function
+    at LoggerService.processQueue (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:54:27)
+Agentic Vault Logger Error: TypeError: this.app.vault.append is not a function
+    at LoggerService.processQueue (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:54:27)
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Routine Morning Briefing
+LOADED TOOLS FOR Routine Morning Briefing : [
+  'business_of_you.crm_query',
+  'business_of_you.manage_queue',
+  'business_of_you.read_calendar',
+  'core.allocate_zone',
+  'core.echo',
+  'core.file_manager',
+  'core.install_fleet',
+  'core.system_diagnostic',
+  'core.update_memory',
+  'core.update_profile',
+  'para_career.map_vault',
+  'para_career.unreliable_math',
+  'para_career.web_search'
+]
+
+stderr | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Routine Morning Briefing > should execute the scenario successfully
+Agentic Vault Logger Error: TypeError: this.app.vault.append is not a function
+    at LoggerService.processQueue (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:54:27)
+    at LoggerService.log (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:19:9)
+    at ChatService.sendMessage (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/ChatService.ts:121:25)
+    at /Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox/src/run_markdown_e2e.test.ts:213:35
+    at file:///Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11
+    at file:///Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26
+    at file:///Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20
+    at new Promise (<anonymous>)
+    at runWithCancel (file:///Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)
+    at file:///Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Routine Morning Briefing > should execute the scenario successfully
+Using configured provider: MockLLMProvider
+
+stderr | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Routine Morning Briefing > should execute the scenario successfully
+Agentic Vault Logger Error: TypeError: this.app.vault.append is not a function
+    at LoggerService.processQueue (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:54:27)
+    at LoggerService.log (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:19:9)
+    at ChatService.sendMessage (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/ChatService.ts:134:24)
+    at /Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox/src/run_markdown_e2e.test.ts:213:17
+    at file:///Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20
+
+stderr | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Routine Morning Briefing > should execute the scenario successfully
+Agentic Vault Logger Error: TypeError: this.app.vault.append is not a function
+    at LoggerService.processQueue (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:54:27)
+    at LoggerService.log (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:19:9)
+    at ChatService.sendMessage (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/ChatService.ts:289:23)
+    at /Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox/src/run_markdown_e2e.test.ts:213:17
+    at file:///Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20
+Agentic Vault Logger Error: TypeError: this.app.vault.append is not a function
+    at LoggerService.processQueue (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:54:27)
+    at LoggerService.log (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:19:9)
+    at ChatService.sendMessage (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/ChatService.ts:340:25)
+    at /Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox/src/run_markdown_e2e.test.ts:213:17
+    at file:///Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20
+
+stderr | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Routine Morning Briefing > should execute the scenario successfully
+Agentic Vault Logger Error: TypeError: this.app.vault.append is not a function
+    at LoggerService.processQueue (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:54:27)
+    at LoggerService.log (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:19:9)
+    at ChatService.sendMessage (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/ChatService.ts:538:24)
+    at /Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox/src/run_markdown_e2e.test.ts:213:17
+    at file:///Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Routine Morning Briefing > should execute the scenario successfully
+SEND_MESSAGE_RESULT: <details><summary>⚙️ Routine Manager: trigger</summary>
+
+```text
+Error: Routine 'morning_briefing' not found.
+```
+</details>
+
+I have triggered the morning briefing routine.
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Manage Tasks Queue
+LOADED TOOLS FOR Manage Tasks Queue : [
+  'business_of_you.crm_query',
+  'business_of_you.manage_queue',
+  'business_of_you.read_calendar',
+  'core.allocate_zone',
+  'core.echo',
+  'core.file_manager',
+  'core.install_fleet',
+  'core.system_diagnostic',
+  'core.update_memory',
+  'core.update_profile',
+  'para_career.map_vault',
+  'para_career.unreliable_math',
+  'para_career.web_search'
+]
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Manage Tasks Queue > should execute the scenario successfully
+Using configured provider: MockLLMProvider
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Manage Tasks Queue > should execute the scenario successfully
+SEND_MESSAGE_RESULT: 
+
+<details><summary>⚙️ Executed tool: manage_queue</summary>
+
+```text
+ERROR: Tool not found: manage_queue
+
+[SYSTEM DIRECTIVE]: Tool execution failed. Do NOT report this failure to the user yet. You must autonomously analyze the error, correct your arguments or approach, and retry.
+```
+</details>
+
+I have added the task to your queue.
+
+stderr | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Coach Socratic Session
+Agentic Vault Logger Error: Error: ENOENT: no such file or directory, mkdir '/Users/raytiong/projects/obsidian-agentic-vault-dev/test-vaults/test-vault-markdown/AgenticVault/logs'
+    at Object.mkdir (node:internal/fs/promises:861:10)
+    at NodeFileSystem.writeText (/Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox/src/adapters/NodeAdapter.ts:60:3)
+    at Object.mockApp.vault.create (/Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox/src/run_markdown_e2e.test.ts:124:6)
+    at LoggerService.processQueue (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:58:7) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'mkdir',
+  path: '/Users/raytiong/projects/obsidian-agentic-vault-dev/test-vaults/test-vault-markdown/AgenticVault/logs'
+}
+
+stderr | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Coach Socratic Session
+Agentic Vault Logger Error: TypeError: this.app.vault.append is not a function
+    at LoggerService.processQueue (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:54:27)
+Agentic Vault Logger Error: TypeError: this.app.vault.append is not a function
+    at LoggerService.processQueue (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:54:27)
+Agentic Vault Logger Error: TypeError: this.app.vault.append is not a function
+    at LoggerService.processQueue (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:54:27)
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Coach Socratic Session
+LOADED TOOLS FOR Coach Socratic Session : [
+  'business_of_you.crm_query',
+  'business_of_you.manage_queue',
+  'business_of_you.read_calendar',
+  'core.allocate_zone',
+  'core.echo',
+  'core.file_manager',
+  'core.install_fleet',
+  'core.system_diagnostic',
+  'core.update_memory',
+  'core.update_profile',
+  'para_career.map_vault',
+  'para_career.unreliable_math',
+  'para_career.web_search'
+]
+
+stderr | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Coach Socratic Session > should execute the scenario successfully
+Agentic Vault Logger Error: TypeError: this.app.vault.append is not a function
+    at LoggerService.processQueue (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:54:27)
+    at LoggerService.log (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:19:9)
+    at ChatService.sendMessage (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/ChatService.ts:121:25)
+    at /Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox/src/run_markdown_e2e.test.ts:213:35
+    at file:///Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11
+    at file:///Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26
+    at file:///Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20
+    at new Promise (<anonymous>)
+    at runWithCancel (file:///Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)
+    at file:///Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Coach Socratic Session > should execute the scenario successfully
+Using configured provider: MockLLMProvider
+
+stderr | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Coach Socratic Session > should execute the scenario successfully
+Agentic Vault Logger Error: TypeError: this.app.vault.append is not a function
+    at LoggerService.processQueue (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:54:27)
+    at LoggerService.log (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:19:9)
+    at ChatService.sendMessage (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/ChatService.ts:134:24)
+    at /Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox/src/run_markdown_e2e.test.ts:213:17
+    at file:///Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20
+
+stderr | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Coach Socratic Session > should execute the scenario successfully
+Agentic Vault Logger Error: TypeError: this.app.vault.append is not a function
+    at LoggerService.processQueue (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:54:27)
+    at LoggerService.log (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:19:9)
+    at ChatService.sendMessage (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/ChatService.ts:289:23)
+    at /Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox/src/run_markdown_e2e.test.ts:213:17
+    at file:///Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20
+Agentic Vault Logger Error: TypeError: this.app.vault.append is not a function
+    at LoggerService.processQueue (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:54:27)
+    at LoggerService.log (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:19:9)
+    at ChatService.sendMessage (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/ChatService.ts:340:25)
+    at /Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox/src/run_markdown_e2e.test.ts:213:17
+    at file:///Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20
+
+stderr | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Coach Socratic Session > should execute the scenario successfully
+Agentic Vault Logger Error: TypeError: this.app.vault.append is not a function
+    at LoggerService.processQueue (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:54:27)
+    at LoggerService.log (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:19:9)
+    at ExecutionSandbox.executeTool (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/sandbox/ExecutionSandbox.ts:25:15)
+    at ChatService.sendMessage (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/ChatService.ts:390:60)
+    at /Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox/src/run_markdown_e2e.test.ts:213:17
+    at file:///Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20
+
+stderr | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Coach Socratic Session > should execute the scenario successfully
+Agentic Vault Logger Error: TypeError: this.app.vault.append is not a function
+    at LoggerService.processQueue (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:54:27)
+    at LoggerService.log (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:19:9)
+    at ExecutionSandbox.executeTool (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/sandbox/ExecutionSandbox.ts:111:16)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at ChatService.sendMessage (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/ChatService.ts:390:25)
+    at /Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox/src/run_markdown_e2e.test.ts:213:17
+    at file:///Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20
+
+stderr | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Coach Socratic Session > should execute the scenario successfully
+Agentic Vault Logger Error: TypeError: this.app.vault.append is not a function
+    at LoggerService.processQueue (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:54:27)
+    at LoggerService.log (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:19:9)
+    at ChatService.sendMessage (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/ChatService.ts:538:24)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at /Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox/src/run_markdown_e2e.test.ts:213:17
+    at file:///Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Coach Socratic Session > should execute the scenario successfully
+SEND_MESSAGE_RESULT: 
+
+<details><summary>⚙️ Executed tool: file_manager</summary>
+
+```text
+{"error":"File not found in zone journal: Team_Conflict.md"}
+```
+</details>
+
+Let's talk about the team conflict. What do you think is the root cause?
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Comms CRM Outreach
+LOADED TOOLS FOR Comms CRM Outreach : [
+  'business_of_you.crm_query',
+  'business_of_you.manage_queue',
+  'business_of_you.read_calendar',
+  'core.allocate_zone',
+  'core.echo',
+  'core.file_manager',
+  'core.install_fleet',
+  'core.system_diagnostic',
+  'core.update_memory',
+  'core.update_profile',
+  'para_career.map_vault',
+  'para_career.unreliable_math',
+  'para_career.web_search'
+]
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Comms CRM Outreach > should execute the scenario successfully
+Using configured provider: MockLLMProvider
+
+stderr | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Comms CRM Outreach > should execute the scenario successfully
+Agentic Vault Logger Error: TypeError: this.app.vault.append is not a function
+    at LoggerService.processQueue (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:54:27)
+Agentic Vault Logger Error: TypeError: this.app.vault.append is not a function
+    at LoggerService.processQueue (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:54:27)
+Agentic Vault Logger Error: TypeError: this.app.vault.append is not a function
+    at LoggerService.processQueue (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:54:27)
+Agentic Vault Logger Error: TypeError: this.app.vault.append is not a function
+    at LoggerService.processQueue (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:54:27)
+Agentic Vault Logger Error: TypeError: this.app.vault.append is not a function
+    at LoggerService.processQueue (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:54:27)
+
+stderr | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Comms CRM Outreach > should execute the scenario successfully
+Agentic Vault Logger Error: TypeError: this.app.vault.append is not a function
+    at LoggerService.processQueue (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:54:27)
+    at LoggerService.log (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:19:9)
+    at ExecutionSandbox.executeTool (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/sandbox/ExecutionSandbox.ts:111:16)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at ChatService.sendMessage (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/ChatService.ts:390:25)
+    at /Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox/src/run_markdown_e2e.test.ts:213:17
+    at file:///Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20
+
+stderr | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Comms CRM Outreach > should execute the scenario successfully
+Agentic Vault Logger Error: TypeError: this.app.vault.append is not a function
+    at LoggerService.processQueue (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:54:27)
+    at LoggerService.log (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:19:9)
+    at ChatService.sendMessage (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/ChatService.ts:538:24)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at /Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox/src/run_markdown_e2e.test.ts:213:17
+    at file:///Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Comms CRM Outreach > should execute the scenario successfully
+SEND_MESSAGE_RESULT: 
+
+<details><summary>⚙️ Executed tool: crm_query</summary>
+
+```text
+ERROR: Tool not found: crm_query
+
+[SYSTEM DIRECTIVE]: Tool execution failed. Do NOT report this failure to the user yet. You must autonomously analyze the error, correct your arguments or approach, and retry.
+```
+</details>
+
+<details><summary>⚙️ Executed tool: file_manager</summary>
+
+```text
+{"status":"success","message":"File written to zone workspace: Draft_Email_Sarah.md","side_effects":[{"type":"write","path":"99_Agent_Workspace/Draft_Email_Sarah.md"}]}
+```
+</details>
+
+I have drafted the email for Sarah in your workspace.
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Automatic Template Installation > should execute the scenario successfully
+Using configured provider: MockLLMProvider
+
+stderr | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Automatic Template Installation > should execute the scenario successfully
+Agentic Vault Logger Error: TypeError: this.app.vault.append is not a function
+    at LoggerService.processQueue (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:54:27)
+Agentic Vault Logger Error: TypeError: this.app.vault.append is not a function
+    at LoggerService.processQueue (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:54:27)
+Agentic Vault Logger Error: TypeError: this.app.vault.append is not a function
+    at LoggerService.processQueue (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:54:27)
+Agentic Vault Logger Error: TypeError: this.app.vault.append is not a function
+    at LoggerService.processQueue (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:54:27)
+
+stderr | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Automatic Template Installation > should execute the scenario successfully
+Agentic Vault Logger Error: TypeError: this.app.vault.append is not a function
+    at LoggerService.processQueue (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:54:27)
+    at LoggerService.log (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:19:9)
+    at ExecutionSandbox.executeTool (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/sandbox/ExecutionSandbox.ts:111:16)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at ChatService.sendMessage (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/ChatService.ts:390:25)
+    at /Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox/src/run_markdown_e2e.test.ts:213:17
+    at file:///Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20
+
+stderr | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Automatic Template Installation > should execute the scenario successfully
+Agentic Vault Logger Error: TypeError: this.app.vault.append is not a function
+    at LoggerService.processQueue (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:54:27)
+    at LoggerService.log (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:19:9)
+    at ChatService.sendMessage (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/ChatService.ts:480:28)
+    at /Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox/src/run_markdown_e2e.test.ts:213:17
+    at file:///Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Automatic Template Installation > should execute the scenario successfully
+YAML String: name: "The Business of You"
+system_version: 0.0.1
+description: "A suite of agents to help you manage your professional career or job like a business."
+status: active
+onboarding:
+  trigger_agent: Concierge
+  welcome_message: "Welcome to 'The Business of You'. The suite is fully installed and your personal board of directors is waiting. To calibrate the system, we need to establish your baseline. How would you like to begin?"
+  pathways:
+    - id: identity_and_vision
+      label: "1. Establish my core Identity & Vision (Start Here)"
+      description: "Build your `Me.md` profile and define your 5-10 year horizon."
+      target_agent: "Executive Coach"
+      handoff_context: "[GUIDED MODE ACTIVE]: The user has elected to establish their core identity. Please initiate the Socratic interview to build their `Me.md` file in the root folder, focusing on their 5-10 year career vision. When you have successfully completed your specific onboarding task, you MUST automatically use the 'transfer_session' tool to hand the user BACK to the Concierge, including a summary of what you achieved."
+
+    - id: define_strategy
+      label: "2. Draft my 6-month Strategy & OKRs"
+      description: "Translate your long-term vision into actionable quarterly objectives."
+      target_agent: "Strategist"
+      handoff_context: "[GUIDED MODE ACTIVE]: The user wants to draft their 6-12 month strategy. Please review their `Me.md` (if it exists) and help them define 3 OKRs, saving them as a formal document in the `strategy` zone. When you have successfully completed your specific onboarding task, you MUST automatically use the 'transfer_session' tool to hand the user BACK to the Concierge, including a summary of what you achieved."
+
+    - id: execution_fires
+      label: "3. Clear my immediate tasks & 'fires'"
+      description: "Do a quick brain dump to populate your Kanban board for the week."
+      target_agent: "Chief of Staff"
+      handoff_context: "[GUIDED MODE ACTIVE]: The user needs to organize their immediate operational execution. Ask them for a brain dump of their top 3 'fires' and translate them into tasks on the `execution` Kanban board. When you have successfully completed your specific onboarding task, you MUST automatically use the 'transfer_session' tool to hand the user BACK to the Concierge, including a summary of what you achieved."
+
+    - id: crm_stakeholders
+      label: "4. Map my critical stakeholders"
+      description: "Set up your relationship tracker for key managers and peers."
+      target_agent: "Chief People Officer"
+      handoff_context: "[GUIDED MODE ACTIVE]: The user wants to set up their CRM. Ask them for the names and roles of their 3 most critical stakeholders right now, and generate relationship tracking files in the `network` zone. When you have successfully completed your specific onboarding task, you MUST automatically use the 'transfer_session' tool to hand the user BACK to the Concierge, including a summary of what you achieved."
+required_zones:
+  - zone_id: inbox
+    vault_path: 00_Inbox
+    description: "The drop zone for raw thoughts and web clippings."
+  - zone_id: strategy
+    vault_path: 10_Strategy
+    description: "Contains formal OKRs and project briefs."
+  - zone_id: execution
+    vault_path: 20_Execution
+    description: "Contains the tasks.jsonl queue and sprint boards."
+  - zone_id: briefings
+    vault_path: 30_Briefings
+    description: "Contains unified Daily Notes."
+  - zone_id: agendas
+    vault_path: 35_Agendas
+    description: "Staging ground for upcoming meeting agendas, talking points, and 1:1 structures."
+  - zone_id: network
+    vault_path: 40_Network
+    description: "CRM tracking relationships, featuring YAML trackers for rhythms (consecutive-tactical-meetings) and relationship-tiers (manager, peer)."
+  - zone_id: radar
+    vault_path: 50_Radar
+    description: "Watchlist for emerging trends and research."
+  - zone_id: journal
+    vault_path: 60_Journal
+    description: "Private boardroom for raw dumps and post-mortems."
+  - zone_id: rubrics
+    vault_path: 80_Company_Rubrics
+    description: "Reference folder containing official HR rubrics, promotion packets, and leveling docs."
+  - zone_id: templates
+    vault_path: 90_Templates
+    description: "The repository of dynamic templates owned and iteratively updated by the personas."
+  - zone_id: workspace
+    vault_path: 99_Agent_Workspace
+    description: "Scratchpad for Specialists and Researchers."
+Parsed YAML: {
+  name: 'The Business of You',
+  system_version: '0.0.1',
+  description: 'A suite of agents to help you manage your professional career or job like a business.',
+  status: 'active',
+  onboarding: {
+    trigger_agent: 'Concierge',
+    welcome_message: "Welcome to 'The Business of You'. The suite is fully installed and your personal board of directors is waiting. To calibrate the system, we need to establish your baseline. How would you like to begin?",
+    pathways: [ [Object], [Object], [Object], [Object] ]
+  },
+  required_zones: [
+    {
+      zone_id: 'inbox',
+      vault_path: '00_Inbox',
+      description: 'The drop zone for raw thoughts and web clippings.'
+    },
+    {
+      zone_id: 'strategy',
+      vault_path: '10_Strategy',
+      description: 'Contains formal OKRs and project briefs.'
+    },
+    {
+      zone_id: 'execution',
+      vault_path: '20_Execution',
+      description: 'Contains the tasks.jsonl queue and sprint boards.'
+    },
+    {
+      zone_id: 'briefings',
+      vault_path: '30_Briefings',
+      description: 'Contains unified Daily Notes.'
+    },
+    {
+      zone_id: 'agendas',
+      vault_path: '35_Agendas',
+      description: 'Staging ground for upcoming meeting agendas, talking points, and 1:1 structures.'
+    },
+    {
+      zone_id: 'network',
+      vault_path: '40_Network',
+      description: 'CRM tracking relationships, featuring YAML trackers for rhythms (consecutive-tactical-meetings) and relationship-tiers (manager, peer).'
+    },
+    {
+      zone_id: 'radar',
+      vault_path: '50_Radar',
+      description: 'Watchlist for emerging trends and research.'
+    },
+    {
+      zone_id: 'journal',
+      vault_path: '60_Journal',
+      description: 'Private boardroom for raw dumps and post-mortems.'
+    },
+    {
+      zone_id: 'rubrics',
+      vault_path: '80_Company_Rubrics',
+      description: 'Reference folder containing official HR rubrics, promotion packets, and leveling docs.'
+    },
+    {
+      zone_id: 'templates',
+      vault_path: '90_Templates',
+      description: 'The repository of dynamic templates owned and iteratively updated by the personas.'
+    },
+    {
+      zone_id: 'workspace',
+      vault_path: '99_Agent_Workspace',
+      description: 'Scratchpad for Specialists and Researchers.'
+    }
+  ]
+}
+
+stderr | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Automatic Template Installation > should execute the scenario successfully
+Agentic Vault Logger Error: TypeError: this.app.vault.append is not a function
+    at LoggerService.processQueue (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:54:27)
+    at LoggerService.log (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:19:9)
+    at ChatService.sendMessage (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/ChatService.ts:340:25)
+    at /Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox/src/run_markdown_e2e.test.ts:213:17
+    at file:///Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20
+
+stderr | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Automatic Template Installation > should execute the scenario successfully
+Agentic Vault Logger Error: TypeError: this.app.vault.append is not a function
+    at LoggerService.processQueue (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:54:27)
+    at LoggerService.log (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:19:9)
+    at ExecutionSandbox.executeTool (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/sandbox/ExecutionSandbox.ts:25:15)
+    at ChatService.sendMessage (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/ChatService.ts:390:60)
+    at /Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox/src/run_markdown_e2e.test.ts:213:17
+    at file:///Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20
+
+stderr | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Automatic Template Installation > should execute the scenario successfully
+Agentic Vault Logger Error: TypeError: this.app.vault.append is not a function
+    at LoggerService.processQueue (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:54:27)
+    at LoggerService.log (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:19:9)
+    at ExecutionSandbox.executeTool (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/sandbox/ExecutionSandbox.ts:111:16)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at ChatService.sendMessage (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/ChatService.ts:390:25)
+    at /Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox/src/run_markdown_e2e.test.ts:213:17
+    at file:///Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20
+
+stderr | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Automatic Template Installation > should execute the scenario successfully
+Agentic Vault Logger Error: TypeError: this.app.vault.append is not a function
+    at LoggerService.processQueue (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:54:27)
+    at LoggerService.log (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:19:9)
+    at ChatService.sendMessage (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/ChatService.ts:508:28)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at /Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox/src/run_markdown_e2e.test.ts:213:17
+    at file:///Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20
+
+stderr | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Automatic Template Installation > should execute the scenario successfully
+Agentic Vault Logger Error: TypeError: this.app.vault.append is not a function
+    at LoggerService.processQueue (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:54:27)
+    at LoggerService.log (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/LoggerService.ts:19:9)
+    at ChatService.sendMessage (/Users/raytiong/projects/obsidian-agentic-vault-dev/src/services/ChatService.ts:538:24)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at /Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox/src/run_markdown_e2e.test.ts:213:17
+    at file:///Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Automatic Template Installation > should execute the scenario successfully
+SEND_MESSAGE_RESULT: 
+
+<details><summary>⚙️ Executed tool: install_fleet</summary>
+
+```text
+{"status":"success","message":"Triggering installation for fleet 'business_of_you'...","_INTERNAL_INSTALL_FLEET_TRIGGER":{"fleet_name":"business_of_you"}}
+
+SUCCESS! Fleet installed. 
+[SYSTEM DIRECTIVE]: This fleet REQUIRES the following zones to be mapped. You MUST now call the `allocate_zone` tool multiple times (once for each zone) with the following configurations:
+[
+  {
+    "zone_id": "inbox",
+    "vault_path": "00_Inbox",
+    "description": "The drop zone for raw thoughts and web clippings."
+  },
+  {
+    "zone_id": "strategy",
+    "vault_path": "10_Strategy",
+    "description": "Contains formal OKRs and project briefs."
+  },
+  {
+    "zone_id": "execution",
+    "vault_path": "20_Execution",
+    "description": "Contains the tasks.jsonl queue and sprint boards."
+  },
+  {
+    "zone_id": "briefings",
+    "vault_path": "30_Briefings",
+    "description": "Contains unified Daily Notes."
+  },
+  {
+    "zone_id": "agendas",
+    "vault_path": "35_Agendas",
+    "description": "Staging ground for upcoming meeting agendas, talking points, and 1:1 structures."
+  },
+  {
+    "zone_id": "network",
+    "vault_path": "40_Network",
+    "description": "CRM tracking relationships, featuring YAML trackers for rhythms (consecutive-tactical-meetings) and relationship-tiers (manager, peer)."
+  },
+  {
+    "zone_id": "radar",
+    "vault_path": "50_Radar",
+    "description": "Watchlist for emerging trends and research."
+  },
+  {
+    "zone_id": "journal",
+    "vault_path": "60_Journal",
+    "description": "Private boardroom for raw dumps and post-mortems."
+  },
+  {
+    "zone_id": "rubrics",
+    "vault_path": "80_Company_Rubrics",
+    "description": "Reference folder containing official HR rubrics, promotion packets, and leveling docs."
+  },
+  {
+    "zone_id": "templates",
+    "vault_path": "90_Templates",
+    "description": "The repository of dynamic templates owned and iteratively updated by the personas."
+  },
+  {
+    "zone_id": "workspace",
+    "vault_path": "99_Agent_Workspace",
+    "description": "Scratchpad for Specialists and Researchers."
+  }
+]
+
+[SYSTEM DIRECTIVE]: After you have successfully allocated all required zones, you MUST initiate the onboarding flow. Present the pathways defined below using your 'present_options' tool. You MUST always automatically append a final option: 'Bypass (I will explore manually)'.
+{
+  "trigger_agent": "Concierge",
+  "welcome_message": "Welcome to 'The Business of You'. The suite is fully installed and your personal board of directors is waiting. To calibrate the system, we need to establish your baseline. How would you like to begin?",
+  "pathways": [
+    {
+      "id": "identity_and_vision",
+      "label": "1. Establish my core Identity & Vision (Start Here)",
+      "description": "Build your `Me.md` profile and define your 5-10 year horizon.",
+      "target_agent": "Executive Coach",
+      "handoff_context": "[GUIDED MODE ACTIVE]: The user has elected to establish their core identity. Please initiate the Socratic interview to build their `Me.md` file in the root folder, focusing on their 5-10 year career vision. When you have successfully completed your specific onboarding task, you MUST automatically use the 'transfer_session' tool to hand the user BACK to the Concierge, including a summary of what you achieved."
+    },
+    {
+      "id": "define_strategy",
+      "label": "2. Draft my 6-month Strategy & OKRs",
+      "description": "Translate your long-term vision into actionable quarterly objectives.",
+      "target_agent": "Strategist",
+      "handoff_context": "[GUIDED MODE ACTIVE]: The user wants to draft their 6-12 month strategy. Please review their `Me.md` (if it exists) and help them define 3 OKRs, saving them as a formal document in the `strategy` zone. When you have successfully completed your specific onboarding task, you MUST automatically use the 'transfer_session' tool to hand the user BACK to the Concierge, including a summary of what you achieved."
+    },
+    {
+      "id": "execution_fires",
+      "label": "3. Clear my immediate tasks & 'fires'",
+      "description": "Do a quick brain dump to populate your Kanban board for the week.",
+      "target_agent": "Chief of Staff",
+      "handoff_context": "[GUIDED MODE ACTIVE]: The user needs to organize their immediate operational execution. Ask them for a brain dump of their top 3 'fires' and translate them into tasks on the `execution` Kanban board. When you have successfully completed your specific onboarding task, you MUST automatically use the 'transfer_session' tool to hand the user BACK to the Concierge, including a summary of what you achieved."
+    },
+    {
+      "id": "crm_stakeholders",
+      "label": "4. Map my critical stakeholders",
+      "description": "Set up your relationship tracker for key managers and peers.",
+      "target_agent": "Chief People Officer",
+      "handoff_context": "[GUIDED MODE ACTIVE]: The user wants to set up their CRM. Ask them for the names and roles of their 3 most critical stakeholders right now, and generate relationship tracking files in the `network` zone. When you have successfully completed your specific onboarding task, you MUST automatically use the 'transfer_session' tool to hand the user BACK to the Concierge, including a summary of what you achieved."
+    }
+  ]
+}
+```
+</details>
+
+<details><summary>⚙️ Executed tool: allocate_zone</summary>
+
+```text
+{"status":"success","message":"Zone 'templates' allocated to path '90_Templates'.","_INTERNAL_ALLOCATE_ZONE_TRIGGER":{"zone_id":"templates","path":"90_Templates","description":"The repository of dynamic templates owned and iteratively updated by the personas."}}
+```
+</details>
+
+The Business of You fleet has been successfully installed, and your templates have been automatically synced to the new templates zone.
+
+ ❯ src/run_markdown_e2e.test.ts (11 tests | 1 failed) 496ms
+       ✓ should execute the scenario successfully 97ms
+       ✓ should execute the scenario successfully 25ms
+       ✓ should execute the scenario successfully 51ms
+       ✓ should execute the scenario successfully 0ms
+       ✓ should execute the scenario successfully 1ms
+       ✓ should execute the scenario successfully 0ms
+       ✓ should execute the scenario successfully 1ms
+       ✓ should execute the scenario successfully 0ms
+       ✓ should execute the scenario successfully 25ms
+       ✓ should execute the scenario successfully 24ms
+       × should execute the scenario successfully 56ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Automatic Template Installation > should execute the scenario successfully
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/run_markdown_e2e.test.ts:229:21
+    227|     for (const expectedFile of scenario.expectedFiles) {
+    228|      const exists = fs.existsSync(path.join(vaultPath, expectedFile));
+    229|      expect(exists).toBe(true);
+       |                     ^
+    230|     }
+    231|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 10 passed (11)
+   Start at  19:38:26
+   Duration  734ms (transform 88ms, setup 0ms, import 181ms, tests 496ms, environment 0ms)
+

@@ -177,13 +177,13 @@ export class McpEngine {
 		}
 	}
 
-	getMcpToolsAsRegistryFormat(): unknown[] {
+	getMcpToolsAsRegistryFormat(): import('../sandbox/ToolRegistry').ToolDefinition[] {
 		return Object.values(this.availableTools).map(t => ({
 			name: `${t._serverName}___${t._originalName}`, // The prefixed name
-			id: `${t._serverName}___${t._originalName}`, 
 			description: t.description || `Provided by MCP Server: ${t._serverName}`,
 			language: 'mcp',
 			scriptContent: '',
+			fleet: t._serverName,
 			parameters: t.inputSchema || [] 
 		}));
 	}

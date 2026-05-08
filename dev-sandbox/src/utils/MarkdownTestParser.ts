@@ -10,6 +10,8 @@ export interface MarkdownTestScenario {
 	expectedOutput: string;
 	expectedDirectories: string[];
 	expectedFiles: string[];
+	expectedMissingFiles: string[];
+	expectedToolErrors: { tool: string, errorContains: string }[];
 }
 
 export function parseMarkdownTest(filePath: string): MarkdownTestScenario {
@@ -23,7 +25,9 @@ export function parseMarkdownTest(filePath: string): MarkdownTestScenario {
 		expectedToolCalls: [],
 		expectedOutput: '',
 		expectedDirectories: [],
-		expectedFiles: []
+		expectedFiles: [],
+		expectedMissingFiles: [],
+		expectedToolErrors: []
 	};
 
 	// Parse frontmatter
@@ -72,6 +76,12 @@ export function parseMarkdownTest(filePath: string): MarkdownTestScenario {
 			
 			const fileMatch = line.match(/-\s*\*\*File Exists:\*\*\s*(.*)/);
 			if (fileMatch) scenario.expectedFiles.push(fileMatch[1].trim());
+
+			const missingMatch = line.match(/-\s*\*\*File Missing:\*\*\s*(.*)/);
+			if (missingMatch) scenario.expectedMissingFiles.push(missingMatch[1].trim());
+
+			const errMatch = line.match(/-\s*\*\*Tool Error \((.*?)\):\*\*\s*(.*)/);
+			if (errMatch) scenario.expectedToolErrors.push({ tool: errMatch[1].trim(), errorContains: errMatch[2].trim() });
 		}
 	}
 

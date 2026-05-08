@@ -55,7 +55,11 @@ export class TaskBoardView extends ItemView {
 		this.boardContainerEl.empty();
 		
 		const routines = this.plugin.routineManager.getRoutines();
-		const states = this.plugin.routineManager.getQueueState();
+		const tasks = this.plugin.routineManager.getTasks();
+		const states: Record<string, { status: string, lastRunTime: number, lastError?: string }> = {};
+		for (const t of tasks) {
+			states[t.routineId] = { status: t.status, lastRunTime: t.spawnTime, lastError: t.error };
+		}
 
 		const columns = [
 			{ id: 'idle', title: 'Idle / Scheduled' },

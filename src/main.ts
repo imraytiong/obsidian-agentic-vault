@@ -92,8 +92,9 @@ export default class AgenticVaultPlugin extends Plugin {
 				
 				// Refresh any open views now that the managers are fully loaded
 				this.app.workspace.getLeavesOfType(VIEW_TYPE_FLEET_DASHBOARD).forEach(leaf => {
-					if ((leaf.view as any).onOpen) {
-						(leaf.view as any).onOpen();
+					const view = leaf.view as unknown as { onOpen?: () => void };
+					if (view.onOpen) {
+						view.onOpen();
 					}
 				});
 
@@ -167,7 +168,7 @@ export default class AgenticVaultPlugin extends Plugin {
 		// Add command to reload bundled fleets
 		this.addCommand({
 			id: 'reload-bundled-fleets',
-			// eslint-disable-next-line obsidianmd/ui/sentence-case
+			 
 			name: 'Reload bundled fleets to vault',
 			callback: async () => {
 				await this.initializeFleetArchitecture();
@@ -175,9 +176,10 @@ export default class AgenticVaultPlugin extends Plugin {
 			}
 		});
 
-		} catch (e: any) {
+		} catch (e: unknown) {
+			const errMsg = import('./utils/ErrorUtils').then(m => m.getErrorMessage(e));
 			console.error("Agentic Vault failed to load:", e);
-			new Notice("Agentic Vault failed to load: " + e.message, 10000);
+			new Notice("Agentic Vault failed to load: " + String(e), 10000);
 		}
 	}
 
@@ -191,8 +193,8 @@ export default class AgenticVaultPlugin extends Plugin {
 			await this.toolRegistry.loadTools();
 			await this.skillsEngine.loadSkills();
 			await this.routineManager.initialize();
-		} catch (e: any) {
-			new Notice("CRITICAL CRASH in initializeFleetArchitecture: " + e.message, 10000);
+		} catch (e: unknown) {
+			new Notice("CRITICAL CRASH in initializeFleetArchitecture: " + String(e), 10000);
 			console.error("initializeFleetArchitecture crashed:", e);
 			throw e;
 		}
@@ -239,9 +241,9 @@ export default class AgenticVaultPlugin extends Plugin {
 		const leaves = workspace.getLeavesOfType(VIEW_TYPE_FLEET_DASHBOARD);
 		
 		if (leaves.length > 0) {
-			leaf = leaves[0];
+			leaf = leaves[0] || null;
 		} else {
-			leaf = workspace.getRightLeaf(false);
+			leaf = workspace.getRightLeaf(false) as import('obsidian').WorkspaceLeaf | null;
 			if (leaf) {
 				await leaf.setViewState({ type: VIEW_TYPE_FLEET_DASHBOARD, active: true });
 			}
@@ -257,13 +259,13 @@ export default class AgenticVaultPlugin extends Plugin {
 		if (this.triggerParser) {
 			this.triggerParser.unregisterTriggers();
 		}
-		this.app.workspace.detachLeavesOfType(VIEW_TYPE_FLEET_DASHBOARD);
-		this.app.workspace.detachLeavesOfType(VIEW_TYPE_AGENTIC_CHAT);
-		this.app.workspace.detachLeavesOfType(VIEW_TYPE_AGENTIC_KANBAN);
+		
+		
+		
 	}
 
 	async loadSettings() {
-		const rawData = await this.loadData() as any || {};
+		const rawData = await this.loadData() || {};
 		
 		// Migration: v0.0.1 hardcoded paths to v0.0.2 dynamic zones
 		if (rawData.projectsPath !== undefined && !rawData.zones) {

@@ -11,7 +11,16 @@ export class App {
 		create: async () => {},
 		createFolder: async () => {},
 		read: async () => '',
-		modify: async () => {}
+		modify: async () => {},
+		copy: async (sourceFile: any, destPath: string) => {
+			const fs = require('fs');
+			const path = require('path');
+			const vaultRoot = path.resolve(__dirname, '../../../test-vault-headless');
+			const fullSrc = path.join(vaultRoot, sourceFile.path);
+			const fullDest = path.join(vaultRoot, destPath);
+			fs.mkdirSync(path.dirname(fullDest), { recursive: true });
+			fs.copyFileSync(fullSrc, fullDest);
+		}
 	};
 	workspace: any = {
 		on: () => {},
@@ -48,34 +57,11 @@ export class TFolder {
 	isRoot: () => boolean = () => false;
 }
 
+import * as yaml from 'yaml';
+
 export function parseYaml(text: string): any {
 	try {
-		if (text.includes('required_zones:')) {
-			const zones: any[] = [];
-			const lines = text.split('\n');
-			let currentZone: any = null;
-			for (const line of lines) {
-				if (line.trim().startsWith('- zone_id:')) {
-					if (currentZone) zones.push(currentZone);
-					currentZone = { zone_id: line.split('zone_id:')[1].trim().replace(/['"]/g, '') };
-				} else if (currentZone && line.trim().startsWith('description:')) {
-					currentZone.description = line.split('description:')[1].trim().replace(/['"]/g, '');
-				} else if (currentZone && line.trim().startsWith('vault_path:')) {
-					currentZone.vault_path = line.split('vault_path:')[1].trim().replace(/['"]/g, '');
-				}
-			}
-			if (currentZone) zones.push(currentZone);
-			
-			return { required_zones: zones };
-		}
-		
-		const lines = text.split('\n');
-		const result: any = {};
-		for (const line of lines) {
-			const [k, ...v] = line.split(':');
-			if (k && v.length) result[k.trim()] = v.join(':').trim();
-		}
-		return result;
+		return yaml.parse(text) || {};
 	} catch(e) {
 		return {};
 	}

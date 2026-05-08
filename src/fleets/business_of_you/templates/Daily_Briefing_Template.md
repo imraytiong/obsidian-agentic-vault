@@ -20,6 +20,10 @@ tags: [daily-brief]
 - **[04:00 PM - 05:00 PM] 📥 EOD Triage & Follow-Ups**
   - Process new inbound requests before signing off.
 
+## 🧠 Coaching Reminders
+*(Injected by the Executive Coach based on today's execution plan and your Core Identity)*
+- [Coach's specific advice for the day based on the agenda above]
+
 ## 📥 Unprocessed Inbox Signals
 *(Items remaining in 00_Inbox awaiting the Strategist)*
 - [[00_Inbox/Raw_Idea_About_X]] - *Scraped from mobile quick-capture.*

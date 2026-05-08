@@ -1,0 +1,13 @@
+src/core/InitializationEngine.ts(156,62): error TS18046: 'templateFile' is of type 'unknown'.
+src/core/InitializationEngine.ts(159,35): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'TAbstractFile'.
+src/core/PersonaEngine.ts(93,8): error TS2322: Type '{ target?: string | undefined; allow_fallback?: boolean | undefined; } | undefined' is not assignable to type '{ target: string; allow_fallback: boolean; } | undefined'.
+  Type '{ target?: string | undefined; allow_fallback?: boolean | undefined; }' is not assignable to type '{ target: string; allow_fallback: boolean; }'.
+    Types of property 'target' are incompatible.
+      Type 'string | undefined' is not assignable to type 'string'.
+        Type 'undefined' is not assignable to type 'string'.
+src/core/TriggerParser.ts(91,60): error TS2345: Argument of type '"last_run"' is not assignable to parameter of type '"trigger" | "timeout" | "agent" | "skill" | "retries"'.
+src/main.ts(244,4): error TS2322: Type 'WorkspaceLeaf | undefined' is not assignable to type 'WorkspaceLeaf | null'.
+  Type 'undefined' is not assignable to type 'WorkspaceLeaf | null'.
+src/ui/ChatView.ts(168,6): error TS2322: Type 'unknown' is not assignable to type 'string'.
+src/ui/FleetDashboardView.ts(324,51): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.

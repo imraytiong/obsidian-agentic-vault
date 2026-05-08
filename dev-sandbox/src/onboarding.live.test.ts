@@ -11,6 +11,7 @@ import { ApprovalQueueManager } from '../../src/core/ApprovalQueueManager';
 import { McpEngine } from '../../src/core/McpEngine';
 import { ChatService } from '../../src/services/ChatService';
 import { TriggerParser } from '../../src/core/TriggerParser';
+import { InitializationEngine } from '../../src/core/InitializationEngine';
 import { App as ObsidianApp, TFolder, TFile } from 'obsidian';
 import { GeminiProvider } from '../../src/llm/GeminiProvider';
 import { SkillsEngine } from '../../src/core/SkillsEngine';
@@ -37,7 +38,9 @@ describe('AntiGravity Headless Engine: Onboarding Flow', () => {
 		const settings = { 
 			...DEFAULT_SETTINGS, 
 			agenticVaultPath: 'AgenticVault', 
-			llmApiKey: 'AIzaSyA25LglHa1-zYILxaW3HVpYHifTBmn9Xls' 
+			llmApiKey: 'AIzaSyA25LglHa1-zYILxaW3HVpYHifTBmn9Xls',
+			llmModel: 'gemini-2.5-flash',
+			availableModels: ['gemini-2.5-flash']
 		};
 
 		context = {
@@ -73,6 +76,36 @@ describe('AntiGravity Headless Engine: Onboarding Flow', () => {
 		mockApp.vault.getFiles = () => {
 			// We need a sync-like interface for getFiles, but since we are running in Node,
 			// we can just read the whole tree synchronously for testing purposes.
+			const executionSandbox = {
+				executeTool: async (name: string, args: any) => {
+					if (name === 'install_fleet') {
+						return {
+							success: true,
+							output: JSON.stringify({
+								status: "success", 
+								message: `Triggering installation for fleet '${args.fleet_name}'...`,
+								_INTERNAL_INSTALL_FLEET_TRIGGER: { fleet_name: args.fleet_name }
+							})
+						};
+					}
+					if (name === 'allocate_zone') {
+						return {
+							success: true,
+							output: JSON.stringify({
+								status: "success",
+								message: `Zone '${args.zone_id}' allocated to path '${args.vault_path}'.`,
+								_INTERNAL_ALLOCATE_ZONE_TRIGGER: {
+									zone_id: args.zone_id,
+									path: args.vault_path,
+									description: args.description
+								}
+							})
+						};
+					}
+					return { success: true, output: JSON.stringify({ status: 'success', message: 'mocked' }) };
+				}
+			};
+
 			const readDirRecursiveSync = (dir: string, base: string = ''): any[] => {
 				let results: any[] = [];
 				const list = fs.readdirSync(dir);
@@ -93,6 +126,16 @@ describe('AntiGravity Headless Engine: Onboarding Flow', () => {
 				return results;
 			};
 			return readDirRecursiveSync(vaultPath);
+		};
+
+		mockApp.vault.create = async (p: string, c: string) => {
+			fs.mkdirSync(path.dirname(path.join(vaultPath, p)), { recursive: true });
+			await context.fs.writeText(p, c);
+			const file = new TFile(); file.path = p; return file;
+		};
+		mockApp.vault.append = async (file: any, text: string) => {
+			const current = await context.fs.readText(file.path);
+			await context.fs.writeText(file.path, current + text);
 		};
 
 		mockApp.vault.read = async (file: any) => {
@@ -156,7 +199,8 @@ describe('AntiGravity Headless Engine: Onboarding Flow', () => {
 			mcpEngine,
 			skillsEngine,
 			context,
-			saveData: async () => {}
+			saveData: async () => {},
+			saveSettings: async () => {}
 		};
 
 		provider = new GeminiProvider(settings.llmApiKey, 'gemini-2.5-flash', context.network!);
@@ -180,6 +224,7 @@ describe('AntiGravity Headless Engine: Onboarding Flow', () => {
 		await skillsEngine.loadSkills();
 		
 		console.log("LOADED TOOLS:", toolRegistry.getAllTools().map(t => t.name));
+		console.log("LOADED CONCIERGE:", personaEngine.getPersonaByName('Concierge'));
 	});
 
 	it('should successfully run the business of you onboarding flow', async () => {
@@ -249,10 +294,14 @@ Return ONLY a JSON object: { "success": true } or { "success": false }`;
 		const strategyZone = fs.existsSync(path.join(vaultPath, '10_Strategy'));
 		const opsZone = fs.existsSync(path.join(vaultPath, '20_Execution'));
 		const templatesDir = fs.existsSync(path.join(vaultPath, 'AgenticVault', 'fleets', 'business_of_you', 'templates'));
+		const syncedTemplatesZone = fs.existsSync(path.join(vaultPath, '90_Templates'));
+		const syncedTemplateFile = fs.existsSync(path.join(vaultPath, '90_Templates', '1_on_1_Agenda_Template.md'));
 		
 		expect(strategyZone).toBe(true);
 		expect(opsZone).toBe(true);
 		expect(templatesDir).toBe(true);
+		expect(syncedTemplatesZone).toBe(true);
+		expect(syncedTemplateFile).toBe(true);
 
 		// Assert the Concierge timeline includes a message
 		const lastMsg = chatService.unifiedTimeline[chatService.unifiedTimeline.length - 1];
@@ -260,4 +309,15 @@ Return ONLY a JSON object: { "success": true } or { "success": false }`;
 		expect(lastMsg.persona).toBe('Concierge');
 		
 	}, 120000); // 120 second timeout since LLM takes time
+	
+	it('should directly sync templates using InitializationEngine', async () => {
+		const engine = new InitializationEngine(chatService.plugin);
+		await engine.syncTemplatesToZone('90_Templates');
+		
+		const syncedTemplatesZone = fs.existsSync(path.join(vaultPath, '90_Templates'));
+		const syncedTemplateFile = fs.existsSync(path.join(vaultPath, '90_Templates', '1_on_1_Agenda_Template.md'));
+		
+		expect(syncedTemplatesZone).toBe(true);
+		expect(syncedTemplateFile).toBe(true);
+	});
 });

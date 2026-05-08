@@ -1,0 +1,808 @@
+
+ RUN  v4.1.5 /Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox
+
+ ✓ src/persona-resolution.test.ts (4 tests) 2ms
+stdout | src/resilience.test.ts > GeminiProvider Resilience > should retry twice on 429 and then fail
+Sending Gemini request... { contents: [ { role: 'user', parts: [Array] } ] }
+
+stdout | src/resilience.test.ts > GeminiProvider Resilience > should retry twice on 429 and then fail
+Received Gemini response (gemini-3.1-pro-preview): 429
+
+ ❯ src/PromptCompiler.test.ts (3 tests | 1 failed) 18ms
+     ✓ should compile system prompt correctly with minimal data 13ms
+     × should include shared and persona memory if files exist 3ms
+     ✓ should list available skills if any exist 0ms
+ ❯ src/TriggerParser.test.ts (4 tests | 3 failed) 9ms
+     × should register file-open event 3ms
+     × should trigger routine when cron is due 1ms
+     × should NOT trigger routine when cron is NOT due 1ms
+     ✓ should execute routine retries upon failure 3ms
+ ❯ src/onboarding.test.ts (1 test | 1 skipped) 4ms
+     ↓ should successfully run the business of you onboarding flow
+ ❯ src/onboarding.live.test.ts (2 tests | 2 skipped) 7ms
+     ↓ should successfully run the business of you onboarding flow
+     ↓ should directly sync templates using InitializationEngine
+stdout | src/debug-test.test.ts
+Starting headless test...
+
+stdout | src/debug-test.test.ts
+Registered Tools: 
+Environment initialized. Sending message...
+
+stdout | src/debug-test.test.ts
+Using GeminiProvider fallback!
+[DEBUG GeminiProvider] THROWING ERROR because targetModel is Light
+
+stdout | src/debug-test.test.ts
+Processing finished!
+
+--- UNIFIED TIMELINE ---
+[
+  {
+    "role": "user",
+    "content": "Please use the install_fleet tool to install the business_of_you fleet.",
+    "persona": "Concierge"
+  },
+  {
+    "role": "assistant",
+    "content": "Error connecting to gemini: No specific model selected. Please click 'Test Key & Load Models' in settings to populate the model list.\n\n⚠️ **Troubleshooting:** It looks like your API key or selected model might be invalid. Please go to **Settings → Community plugins → Agentic Vault** and use the **Test Key & Load Models** button to verify your configuration.",
+    "persona": "Concierge"
+  }
+]
+
+ ❯ src/debug-test.test.ts (0 test)
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Onboarding The Business of You > should execute the scenario successfully
+Using configured provider: MockLLMProvider
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Onboarding The Business of You > should execute the scenario successfully
+YAML String: name: "The Business of You"
+system_version: 0.0.1
+description: "A suite of agents to help you manage your professional career or job like a business."
+status: active
+onboarding:
+  trigger_agent: Concierge
+  welcome_message: "Welcome to 'The Business of You'. The suite is fully installed and your personal board of directors is waiting. To calibrate the system, we need to establish your baseline. How would you like to begin?"
+  pathways:
+    - id: guided_full_cycle
+      label: "0. The Virtuous Cycle (Guided Full Setup)"
+      description: "Walk through the entire setup step-by-step: Identity -> Strategy & Stakeholders -> Operations -> Execution -> (Optional) Team Management."
+      target_agent: "Executive Coach"
+      handoff_context: "[GUIDED MODE ACTIVE - FULL CYCLE (STEP 1/5)]: The user wants to complete the full Business of You lifecycle. You are Step 1. First, initiate the Socratic interview to build their `Me.md` file. Second, after `Me.md` is defined, ask them about their current challenges, anxieties, excitements, and opportunities to help shape their mindset before strategy formulation. When you have successfully completed this emotional and strategic baseline, you MUST use the 'transfer_session' tool to hand the user to the 'Chief Strategist' with the context: '[GUIDED MODE ACTIVE - FULL CYCLE (STEP 2/5)]: The user has established their identity and baseline. You are Step 2. First, guide them to define 3 OKRs based on their vision and current challenges. Second, help them map out their critical non-report stakeholders (managers, peers, matrix partners) necessary to achieve those OKRs into the network zone. When finished, transfer them to the Chief Operating Officer with the context: [GUIDED MODE ACTIVE - FULL CYCLE (STEP 3/5)]: The user has defined their strategy and mapped stakeholders. You are Step 3. Help them atomize these OKRs into actionable tickets in the queue. When finished, transfer them to the Chief of Staff with the context: [GUIDED MODE ACTIVE - FULL CYCLE (STEP 4/5)]: The user has atomized their strategy. You are Step 4. Help them brain dump any immediate daily fires onto the execution Kanban. When finished, check if the user has management duties (by reviewing their profile or asking). If they DO have management duties, transfer them to the Chief People Officer with the context: [GUIDED MODE ACTIVE - FULL CYCLE (STEP 5/5)]: The user has organized their tasks. You are the final step. Help them map their direct reports and team structure into the network zone. When finished, transfer them BACK to the Concierge. If they DO NOT have management duties, you are the final step, so transfer them directly BACK to the Concierge.'"
+
+    - id: identity_and_vision
+      label: "1. Establish my core Identity & Vision (Start Here)"
+      description: "Build your `Me.md` profile and define your 5-10 year horizon."
+      target_agent: "Executive Coach"
+      handoff_context: "[GUIDED MODE ACTIVE]: The user has elected to establish their core identity. Please initiate the Socratic interview to build their `Me.md` file in the strategy folder, focusing on their 5-10 year career vision. When you have successfully completed your specific onboarding task, you MUST automatically use the 'transfer_session' tool to hand the user BACK to the Concierge, including a summary of what you achieved."
+
+    - id: define_strategy
+      label: "2. Draft my 6-month Strategy & OKRs"
+      description: "Translate your long-term vision into actionable quarterly objectives."
+      target_agent: "Strategist"
+      handoff_context: "[GUIDED MODE ACTIVE]: The user wants to draft their 6-12 month strategy. Please review their `Me.md` (if it exists) and help them define 3 OKRs, saving them as a formal document in the `strategy` zone. When you have successfully completed your specific onboarding task, you MUST automatically use the 'transfer_session' tool to hand the user BACK to the Concierge, including a summary of what you achieved."
+
+    - id: execution_fires
+      label: "3. Clear my immediate tasks & 'fires'"
+      description: "Do a quick brain dump to populate your Kanban board for the week."
+      target_agent: "Chief of Staff"
+      handoff_context: "[GUIDED MODE ACTIVE]: The user needs to organize their immediate operational execution. Ask them for a brain dump of their top 3 'fires' and translate them into tasks on the `execution` Kanban board. When you have successfully completed your specific onboarding task, you MUST automatically use the 'transfer_session' tool to hand the user BACK to the Concierge, including a summary of what you achieved."
+
+    - id: crm_stakeholders
+      label: "4. Map my critical stakeholders"
+      description: "Set up your relationship tracker for key managers and peers."
+      target_agent: "Chief People Officer"
+      handoff_context: "[GUIDED MODE ACTIVE]: The user wants to set up their CRM. Ask them for the names and roles of their 3 most critical stakeholders right now, and generate relationship tracking files in the `network` zone. When you have successfully completed your specific onboarding task, you MUST automatically use the 'transfer_session' tool to hand the user BACK to the Concierge, including a summary of what you achieved."
+
+    - id: strategy_pivot
+      label: "5. Pivot my strategy based on challenges"
+      description: "Socratically break down perceived challenges and shift your strategy."
+      target_agent: "Executive Coach"
+      handoff_context: "[GUIDED MODE ACTIVE]: The user is perceiving challenges and wants to evaluate a shift in strategy. Please act as a Socratic sounding board to break down these challenges. Use the `file_manager` tool to output a `Strategic_Pivot_Log.md` file in the `journal` zone, or update their existing documents in the `strategy` zone if the pivot results in new formal OKRs. When you have successfully completed your specific onboarding task, you MUST automatically use the 'transfer_session' tool to hand the user BACK to the Concierge, including a summary of what you achieved."
+required_zones:
+  - zone_id: inbox
+    vault_path: 00_Inbox
+    description: "The drop zone for raw thoughts and web clippings."
+  - zone_id: strategy
+    vault_path: 10_Strategy
+    description: "Contains formal OKRs and project briefs."
+  - zone_id: execution
+    vault_path: 20_Execution
+    description: "Contains the tasks.jsonl queue and sprint boards."
+  - zone_id: briefings
+    vault_path: 30_Briefings
+    description: "Contains unified Daily Notes."
+  - zone_id: agendas
+    vault_path: 35_Agendas
+    description: "Staging ground for upcoming meeting agendas, talking points, and 1:1 structures."
+  - zone_id: network
+    vault_path: 40_Network
+    description: "CRM tracking relationships, featuring YAML trackers for rhythms (consecutive-tactical-meetings) and relationship-tiers (manager, peer)."
+  - zone_id: radar
+    vault_path: 50_Radar
+    description: "Watchlist for emerging trends and research."
+  - zone_id: journal
+    vault_path: 60_Journal
+    description: "Private boardroom for raw dumps and post-mortems."
+  - zone_id: rubrics
+    vault_path: 80_Company_Rubrics
+    description: "Reference folder containing official HR rubrics, promotion packets, and leveling docs."
+  - zone_id: templates
+    vault_path: 90_Templates
+    description: "The repository of dynamic templates owned and iteratively updated by the personas."
+  - zone_id: workspace
+    vault_path: 99_Agent_Workspace
+    description: "Scratchpad for Specialists and Researchers."
+Parsed YAML: {
+  name: 'The Business of You',
+  system_version: '0.0.1',
+  description: 'A suite of agents to help you manage your professional career or job like a business.',
+  status: 'active',
+  onboarding: {
+    trigger_agent: 'Concierge',
+    welcome_message: "Welcome to 'The Business of You'. The suite is fully installed and your personal board of directors is waiting. To calibrate the system, we need to establish your baseline. How would you like to begin?",
+    pathways: [ [Object], [Object], [Object], [Object], [Object], [Object] ]
+  },
+  required_zones: [
+    {
+      zone_id: 'inbox',
+      vault_path: '00_Inbox',
+      description: 'The drop zone for raw thoughts and web clippings.'
+    },
+    {
+      zone_id: 'strategy',
+      vault_path: '10_Strategy',
+      description: 'Contains formal OKRs and project briefs.'
+    },
+    {
+      zone_id: 'execution',
+      vault_path: '20_Execution',
+      description: 'Contains the tasks.jsonl queue and sprint boards.'
+    },
+    {
+      zone_id: 'briefings',
+      vault_path: '30_Briefings',
+      description: 'Contains unified Daily Notes.'
+    },
+    {
+      zone_id: 'agendas',
+      vault_path: '35_Agendas',
+      description: 'Staging ground for upcoming meeting agendas, talking points, and 1:1 structures.'
+    },
+    {
+      zone_id: 'network',
+      vault_path: '40_Network',
+      description: 'CRM tracking relationships, featuring YAML trackers for rhythms (consecutive-tactical-meetings) and relationship-tiers (manager, peer).'
+    },
+    {
+      zone_id: 'radar',
+      vault_path: '50_Radar',
+      description: 'Watchlist for emerging trends and research.'
+    },
+    {
+      zone_id: 'journal',
+      vault_path: '60_Journal',
+      description: 'Private boardroom for raw dumps and post-mortems.'
+    },
+    {
+      zone_id: 'rubrics',
+      vault_path: '80_Company_Rubrics',
+      description: 'Reference folder containing official HR rubrics, promotion packets, and leveling docs.'
+    },
+    {
+      zone_id: 'templates',
+      vault_path: '90_Templates',
+      description: 'The repository of dynamic templates owned and iteratively updated by the personas.'
+    },
+    {
+      zone_id: 'workspace',
+      vault_path: '99_Agent_Workspace',
+      description: 'Scratchpad for Specialists and Researchers.'
+    }
+  ]
+}
+
+ ✓ src/tools.test.ts (6 tests) 287ms
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Onboarding The Business of You > should execute the scenario successfully
+SEND_MESSAGE_RESULT: Awaiting user selection...
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Chief Strategist OKR Generation
+LOADED TOOLS FOR Chief Strategist OKR Generation : [
+  'business_of_you.crm_query',
+  'business_of_you.manage_queue',
+  'business_of_you.read_calendar',
+  'core.allocate_zone',
+  'core.echo',
+  'core.file_manager',
+  'core.install_fleet',
+  'core.system_diagnostic',
+  'core.update_memory',
+  'core.update_profile',
+  'para_career.map_vault',
+  'para_career.unreliable_math',
+  'para_career.web_search'
+]
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Chief Strategist OKR Generation > should execute the scenario successfully
+Using configured provider: MockLLMProvider
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Chief Strategist OKR Generation > should execute the scenario successfully
+SEND_MESSAGE_RESULT: 
+
+<details><summary>⚙️ Executed tool: file_manager</summary>
+
+```text
+{"status":"success","message":"File written to zone strategy: Q3_Agentic_Vault_OKRs.md","side_effects":[{"type":"write","path":"10_Strategy/Q3_Agentic_Vault_OKRs.md"}]}
+```
+</details>
+
+I have created your Q3 OKR document in the Strategy zone.
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Chief Quality Officer Sprint Review
+LOADED TOOLS FOR Chief Quality Officer Sprint Review : [
+  'business_of_you.crm_query',
+  'business_of_you.manage_queue',
+  'business_of_you.read_calendar',
+  'core.allocate_zone',
+  'core.echo',
+  'core.file_manager',
+  'core.install_fleet',
+  'core.system_diagnostic',
+  'core.update_memory',
+  'core.update_profile',
+  'para_career.map_vault',
+  'para_career.unreliable_math',
+  'para_career.web_search'
+]
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Chief Quality Officer Sprint Review > should execute the scenario successfully
+Using configured provider: MockLLMProvider
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Chief Quality Officer Sprint Review > should execute the scenario successfully
+SEND_MESSAGE_RESULT: 
+
+<details><summary>⚙️ Executed tool: file_manager</summary>
+
+```text
+{"error":"File not found in zone execution: tasks.jsonl"}
+```
+</details>
+
+<details><summary>⚙️ Executed tool: file_manager</summary>
+
+```text
+{"status":"success","message":"File written to zone execution: Sprint_Deviation_Report.md","side_effects":[{"type":"write","path":"20_Execution/Sprint_Deviation_Report.md"}]}
+```
+</details>
+
+The deviation report has been generated.
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: HITL Approval Flow > should execute the scenario successfully
+Using configured provider: MockLLMProvider
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: HITL Approval Flow > should execute the scenario successfully
+SEND_MESSAGE_RESULT: ⚠️ **Approval Requested:**
+- **Action:** Delete the production database
+- **Reason:** You asked me to delete it, but this is a destructive action.
+
+*The system has paused and added this request to the HITL queue.*
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Present Options Flow > should execute the scenario successfully
+Using configured provider: MockLLMProvider
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Present Options Flow > should execute the scenario successfully
+SEND_MESSAGE_RESULT: Awaiting user selection...
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Skill Loading Flow > should execute the scenario successfully
+Using configured provider: MockLLMProvider
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Skill Loading Flow > should execute the scenario successfully
+SEND_MESSAGE_RESULT: <details><summary>🧠 Loaded Skill: project_planning</summary>
+
+```text
+Error: Skill 'project_planning' not found.
+```
+</details>
+
+I have loaded the skill instructions.
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Routine Morning Briefing
+LOADED TOOLS FOR Routine Morning Briefing : [
+  'business_of_you.crm_query',
+  'business_of_you.manage_queue',
+  'business_of_you.read_calendar',
+  'core.allocate_zone',
+  'core.echo',
+  'core.file_manager',
+  'core.install_fleet',
+  'core.system_diagnostic',
+  'core.update_memory',
+  'core.update_profile',
+  'para_career.map_vault',
+  'para_career.unreliable_math',
+  'para_career.web_search'
+]
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Routine Morning Briefing > should execute the scenario successfully
+Using configured provider: MockLLMProvider
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Routine Morning Briefing > should execute the scenario successfully
+SEND_MESSAGE_RESULT: <details><summary>⚙️ Routine Manager: trigger</summary>
+
+```text
+Error: Routine 'morning_briefing' not found.
+```
+</details>
+
+I have triggered the morning briefing routine.
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Manage Tasks Queue
+LOADED TOOLS FOR Manage Tasks Queue : [
+  'business_of_you.crm_query',
+  'business_of_you.manage_queue',
+  'business_of_you.read_calendar',
+  'core.allocate_zone',
+  'core.echo',
+  'core.file_manager',
+  'core.install_fleet',
+  'core.system_diagnostic',
+  'core.update_memory',
+  'core.update_profile',
+  'para_career.map_vault',
+  'para_career.unreliable_math',
+  'para_career.web_search'
+]
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Manage Tasks Queue > should execute the scenario successfully
+Using configured provider: MockLLMProvider
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Manage Tasks Queue > should execute the scenario successfully
+SEND_MESSAGE_RESULT: 
+
+<details><summary>⚙️ Executed tool: manage_queue</summary>
+
+```text
+ERROR: Permission Denied: Tool 'manage_queue' is not in your capabilities.
+
+[SYSTEM DIRECTIVE]: Tool execution failed. Do NOT report this failure to the user yet. You must autonomously analyze the error, correct your arguments or approach, and retry.
+```
+</details>
+
+I have added the task to your queue.
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Coach Socratic Session
+LOADED TOOLS FOR Coach Socratic Session : [
+  'business_of_you.crm_query',
+  'business_of_you.manage_queue',
+  'business_of_you.read_calendar',
+  'core.allocate_zone',
+  'core.echo',
+  'core.file_manager',
+  'core.install_fleet',
+  'core.system_diagnostic',
+  'core.update_memory',
+  'core.update_profile',
+  'para_career.map_vault',
+  'para_career.unreliable_math',
+  'para_career.web_search'
+]
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Coach Socratic Session > should execute the scenario successfully
+Using configured provider: MockLLMProvider
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Coach Socratic Session > should execute the scenario successfully
+SEND_MESSAGE_RESULT: 
+
+<details><summary>⚙️ Executed tool: file_manager</summary>
+
+```text
+ERROR: Permission Denied: Tool 'file_manager' is not in your capabilities.
+
+[SYSTEM DIRECTIVE]: Tool execution failed. Do NOT report this failure to the user yet. You must autonomously analyze the error, correct your arguments or approach, and retry.
+```
+</details>
+
+Let's talk about the team conflict. What do you think is the root cause?
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Comms CRM Outreach
+LOADED TOOLS FOR Comms CRM Outreach : [
+  'business_of_you.crm_query',
+  'business_of_you.manage_queue',
+  'business_of_you.read_calendar',
+  'core.allocate_zone',
+  'core.echo',
+  'core.file_manager',
+  'core.install_fleet',
+  'core.system_diagnostic',
+  'core.update_memory',
+  'core.update_profile',
+  'para_career.map_vault',
+  'para_career.unreliable_math',
+  'para_career.web_search'
+]
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Comms CRM Outreach > should execute the scenario successfully
+Using configured provider: MockLLMProvider
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Comms CRM Outreach > should execute the scenario successfully
+SEND_MESSAGE_RESULT: 
+
+<details><summary>⚙️ Executed tool: file_manager</summary>
+
+```text
+{"error":"File not found in zone network: Sarah.md"}
+```
+</details>
+
+<details><summary>⚙️ Executed tool: file_manager</summary>
+
+```text
+{"status":"success","message":"File written to zone workspace: Draft_Email_Sarah.md","side_effects":[{"type":"write","path":"99_Agent_Workspace/Draft_Email_Sarah.md"}]}
+```
+</details>
+
+I have drafted the email for Sarah in your workspace.
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Automatic Template Installation > should execute the scenario successfully
+Using configured provider: MockLLMProvider
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Automatic Template Installation > should execute the scenario successfully
+YAML String: name: "The Business of You"
+system_version: 0.0.1
+description: "A suite of agents to help you manage your professional career or job like a business."
+status: active
+onboarding:
+  trigger_agent: Concierge
+  welcome_message: "Welcome to 'The Business of You'. The suite is fully installed and your personal board of directors is waiting. To calibrate the system, we need to establish your baseline. How would you like to begin?"
+  pathways:
+    - id: guided_full_cycle
+      label: "0. The Virtuous Cycle (Guided Full Setup)"
+      description: "Walk through the entire setup step-by-step: Identity -> Strategy & Stakeholders -> Operations -> Execution -> (Optional) Team Management."
+      target_agent: "Executive Coach"
+      handoff_context: "[GUIDED MODE ACTIVE - FULL CYCLE (STEP 1/5)]: The user wants to complete the full Business of You lifecycle. You are Step 1. First, initiate the Socratic interview to build their `Me.md` file. Second, after `Me.md` is defined, ask them about their current challenges, anxieties, excitements, and opportunities to help shape their mindset before strategy formulation. When you have successfully completed this emotional and strategic baseline, you MUST use the 'transfer_session' tool to hand the user to the 'Chief Strategist' with the context: '[GUIDED MODE ACTIVE - FULL CYCLE (STEP 2/5)]: The user has established their identity and baseline. You are Step 2. First, guide them to define 3 OKRs based on their vision and current challenges. Second, help them map out their critical non-report stakeholders (managers, peers, matrix partners) necessary to achieve those OKRs into the network zone. When finished, transfer them to the Chief Operating Officer with the context: [GUIDED MODE ACTIVE - FULL CYCLE (STEP 3/5)]: The user has defined their strategy and mapped stakeholders. You are Step 3. Help them atomize these OKRs into actionable tickets in the queue. When finished, transfer them to the Chief of Staff with the context: [GUIDED MODE ACTIVE - FULL CYCLE (STEP 4/5)]: The user has atomized their strategy. You are Step 4. Help them brain dump any immediate daily fires onto the execution Kanban. When finished, check if the user has management duties (by reviewing their profile or asking). If they DO have management duties, transfer them to the Chief People Officer with the context: [GUIDED MODE ACTIVE - FULL CYCLE (STEP 5/5)]: The user has organized their tasks. You are the final step. Help them map their direct reports and team structure into the network zone. When finished, transfer them BACK to the Concierge. If they DO NOT have management duties, you are the final step, so transfer them directly BACK to the Concierge.'"
+
+    - id: identity_and_vision
+      label: "1. Establish my core Identity & Vision (Start Here)"
+      description: "Build your `Me.md` profile and define your 5-10 year horizon."
+      target_agent: "Executive Coach"
+      handoff_context: "[GUIDED MODE ACTIVE]: The user has elected to establish their core identity. Please initiate the Socratic interview to build their `Me.md` file in the strategy folder, focusing on their 5-10 year career vision. When you have successfully completed your specific onboarding task, you MUST automatically use the 'transfer_session' tool to hand the user BACK to the Concierge, including a summary of what you achieved."
+
+    - id: define_strategy
+      label: "2. Draft my 6-month Strategy & OKRs"
+      description: "Translate your long-term vision into actionable quarterly objectives."
+      target_agent: "Strategist"
+      handoff_context: "[GUIDED MODE ACTIVE]: The user wants to draft their 6-12 month strategy. Please review their `Me.md` (if it exists) and help them define 3 OKRs, saving them as a formal document in the `strategy` zone. When you have successfully completed your specific onboarding task, you MUST automatically use the 'transfer_session' tool to hand the user BACK to the Concierge, including a summary of what you achieved."
+
+    - id: execution_fires
+      label: "3. Clear my immediate tasks & 'fires'"
+      description: "Do a quick brain dump to populate your Kanban board for the week."
+      target_agent: "Chief of Staff"
+      handoff_context: "[GUIDED MODE ACTIVE]: The user needs to organize their immediate operational execution. Ask them for a brain dump of their top 3 'fires' and translate them into tasks on the `execution` Kanban board. When you have successfully completed your specific onboarding task, you MUST automatically use the 'transfer_session' tool to hand the user BACK to the Concierge, including a summary of what you achieved."
+
+    - id: crm_stakeholders
+      label: "4. Map my critical stakeholders"
+      description: "Set up your relationship tracker for key managers and peers."
+      target_agent: "Chief People Officer"
+      handoff_context: "[GUIDED MODE ACTIVE]: The user wants to set up their CRM. Ask them for the names and roles of their 3 most critical stakeholders right now, and generate relationship tracking files in the `network` zone. When you have successfully completed your specific onboarding task, you MUST automatically use the 'transfer_session' tool to hand the user BACK to the Concierge, including a summary of what you achieved."
+
+    - id: strategy_pivot
+      label: "5. Pivot my strategy based on challenges"
+      description: "Socratically break down perceived challenges and shift your strategy."
+      target_agent: "Executive Coach"
+      handoff_context: "[GUIDED MODE ACTIVE]: The user is perceiving challenges and wants to evaluate a shift in strategy. Please act as a Socratic sounding board to break down these challenges. Use the `file_manager` tool to output a `Strategic_Pivot_Log.md` file in the `journal` zone, or update their existing documents in the `strategy` zone if the pivot results in new formal OKRs. When you have successfully completed your specific onboarding task, you MUST automatically use the 'transfer_session' tool to hand the user BACK to the Concierge, including a summary of what you achieved."
+required_zones:
+  - zone_id: inbox
+    vault_path: 00_Inbox
+    description: "The drop zone for raw thoughts and web clippings."
+  - zone_id: strategy
+    vault_path: 10_Strategy
+    description: "Contains formal OKRs and project briefs."
+  - zone_id: execution
+    vault_path: 20_Execution
+    description: "Contains the tasks.jsonl queue and sprint boards."
+  - zone_id: briefings
+    vault_path: 30_Briefings
+    description: "Contains unified Daily Notes."
+  - zone_id: agendas
+    vault_path: 35_Agendas
+    description: "Staging ground for upcoming meeting agendas, talking points, and 1:1 structures."
+  - zone_id: network
+    vault_path: 40_Network
+    description: "CRM tracking relationships, featuring YAML trackers for rhythms (consecutive-tactical-meetings) and relationship-tiers (manager, peer)."
+  - zone_id: radar
+    vault_path: 50_Radar
+    description: "Watchlist for emerging trends and research."
+  - zone_id: journal
+    vault_path: 60_Journal
+    description: "Private boardroom for raw dumps and post-mortems."
+  - zone_id: rubrics
+    vault_path: 80_Company_Rubrics
+    description: "Reference folder containing official HR rubrics, promotion packets, and leveling docs."
+  - zone_id: templates
+    vault_path: 90_Templates
+    description: "The repository of dynamic templates owned and iteratively updated by the personas."
+  - zone_id: workspace
+    vault_path: 99_Agent_Workspace
+    description: "Scratchpad for Specialists and Researchers."
+Parsed YAML: {
+  name: 'The Business of You',
+  system_version: '0.0.1',
+  description: 'A suite of agents to help you manage your professional career or job like a business.',
+  status: 'active',
+  onboarding: {
+    trigger_agent: 'Concierge',
+    welcome_message: "Welcome to 'The Business of You'. The suite is fully installed and your personal board of directors is waiting. To calibrate the system, we need to establish your baseline. How would you like to begin?",
+    pathways: [ [Object], [Object], [Object], [Object], [Object], [Object] ]
+  },
+  required_zones: [
+    {
+      zone_id: 'inbox',
+      vault_path: '00_Inbox',
+      description: 'The drop zone for raw thoughts and web clippings.'
+    },
+    {
+      zone_id: 'strategy',
+      vault_path: '10_Strategy',
+      description: 'Contains formal OKRs and project briefs.'
+    },
+    {
+      zone_id: 'execution',
+      vault_path: '20_Execution',
+      description: 'Contains the tasks.jsonl queue and sprint boards.'
+    },
+    {
+      zone_id: 'briefings',
+      vault_path: '30_Briefings',
+      description: 'Contains unified Daily Notes.'
+    },
+    {
+      zone_id: 'agendas',
+      vault_path: '35_Agendas',
+      description: 'Staging ground for upcoming meeting agendas, talking points, and 1:1 structures.'
+    },
+    {
+      zone_id: 'network',
+      vault_path: '40_Network',
+      description: 'CRM tracking relationships, featuring YAML trackers for rhythms (consecutive-tactical-meetings) and relationship-tiers (manager, peer).'
+    },
+    {
+      zone_id: 'radar',
+      vault_path: '50_Radar',
+      description: 'Watchlist for emerging trends and research.'
+    },
+    {
+      zone_id: 'journal',
+      vault_path: '60_Journal',
+      description: 'Private boardroom for raw dumps and post-mortems.'
+    },
+    {
+      zone_id: 'rubrics',
+      vault_path: '80_Company_Rubrics',
+      description: 'Reference folder containing official HR rubrics, promotion packets, and leveling docs.'
+    },
+    {
+      zone_id: 'templates',
+      vault_path: '90_Templates',
+      description: 'The repository of dynamic templates owned and iteratively updated by the personas.'
+    },
+    {
+      zone_id: 'workspace',
+      vault_path: '99_Agent_Workspace',
+      description: 'Scratchpad for Specialists and Researchers.'
+    }
+  ]
+}
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: Automatic Template Installation > should execute the scenario successfully
+SEND_MESSAGE_RESULT: 
+
+<details><summary>⚙️ Executed tool: install_fleet</summary>
+
+```text
+{"status":"success","message":"Triggering installation for fleet 'business_of_you'...","_INTERNAL_INSTALL_FLEET_TRIGGER":{"fleet_name":"business_of_you"}}
+
+SUCCESS! Fleet installed. 
+[SYSTEM DIRECTIVE]: This fleet REQUIRES the following zones to be mapped. You MUST now call the `allocate_zone` tool multiple times (once for each zone) with the following configurations:
+[
+  {
+    "zone_id": "inbox",
+    "vault_path": "00_Inbox",
+    "description": "The drop zone for raw thoughts and web clippings."
+  },
+  {
+    "zone_id": "strategy",
+    "vault_path": "10_Strategy",
+    "description": "Contains formal OKRs and project briefs."
+  },
+  {
+    "zone_id": "execution",
+    "vault_path": "20_Execution",
+    "description": "Contains the tasks.jsonl queue and sprint boards."
+  },
+  {
+    "zone_id": "briefings",
+    "vault_path": "30_Briefings",
+    "description": "Contains unified Daily Notes."
+  },
+  {
+    "zone_id": "agendas",
+    "vault_path": "35_Agendas",
+    "description": "Staging ground for upcoming meeting agendas, talking points, and 1:1 structures."
+  },
+  {
+    "zone_id": "network",
+    "vault_path": "40_Network",
+    "description": "CRM tracking relationships, featuring YAML trackers for rhythms (consecutive-tactical-meetings) and relationship-tiers (manager, peer)."
+  },
+  {
+    "zone_id": "radar",
+    "vault_path": "50_Radar",
+    "description": "Watchlist for emerging trends and research."
+  },
+  {
+    "zone_id": "journal",
+    "vault_path": "60_Journal",
+    "description": "Private boardroom for raw dumps and post-mortems."
+  },
+  {
+    "zone_id": "rubrics",
+    "vault_path": "80_Company_Rubrics",
+    "description": "Reference folder containing official HR rubrics, promotion packets, and leveling docs."
+  },
+  {
+    "zone_id": "templates",
+    "vault_path": "90_Templates",
+    "description": "The repository of dynamic templates owned and iteratively updated by the personas."
+  },
+  {
+    "zone_id": "workspace",
+    "vault_path": "99_Agent_Workspace",
+    "description": "Scratchpad for Specialists and Researchers."
+  }
+]
+
+[SYSTEM DIRECTIVE]: After you have successfully allocated all required zones, you MUST initiate the onboarding flow. Present the pathways defined below using your 'present_options' tool. You MUST always automatically append a final option: 'Bypass (I will explore manually)'.
+{
+  "trigger_agent": "Concierge",
+  "welcome_message": "Welcome to 'The Business of You'. The suite is fully installed and your personal board of directors is waiting. To calibrate the system, we need to establish your baseline. How would you like to begin?",
+  "pathways": [
+    {
+      "id": "guided_full_cycle",
+      "label": "0. The Virtuous Cycle (Guided Full Setup)",
+      "description": "Walk through the entire setup step-by-step: Identity -> Strategy & Stakeholders -> Operations -> Execution -> (Optional) Team Management.",
+      "target_agent": "Executive Coach",
+      "handoff_context": "[GUIDED MODE ACTIVE - FULL CYCLE (STEP 1/5)]: The user wants to complete the full Business of You lifecycle. You are Step 1. First, initiate the Socratic interview to build their `Me.md` file. Second, after `Me.md` is defined, ask them about their current challenges, anxieties, excitements, and opportunities to help shape their mindset before strategy formulation. When you have successfully completed this emotional and strategic baseline, you MUST use the 'transfer_session' tool to hand the user to the 'Chief Strategist' with the context: '[GUIDED MODE ACTIVE - FULL CYCLE (STEP 2/5)]: The user has established their identity and baseline. You are Step 2. First, guide them to define 3 OKRs based on their vision and current challenges. Second, help them map out their critical non-report stakeholders (managers, peers, matrix partners) necessary to achieve those OKRs into the network zone. When finished, transfer them to the Chief Operating Officer with the context: [GUIDED MODE ACTIVE - FULL CYCLE (STEP 3/5)]: The user has defined their strategy and mapped stakeholders. You are Step 3. Help them atomize these OKRs into actionable tickets in the queue. When finished, transfer them to the Chief of Staff with the context: [GUIDED MODE ACTIVE - FULL CYCLE (STEP 4/5)]: The user has atomized their strategy. You are Step 4. Help them brain dump any immediate daily fires onto the execution Kanban. When finished, check if the user has management duties (by reviewing their profile or asking). If they DO have management duties, transfer them to the Chief People Officer with the context: [GUIDED MODE ACTIVE - FULL CYCLE (STEP 5/5)]: The user has organized their tasks. You are the final step. Help them map their direct reports and team structure into the network zone. When finished, transfer them BACK to the Concierge. If they DO NOT have management duties, you are the final step, so transfer them directly BACK to the Concierge.'"
+    },
+    {
+      "id": "identity_and_vision",
+      "label": "1. Establish my core Identity & Vision (Start Here)",
+      "description": "Build your `Me.md` profile and define your 5-10 year horizon.",
+      "target_agent": "Executive Coach",
+      "handoff_context": "[GUIDED MODE ACTIVE]: The user has elected to establish their core identity. Please initiate the Socratic interview to build their `Me.md` file in the strategy folder, focusing on their 5-10 year career vision. When you have successfully completed your specific onboarding task, you MUST automatically use the 'transfer_session' tool to hand the user BACK to the Concierge, including a summary of what you achieved."
+    },
+    {
+      "id": "define_strategy",
+      "label": "2. Draft my 6-month Strategy & OKRs",
+      "description": "Translate your long-term vision into actionable quarterly objectives.",
+      "target_agent": "Strategist",
+      "handoff_context": "[GUIDED MODE ACTIVE]: The user wants to draft their 6-12 month strategy. Please review their `Me.md` (if it exists) and help them define 3 OKRs, saving them as a formal document in the `strategy` zone. When you have successfully completed your specific onboarding task, you MUST automatically use the 'transfer_session' tool to hand the user BACK to the Concierge, including a summary of what you achieved."
+    },
+    {
+      "id": "execution_fires",
+      "label": "3. Clear my immediate tasks & 'fires'",
+      "description": "Do a quick brain dump to populate your Kanban board for the week.",
+      "target_agent": "Chief of Staff",
+      "handoff_context": "[GUIDED MODE ACTIVE]: The user needs to organize their immediate operational execution. Ask them for a brain dump of their top 3 'fires' and translate them into tasks on the `execution` Kanban board. When you have successfully completed your specific onboarding task, you MUST automatically use the 'transfer_session' tool to hand the user BACK to the Concierge, including a summary of what you achieved."
+    },
+    {
+      "id": "crm_stakeholders",
+      "label": "4. Map my critical stakeholders",
+      "description": "Set up your relationship tracker for key managers and peers.",
+      "target_agent": "Chief People Officer",
+      "handoff_context": "[GUIDED MODE ACTIVE]: The user wants to set up their CRM. Ask them for the names and roles of their 3 most critical stakeholders right now, and generate relationship tracking files in the `network` zone. When you have successfully completed your specific onboarding task, you MUST automatically use the 'transfer_session' tool to hand the user BACK to the Concierge, including a summary of what you achieved."
+    },
+    {
+      "id": "strategy_pivot",
+      "label": "5. Pivot my strategy based on challenges",
+      "description": "Socratically break down perceived challenges and shift your strategy.",
+      "target_agent": "Executive Coach",
+      "handoff_context": "[GUIDED MODE ACTIVE]: The user is perceiving challenges and wants to evaluate a shift in strategy. Please act as a Socratic sounding board to break down these challenges. Use the `file_manager` tool to output a `Strategic_Pivot_Log.md` file in the `journal` zone, or update their existing documents in the `strategy` zone if the pivot results in new formal OKRs. When you have successfully completed your specific onboarding task, you MUST automatically use the 'transfer_session' tool to hand the user BACK to the Concierge, including a summary of what you achieved."
+    }
+  ]
+}
+```
+</details>
+
+<details><summary>⚙️ Executed tool: allocate_zone</summary>
+
+```text
+{"status":"success","message":"Zone 'templates' allocated to path '90_Templates'.","_INTERNAL_ALLOCATE_ZONE_TRIGGER":{"zone_id":"templates","path":"90_Templates","description":"The repository of dynamic templates owned and iteratively updated by the personas."}}
+```
+</details>
+
+The Business of You fleet has been successfully installed, and your templates have been automatically synced to the new templates zone.
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario:  > should execute the scenario successfully
+Using configured provider: MockLLMProvider
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario:  > should execute the scenario successfully
+SEND_MESSAGE_RESULT: [Empty response]
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: RBAC Restrictions and Capability Sandbox Enforcement
+LOADED TOOLS FOR RBAC Restrictions and Capability Sandbox Enforcement : [
+  'business_of_you.crm_query',
+  'business_of_you.manage_queue',
+  'business_of_you.read_calendar',
+  'core.allocate_zone',
+  'core.echo',
+  'core.file_manager',
+  'core.install_fleet',
+  'core.system_diagnostic',
+  'core.update_memory',
+  'core.update_profile',
+  'para_career.map_vault',
+  'para_career.unreliable_math',
+  'para_career.web_search'
+]
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: RBAC Restrictions and Capability Sandbox Enforcement > should execute the scenario successfully
+Using configured provider: MockLLMProvider
+
+stdout | src/run_markdown_e2e.test.ts > Markdown E2E Test Runner > Scenario: RBAC Restrictions and Capability Sandbox Enforcement > should execute the scenario successfully
+SEND_MESSAGE_RESULT: 
+
+<details><summary>⚙️ Executed tool: file_manager</summary>
+
+```text
+ERROR: Permission Denied: You only have 'read_preferred' access to the 'strategy' zone, but the action 'write_file' requires 'full_read_write'.
+
+[SYSTEM DIRECTIVE]: Tool execution failed. Do NOT report this failure to the user yet. You must autonomously analyze the error, correct your arguments or approach, and retry.
+```
+</details>
+
+<details><summary>⚙️ Executed tool: file_manager</summary>
+
+```text
+ERROR: Permission Denied: You do not have access to the 'AgenticVault' zone.
+
+[SYSTEM DIRECTIVE]: Tool execution failed. Do NOT report this failure to the user yet. You must autonomously analyze the error, correct your arguments or approach, and retry.
+```
+</details>
+
+I attempted to perform those actions, but my access was denied by the Sandbox. I am not allowed to write to the strategy zone, nor am I permitted to delete system files.
+
+ ✓ src/run_markdown_e2e.test.ts (13 tests) 513ms
+stdout | src/resilience.test.ts > GeminiProvider Resilience > should retry twice on 429 and then fail
+Received Gemini response (gemini-3.1-pro-preview): 429
+
+stdout | src/resilience.test.ts > GeminiProvider Resilience > should retry twice on 429 and then fail
+Received Gemini response (gemini-3.1-pro-preview): 429
+
+stdout | src/resilience.test.ts > GeminiProvider Resilience > should fallback on 503 if allowFallback is true and models are available
+Sending Gemini request... { contents: [ { role: 'user', parts: [Array] } ] }
+
+stdout | src/resilience.test.ts > GeminiProvider Resilience > should fallback on 503 if allowFallback is true and models are available
+Received Gemini response (gemini-3.1-pro-preview): 503
+
+stdout | src/resilience.test.ts > GeminiProvider Resilience > should fallback on 503 if allowFallback is true and models are available
+Received Gemini response (gemini-2.5-pro): 200
+
+stdout | src/resilience.test.ts > GeminiProvider Resilience > should throw immediately on 503 if allowFallback is false
+Sending Gemini request... { contents: [ { role: 'user', parts: [Array] } ] }
+
+stdout | src/resilience.test.ts > GeminiProvider Resilience > should throw immediately on 503 if allowFallback is false
+Received Gemini response (gemini-3.1-pro-preview): 503
+
+stdout | src/resilience.test.ts > GeminiProvider Resilience > should throw immediately on 400 Bad Request
+Sending Gemini request... { contents: [ { role: 'user', parts: [Array] } ] }
+
+stdout | src/resilience.test.ts > GeminiProvider Resilience > should throw immediately on 400 Bad Request
+Received Gemini response (gemini-3.1-pro-preview): 400
+
+ ✓ src/resilience.test.ts (4 tests) 6015ms
+     ✓ should retry twice on 429 and then fail  6010ms
+
+ Test Files  5 failed | 4 passed (9)
+      Tests  4 failed | 30 passed | 3 skipped (37)
+   Start at  07:31:30
+   Duration  6.19s (transform 530ms, setup 0ms, import 1.50s, tests 6.85s, environment 1ms)
+

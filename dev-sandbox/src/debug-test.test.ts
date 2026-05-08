@@ -135,7 +135,7 @@ async function runTest() {
 	await routineManager.initialize();
 	await skillsEngine.loadSkills();
 
-	console.log(`Registered Tools: ${Array.from(toolRegistry.getTools().keys()).join(', ')}`);
+	console.log(`Registered Tools: ${toolRegistry.getAllTools().map(t => t.name).join(', ')}`);
 
 	console.log("Environment initialized. Sending message...");
 	await chatService.sendMessage('Please use the install_fleet tool to install the business_of_you fleet.', 'Concierge');

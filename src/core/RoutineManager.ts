@@ -84,24 +84,24 @@ export class RoutineManager {
 					const content = await this.app.vault.read(child);
 					const id = child.basename;
 					// Parse frontmatter
-					let frontmatter: any = {};
+					let frontmatter: unknown = {};
 					const fmMatch = content.match(/^---\n([\s\S]*?)\n---/);
 					if (fmMatch) {
 						try {
-							frontmatter = parseYaml(fmMatch[1]) || {};
+							frontmatter = parseYaml(fmMatch[1] || '') || {};
 						} catch (e) {
 							console.error(`Failed to parse YAML for routine ${child.path}`, e);
 						}
 					}
 
-					let name = frontmatter.name || id;
-					let trigger = frontmatter.trigger || '';
-					let agent = frontmatter.agent || '';
-					let skill = frontmatter.skill || '';
-					let status = frontmatter.status || 'active';
-					let timeout = frontmatter.timeout !== undefined ? parseInt(frontmatter.timeout) : 5;
-					let retries = frontmatter.retries !== undefined ? parseInt(frontmatter.retries) : 3;
-					let last_run = frontmatter.last_run !== undefined ? parseInt(frontmatter.last_run) : 0;
+					let name = (frontmatter as any).name || id;
+					let trigger = (frontmatter as any).trigger || '';
+					let agent = (frontmatter as any).agent || '';
+					let skill = (frontmatter as any).skill || '';
+					let status = (frontmatter as any).status || 'active';
+					let timeout = (frontmatter as any).timeout !== undefined ? parseInt((frontmatter as any).timeout) : 5;
+					let retries = (frontmatter as any).retries !== undefined ? parseInt((frontmatter as any).retries) : 3;
+					let last_run = (frontmatter as any).last_run !== undefined ? parseInt((frontmatter as any).last_run) : 0;
 					
 					// Default to 3 retries if not specified
 					if (retries === undefined || isNaN(retries)) retries = 3;
@@ -172,7 +172,7 @@ export class RoutineManager {
 			await this.app.vault.modify(file, content);
 			
 			// Update memory instantly for UI responsiveness
-			this.routines[routineId].status = newStatus;
+			routine.status = newStatus;
 			
 			if (this.onStateChanged) {
 				this.onStateChanged();
@@ -180,7 +180,7 @@ export class RoutineManager {
 		}
 	}
 
-	async updateRoutineField(routineId: string, field: 'trigger' | 'agent' | 'skill' | 'timeout' | 'retries', value: string | number) {
+	async updateRoutineField(routineId: string, field: 'trigger' | 'agent' | 'skill' | 'timeout' | 'retries' | 'last_run', value: string | number) {
 		const routine = this.routines[routineId];
 		if (!routine) return;
 
@@ -198,7 +198,9 @@ export class RoutineManager {
 			}
 			
 			await this.app.vault.modify(file, content);
-			this.routines[routineId][field] = value;
+			if (this.routines[routineId]) {
+				(this.routines[routineId] as unknown as Record<string, string | number>)[field] = value;
+			}
 			
 			if (this.onStateChanged) {
 				this.onStateChanged();
@@ -219,8 +221,9 @@ export class RoutineManager {
 		} else {
 			try {
 				await this.app.vault.create(this.queueFilePath, jsonString);
-			} catch (e: any) {
-				if (e.message && e.message.includes('already exists')) {
+			} catch (e: unknown) {
+				const errMsg = import('../utils/ErrorUtils').then(m => m.getErrorMessage(e));
+				if (String(e).includes('already exists')) {
 					await this.app.vault.adapter.write(this.queueFilePath, jsonString);
 				} else {
 					console.error("RoutineManager failed to save tasks", e);

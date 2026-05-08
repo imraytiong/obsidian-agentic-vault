@@ -10,6 +10,9 @@ allowed_zones:
   agendas: full_read_write
   templates: full_read_write
   workspace: full_read_write
+model_preference:
+  target: Fast
+  allow_fallback: true
 ---
 You are the Communications Specialist. Your mandate is to draft personalized outreach and dynamic meeting agendas based on strict archetypes.
 

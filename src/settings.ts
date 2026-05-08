@@ -20,9 +20,11 @@ export interface AgenticVaultSettings {
 	llmBaseUrl: string;
 	availableModels: string[];
 	chatState?: {
-		unifiedTimeline: any[];
-		agentContexts: Record<string, any[]>;
+		unifiedTimeline: import('./llm/LLMProvider').LLMMessage[];
+		agentContexts: Record<string, import('./llm/LLMProvider').LLMMessage[]>;
 	};
+	tierModels: Record<string, string>;
+	routinesEnabled: boolean;
 }
 
 export const DEFAULT_SETTINGS: AgenticVaultSettings = {
@@ -41,16 +43,22 @@ export const DEFAULT_SETTINGS: AgenticVaultSettings = {
 	sandboxEngine: 'local-node',
 	customEnvPath: '/Users/raytiong/.nvm/versions/node/v24.11.0/bin:/usr/local/bin:/opt/homebrew/bin',
 	llmProvider: 'gemini',
-	llmModel: 'gemini-2.5-flash',
+	llmModel: '',
 	llmBaseUrl: 'https://api.openai.com/v1',
-	availableModels: ['gemini-2.5-flash', 'gemini-1.5-pro']
+	availableModels: [],
+	tierModels: {
+		Reasoning: '',
+		Fast: '',
+		Light: ''
+	},
+	routinesEnabled: false
 }
 
 import type AgenticVaultPlugin from './main';
 
 export class AgenticVaultSettingTab extends PluginSettingTab {
 	plugin: AgenticVaultPlugin;
-	private modelDropdown: DropdownComponent | null = null;
+	private tierDropdowns: Record<string, DropdownComponent> = {};
 	private debouncedFetch: Function;
 
 	constructor(app: App, plugin: AgenticVaultPlugin) {
@@ -76,49 +84,29 @@ export class AgenticVaultSettingTab extends PluginSettingTab {
 			this.plugin.settings.availableModels = models;
 			
 			if (models.length > 0) {
-				const getBestModel = (models: string[]) => {
-					// Dynamic sorting logic to automatically bubble up the latest, most capable model
-					return [...models].sort((a, b) => {
-						// 1. Extract semantic version (e.g., "2.5" from "gemini-2.5-pro", "4" from "gpt-4")
-						const getV = (str: string) => parseFloat(str.match(/[\d]+(?:\.[\d]+)?/)?.[0] || '0');
-						const vA = getV(a);
-						const vB = getV(b);
-						if (vA !== vB) return vB - vA; // Higher version wins
-						
-						// 2. Capability Tiering
-						const tierWeight = (m: string) => {
-							const lower = m.toLowerCase();
-							if (lower.includes('pro') || lower.includes('plus') || lower.includes('opus') || lower.includes('gpt-4o') || lower.includes('o1') || lower.includes('o3')) return 3;
-							if (lower.includes('flash') || lower.includes('sonnet') || lower.includes('turbo')) return 2;
-							if (lower.includes('haiku') || lower.includes('mini')) return 1;
-							return 0;
-						};
-						const wA = tierWeight(a);
-						const wB = tierWeight(b);
-						if (wA !== wB) return wB - wA; // Higher tier wins
-						
-						// 3. Prefer Stable over Experimental/Preview
-						const isExpA = a.toLowerCase().includes('exp') || a.toLowerCase().includes('preview');
-						const isExpB = b.toLowerCase().includes('exp') || b.toLowerCase().includes('preview');
-						if (isExpA !== isExpB) return isExpA ? 1 : -1;
-						
-						// 4. Shorter string length wins (prefers base aliases like "gemini-2.0-flash" over "gemini-2.0-flash-001")
-						return a.length - b.length;
-					})[0] || models[0];
+				const { ModelResolver } = require('./llm/ModelResolver');
+				const bestModels = ModelResolver.getBestModelsForTiers(models);
+				this.plugin.settings.tierModels = {
+					Reasoning: bestModels.Reasoning,
+					Fast: bestModels.Fast,
+					Light: bestModels.Light
 				};
-				this.plugin.settings.llmModel = getBestModel(models);
 			}
 			
 			await this.plugin.saveSettings();
 			if (showNotice) new Notice(`Success: Found ${models.length} models.`);
 			
-			if (this.modelDropdown) {
-				this.modelDropdown.selectEl.empty();
-				models.forEach(m => this.modelDropdown?.addOption(m, m));
-				this.modelDropdown.setValue(this.plugin.settings.llmModel);
-			}
-		} catch (e: any) {
-			if (showNotice) new Notice(`API Error: ${e.message}`);
+			['Reasoning', 'Fast', 'Light'].forEach(tier => {
+				const dropdown = this.tierDropdowns[tier];
+				if (dropdown) {
+					dropdown.selectEl.empty();
+					dropdown.addOption('', 'Auto / Default Fallback');
+					models.forEach(m => dropdown.addOption(m, m));
+					dropdown.setValue(this.plugin.settings.tierModels[tier] || '');
+				}
+			});
+		} catch (e: unknown) {
+			if (showNotice) new Notice(`API Error: ${String(e)}`);
 		} finally {
 			if (buttonComponent) buttonComponent.setButtonText('Test Connection');
 		}
@@ -156,6 +144,16 @@ export class AgenticVaultSettingTab extends PluginSettingTab {
 				}));
 
 		new Setting(containerEl)
+			.setName('Enable Background Routines')
+			.setDesc('Global kill-switch for automated CRON and event-based tasks.')
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.routinesEnabled)
+				.onChange(async (value) => {
+					this.plugin.settings.routinesEnabled = value;
+					await this.plugin.saveSettings();
+				}));
+
+		new Setting(containerEl)
 			.setName('Test API Key & Fetch Models')
 			.setDesc('Validate your connection and download the latest list of available models.')
 			.addButton(button => button
@@ -164,24 +162,28 @@ export class AgenticVaultSettingTab extends PluginSettingTab {
 					await this.performModelFetch(this.plugin.settings.llmApiKey, true, button);
 				}));
 
-		new Setting(containerEl)
-			.setName('LLM Model')
-			.setDesc('Select the model to use for inference.')
-			.addDropdown(dropdown => {
-				this.modelDropdown = dropdown;
-				const models = this.plugin.settings.availableModels || [];
-				if (models.length === 0) {
-					dropdown.addOption(this.plugin.settings.llmModel, this.plugin.settings.llmModel);
-				} else {
+		new Setting(containerEl).setName("Model Tier Mappings").setHeading();
+		containerEl.createEl('p', { 
+			text: 'Map specific models to capability tiers. If auto/default is selected, the system will pick the best available model for that tier.',
+			attr: { style: 'color: var(--text-muted); font-size: 0.9em; margin-bottom: 20px;' }
+		});
+
+		['Reasoning', 'Fast', 'Light'].forEach(tier => {
+			new Setting(containerEl)
+				.setName(`${tier} Tier Model`)
+				.setDesc(`Used by agents requesting ${tier} capabilities.`)
+				.addDropdown(dropdown => {
+					this.tierDropdowns[tier] = dropdown;
+					const models = this.plugin.settings.availableModels || [];
+					dropdown.addOption('', 'Auto / Default Fallback');
 					models.forEach((m: string) => dropdown.addOption(m, m));
-				}
-				
-				dropdown.setValue(this.plugin.settings.llmModel)
-					.onChange(async (value) => {
-						this.plugin.settings.llmModel = value;
-						await this.plugin.saveSettings();
-					});
-			});
+					dropdown.setValue(this.plugin.settings.tierModels[tier] || '')
+						.onChange(async (value) => {
+							this.plugin.settings.tierModels[tier] = value;
+							await this.plugin.saveSettings();
+						});
+				});
+		});
 
 		new Setting(containerEl)
 			.setName('LLM Base URL (OpenAI Compatible Only)')
@@ -205,7 +207,7 @@ export class AgenticVaultSettingTab extends PluginSettingTab {
 					await this.plugin.saveSettings();
 				}));
 
-		containerEl.createEl('h3', { text: 'Dynamic Zones' });
+		new Setting(containerEl).setName("Dynamic Zones").setHeading();
 		containerEl.createEl('p', { 
 			text: 'Semantic zones allow conversational agents to understand your organization structure without hardcoded paths.',
 			attr: { style: 'color: var(--text-muted); font-size: 0.9em; margin-bottom: 20px;' }

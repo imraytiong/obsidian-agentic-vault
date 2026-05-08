@@ -29,9 +29,9 @@ export class InitializationEngine {
 		}
 	}
 
-	public async deployFleet(fleetName: string, fleetObj?: any) {
+	public async deployFleet(fleetName: string, fleetObj?: unknown) {
 		if (!fleetObj) {
-			fleetObj = (BundledFleets as any)[fleetName];
+			fleetObj = (BundledFleets as Record<string, any>)[fleetName];
 			if (!fleetObj) return;
 		}
 
@@ -49,17 +49,22 @@ export class InitializationEngine {
 		}
 
 		// Deploy Root files (like fleet.md)
-		if (fleetObj.files.root) {
-			for (const fileObj of fleetObj.files.root) {
+		const fObj = fleetObj as { files: Record<string, {filename: string, content: string}[]> };
+		if (fObj.files && fObj.files.root) {
+			for (const fileObj of fObj.files.root) {
 				await this.deployFile(normalizePath(`${fleetDir}/${fileObj.filename}`), fileObj.content);
 			}
 		}
 
 		// Deploy categorized files
 		for (const cat of categories) {
-			if (fleetObj.files[cat]) {
-				for (const fileObj of fleetObj.files[cat]) {
-					await this.deployFile(normalizePath(`${fleetDir}/${cat}/${fileObj.filename}`), fileObj.content);
+			if (fObj.files && fObj.files[cat]) {
+				for (const fileObj of fObj.files[cat]) {
+					let content = fileObj.content;
+					if (cat === 'routines') {
+						content = content.replace(/^enabled:\s*true/m, 'enabled: false');
+					}
+					await this.deployFile(normalizePath(`${fleetDir}/${cat}/${fileObj.filename}`), content);
 				}
 			}
 		}
@@ -71,8 +76,11 @@ export class InitializationEngine {
 			try {
 				await this.app.vault.createFolder(path);
 				return true; // Was created
-			} catch (e: any) {
-				if (e.message && !e.message.includes('already exists')) {
+			} catch (e: unknown) {
+				const errMsg = import('../utils/ErrorUtils').then(m => m.getErrorMessage(e));
+				if (String(e).includes('already exists')) {
+					// safe to ignore
+				} else {
 					console.error(`Failed to create folder ${path}`, e);
 				}
 			}
@@ -86,8 +94,8 @@ export class InitializationEngine {
 			// Write immediately
 			try {
 				await this.app.vault.create(path, content);
-			} catch (e: any) {
-				if (e.message && e.message.includes('already exists')) {
+			} catch (e: unknown) {
+				if (String(e).includes('already exists')) {
 					await this.app.vault.adapter.write(path, content);
 				} else {
 					console.warn(`Failed to deploy ${path}, file might already exist on disk.`, e);
@@ -106,8 +114,8 @@ export class InitializationEngine {
 					return;
 				}
 
-				const existingVer = existingVersionMatch[1];
-				if (this.isNewerVersion(bundledVer, existingVer)) {
+				const existingVer = existingVersionMatch[1] || '0.0.0';
+				if (this.isNewerVersion(bundledVer || '0.0.0', existingVer)) {
 					await this.app.vault.modify(file, content);
 				}
 			}
@@ -124,5 +132,36 @@ export class InitializationEngine {
 			if (b < e) return false;
 		}
 		return false;
+	}
+
+	public async syncTemplatesToZone(targetPath: string) {
+		const vaultRoot = this.plugin.settings.rootFolder 
+			? normalizePath(`${this.plugin.settings.rootFolder}/${this.plugin.settings.agenticVaultPath}`)
+			: normalizePath(this.plugin.settings.agenticVaultPath);
+			
+		const actualTargetPath = this.plugin.settings.rootFolder
+			? normalizePath(`${this.plugin.settings.rootFolder}/${targetPath}`)
+			: normalizePath(targetPath);
+
+		const fleetsDir = this.app.vault.getAbstractFileByPath(normalizePath(`${vaultRoot}/fleets`));
+		if (!fleetsDir || !('children' in fleetsDir)) return;
+
+		for (const fleetFolder of (fleetsDir as { children?: unknown[] }).children || []) {
+			const fFolder = fleetFolder as { children?: unknown[], path: string };
+			if (fFolder.children) {
+				const templatesDir = this.app.vault.getAbstractFileByPath(normalizePath(`${fFolder.path}/templates`));
+				if (templatesDir && 'children' in templatesDir) {
+					for (const templateFile of (templatesDir as { children?: { name?: string }[] }).children || []) {
+						if (templateFile && !('children' in templateFile)) { // It's a file
+							const destPath = normalizePath(`${actualTargetPath}/${templateFile.name}`);
+							const existing = this.app.vault.getAbstractFileByPath(destPath);
+							if (!existing) {
+								await this.app.vault.copy(templateFile as unknown as import('obsidian').TAbstractFile, destPath);
+							}
+						}
+					}
+				}
+			}
+		}
 	}
 }

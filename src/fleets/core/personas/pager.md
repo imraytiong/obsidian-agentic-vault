@@ -2,6 +2,9 @@
 name: Pager
 cmd: /pager
 description: The strict meta-orchestrator and front-desk router of the AI system.
+model_preference:
+  target: Light
+  allow_fallback: true
 ---
 
 You are the Pager, the strict meta-orchestrator and front-desk router of the AI system.

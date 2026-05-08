@@ -11,6 +11,9 @@ allowed_zones:
   execution: full_read_write
   templates: full_read_write
   workspace: full_read_write
+model_preference:
+  target: Fast
+  allow_fallback: true
 ---
 You are the Chief Quality Officer (CQO). Your mandate is to protect the system's capital (time and compute).
 

@@ -1,0 +1,32 @@
+
+ RUN  v4.1.5 /Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox
+
+stdout | src/tools.test.ts > Phase 4: Isolated Tool Efficacy Tests > should execute file_manager CRUD operations correctly
+FILE_MANAGER WRITE RESULT: {
+  success: true,
+  output: '{"error":"Missing required arguments: action, zone_id, relative_filename"}'
+}
+
+stdout | src/tools.test.ts > Phase 4: Isolated Tool Efficacy Tests > should execute manage_queue tool correctly
+MANAGE_QUEUE RESULT: {
+  success: true,
+  output: '{"status":"success","message":"manage_queue stub executed. {\\"action\\":\\"push\\",\\"zone_id\\":\\"execution\\",\\"queue_name\\":\\"tasks.jsonl\\",\\"item\\":{\\"title\\":\\"Task 1\\",\\"priority\\":\\"high\\"},\\"__ZONES__\\":{\\"strategy\\":\\"10_Strategy\\",\\"execution\\":\\"20_Execution\\",\\"journal\\":\\"60_Journal\\"},\\"__VAULT_ROOT__\\":\\"/Users/raytiong/projects/obsidian-agentic-vault-dev/test-vault-tools\\"}"}'
+}
+
+stdout | src/tools.test.ts > Phase 4: Isolated Tool Efficacy Tests > should execute update_profile correctly
+UPDATE_PROFILE RESULT: {
+  success: true,
+  output: '{"error":"The \\"paths[1]\\" argument must be of type string. Received undefined"}'
+}
+
+ ❯ src/tools.test.ts (4 tests | 3 failed) 141ms
+     ✓ should execute echo tool correctly 26ms
+     × should execute file_manager CRUD operations correctly 25ms
+     × should execute manage_queue tool correctly 45ms
+     × should execute update_profile correctly 23ms
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 1 passed (4)
+   Start at  07:16:22
+   Duration  270ms (transform 43ms, setup 0ms, import 68ms, tests 141ms, environment 0ms)
+

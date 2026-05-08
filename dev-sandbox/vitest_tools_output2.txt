@@ -1,0 +1,14 @@
+
+ RUN  v4.1.5 /Users/raytiong/projects/obsidian-agentic-vault-dev/dev-sandbox
+
+ ❯ src/tools.test.ts (4 tests | 4 failed) 117ms
+     × should execute echo tool correctly 32ms
+     × should execute file_manager CRUD operations correctly 23ms
+     × should execute manage_queue tool correctly 23ms
+     × should execute update_profile correctly 23ms
+
+ Test Files  1 failed (1)
+      Tests  4 failed (4)
+   Start at  07:14:16
+   Duration  228ms (transform 36ms, setup 0ms, import 55ms, tests 117ms, environment 0ms)
+

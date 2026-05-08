@@ -4,10 +4,17 @@ export interface Persona {
 	id: string;
 	name: string;
 	cmd: string;
+	emoji?: string;
 	description?: string;
 	skills?: string[];
+	capabilities?: string[];
+	allowed_zones?: Record<string, string>;
 	systemPrompt: string;
 	fleet: string;
+	model_preference?: {
+		target: string;
+		allow_fallback: boolean;
+	};
 }
 
 export class PersonaEngine {
@@ -49,18 +56,18 @@ export class PersonaEngine {
 				if (file instanceof TFile && file.extension === 'md') {
 					const content = await this.app.vault.read(file);
 					
-					// Manually extract frontmatter in case metadataCache is still indexing newly created files
-					let frontmatter: Record<string, any> = {};
+					// Manually extract frontmatter to avoid cache race conditions on first boot
+					let frontmatter: Record<string, unknown> = {};
 					const fmMatch = content.match(/^---\n([\s\S]*?)\n---/);
 					if (fmMatch) {
 						try {
-							frontmatter = parseYaml(fmMatch[1]) || {};
+							frontmatter = (parseYaml(fmMatch[1] || '') || {}) as Record<string, unknown>;
 						} catch (e) {
 							console.error(`Failed to parse YAML for persona ${file.path}`, e);
 						}
 					}
 					
-					if (frontmatter.name && frontmatter.cmd) {
+					if (typeof frontmatter.name === 'string' && typeof frontmatter.cmd === 'string') {
 						// Simple extraction: strip YAML frontmatter
 						let systemPrompt = content;
 						if (content.startsWith('---')) {
@@ -76,16 +83,25 @@ export class PersonaEngine {
 						}
 
 						const description = typeof frontmatter.description === 'string' ? frontmatter.description : undefined;
+						const emoji = typeof frontmatter.emoji === 'string' ? frontmatter.emoji : undefined;
 						const skills = Array.isArray(frontmatter.skills) ? frontmatter.skills.map(String) : [];
+						const capabilities = Array.isArray(frontmatter.capabilities) ? frontmatter.capabilities.map(String) : skills;
+						const allowed_zones = typeof frontmatter.allowed_zones === 'object' && frontmatter.allowed_zones !== null 
+							? (frontmatter.allowed_zones as Record<string, string>) 
+							: undefined;
 
 						this.personas[frontmatter.name] = {
 							id: file.basename,
 							name: frontmatter.name,
 							cmd: parsedCmd,
+							emoji,
 							description,
 							skills,
+							capabilities,
+							allowed_zones,
 							systemPrompt: systemPrompt,
-							fleet: fleetName
+							fleet: fleetName,
+							model_preference: frontmatter.model_preference as { target: string, allow_fallback: boolean } | undefined
 						};
 					}
 				}

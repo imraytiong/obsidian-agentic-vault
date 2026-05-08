@@ -33,8 +33,8 @@ export class LoggerService {
 			let logContent = '';
 			try {
 				logContent = JSON.stringify(context, null, 2);
-			} catch (e: any) {
-				logContent = `[Error stringifying context: ${e.message}]`;
+			} catch (e: unknown) {
+				logContent = `[Error stringifying context: ${String(e)}]`;
 			}
 			const logEntry = `\n### [${timestamp}] ${action}\n\`\`\`json\n${logContent}\n\`\`\`\n`;
 
@@ -56,8 +56,8 @@ export class LoggerService {
 					const header = `# Agentic Vault Trace Log\n\nThis file is autonomously generated to provide a deterministic ReAct audit trail.\n`;
 					try {
 						await this.app.vault.create(logFilePath, header + logEntry);
-					} catch (e: any) {
-						if (e.message && e.message.includes('already exists')) {
+					} catch (e: unknown) {
+						if (String(e).includes('already exists')) {
 							await this.app.vault.adapter.append(logFilePath, logEntry);
 						} else {
 							console.error("Agentic Vault Logger Error:", e);

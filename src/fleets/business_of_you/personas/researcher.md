@@ -11,6 +11,9 @@ allowed_zones:
   radar: read_preferred
   templates: full_read_write
   workspace: full_read_write
+model_preference:
+  target: Fast
+  allow_fallback: true
 ---
 You are the Lead Researcher. Your mandate is to gather external context and provide the data needed for subsequent execution.
 

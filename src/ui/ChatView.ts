@@ -15,6 +15,7 @@ export class AgenticVaultChatView extends ItemView {
 	activeTab: 'chat' | 'approvals' = 'chat';
 	inputRow: HTMLDivElement;
 	optionsContainerEl: HTMLDivElement;
+	selectedModelOverride?: string;
 
 	constructor(leaf: WorkspaceLeaf, plugin: AgenticVaultPlugin) {
 		super(leaf);
@@ -57,16 +58,29 @@ export class AgenticVaultChatView extends ItemView {
 
 		const input = container.createEl('input', { type: 'password', placeholder: 'Enter API Key...', attr: { style: 'margin-bottom: 10px; padding: 10px; width: 100%; max-width: 300px;' } });
 		
-		const modelSelect = container.createEl('select', { attr: { style: 'margin-bottom: 5px; padding: 5px; width: 100%; max-width: 300px; display: none;' } });
+		const modelsContainer = container.createDiv({ attr: { style: 'display: none; width: 100%; max-width: 300px; flex-direction: column; gap: 5px; margin-bottom: 10px;' } });
+		
+		const createTierDropdown = (tierName: string) => {
+			const wrapper = modelsContainer.createDiv({ attr: { style: 'display: flex; flex-direction: column; text-align: left;' } });
+			wrapper.createEl('label', { text: `${tierName} Tier Model`, attr: { style: 'font-size: 0.8em; color: var(--text-muted); margin-bottom: 2px;' } });
+			return wrapper.createEl('select', { attr: { style: 'padding: 5px; width: 100%;' } });
+		};
+
+		const tierSelects: Record<string, HTMLSelectElement> = {
+			Reasoning: createTierDropdown('Reasoning'),
+			Fast: createTierDropdown('Fast'),
+			Light: createTierDropdown('Light')
+		};
+		
 		const statusText = container.createEl('p', { text: '', attr: { style: 'color: var(--text-muted); margin-bottom: 20px; font-size: 0.85em; display: none; height: 15px;' } });
 
-		let fetchTimeout: any = null;
+		let fetchTimeout: ReturnType<typeof setTimeout> | null = null;
 		input.addEventListener('input', () => {
 			if (fetchTimeout) clearTimeout(fetchTimeout);
 			fetchTimeout = setTimeout(async () => {
 				const apiKey = input.value.trim();
 				if (apiKey.length < 5) {
-					modelSelect.style.display = 'none';
+					modelsContainer.style.display = 'none';
 					statusText.style.display = 'none';
 					return;
 				}
@@ -87,57 +101,49 @@ export class AgenticVaultChatView extends ItemView {
 					this.plugin.settings.availableModels = models;
 					
 					if (models.length > 0) {
-						modelSelect.empty();
-						models.forEach(m => modelSelect.createEl('option', { value: m, text: m }));
+						Object.values(tierSelects).forEach(sel => sel.empty());
 						
-						const getBestModel = (models: string[]) => {
-							return [...models].sort((a, b) => {
-								const getV = (str: string) => parseFloat(str.match(/[\d]+(?:\.[\d]+)?/)?.[0] || '0');
-								const vA = getV(a); const vB = getV(b);
-								if (vA !== vB) return vB - vA;
-								
-								const tierWeight = (m: string) => {
-									const lower = m.toLowerCase();
-									if (lower.includes('pro') || lower.includes('plus') || lower.includes('opus') || lower.includes('gpt-4o') || lower.includes('o1') || lower.includes('o3')) return 3;
-									if (lower.includes('flash') || lower.includes('sonnet') || lower.includes('turbo')) return 2;
-									if (lower.includes('haiku') || lower.includes('mini')) return 1;
-									return 0;
-								};
-								const wA = tierWeight(a); const wB = tierWeight(b);
-								if (wA !== wB) return wB - wA;
-								
-								const isExpA = a.toLowerCase().includes('exp') || a.toLowerCase().includes('preview');
-								const isExpB = b.toLowerCase().includes('exp') || b.toLowerCase().includes('preview');
-								if (isExpA !== isExpB) return isExpA ? 1 : -1;
-								
-								return a.length - b.length;
-							})[0] || models[0];
-						};
+						const { ModelResolver } = await import('../llm/ModelResolver');
+						const bestModels = ModelResolver.getBestModelsForTiers(models);
 						
-						const best = getBestModel(models);
-						this.plugin.settings.llmModel = best;
-						modelSelect.value = best;
-						modelSelect.style.display = 'block';
+						if (!this.plugin.settings.tierModels) this.plugin.settings.tierModels = {};
+
+						['Reasoning', 'Fast', 'Light'].forEach(t => {
+							const tier = t as 'Reasoning' | 'Fast' | 'Light';
+							const select = tierSelects[tier];
+							if (!select) return;
+							
+							select.createEl('option', { value: '', text: 'Auto / Default Fallback' });
+							models.forEach(m => select.createEl('option', { value: m, text: m }));
+							
+							const best = bestModels[tier as keyof typeof bestModels];
+							if (best) {
+								select.value = best;
+								this.plugin.settings.tierModels[tier] = best;
+							}
+							
+							select.onchange = () => {
+								this.plugin.settings.tierModels[tier] = select.value;
+							};
+						});
+
+						modelsContainer.style.display = 'flex';
 						statusText.style.color = 'var(--text-success)';
-						statusText.setText(`Found ${models.length} models. Auto-selected best.`);
+						statusText.setText(`Found ${models.length} models. Auto-selected best for each tier.`);
 					} else {
 						statusText.style.color = 'var(--text-error)';
 						statusText.setText('No compatible models found.');
 					}
-				} catch (e: any) {
+				} catch (e: unknown) {
 					statusText.style.color = 'var(--text-error)';
-					statusText.setText(`API Error: ${e.message}`);
-					modelSelect.style.display = 'none';
+					statusText.setText(`API Error: ${e instanceof Error ? e.message : String(e)}`);
+					modelsContainer.style.display = 'none';
 				}
 			}, 1000);
 		});
 
 		providerSelect.addEventListener('change', () => {
 			input.dispatchEvent(new Event('input'));
-		});
-		
-		modelSelect.addEventListener('change', () => {
-			this.plugin.settings.llmModel = modelSelect.value;
 		});
 
 		container.createEl('p', { text: 'Installation Folder:', attr: { style: 'color: var(--text-muted); margin-bottom: 5px; font-size: 0.9em;' } });
@@ -159,7 +165,7 @@ export class AgenticVaultChatView extends ItemView {
 						return;
 					}
 					
-					this.plugin.settings.llmProvider = providerSelect.value as any;
+					this.plugin.settings.llmProvider = providerSelect.value;
 					this.plugin.settings.llmApiKey = key;
 					this.plugin.settings.agenticVaultPath = folderName;
 					// llmModel is automatically saved when modelSelect changes
@@ -179,10 +185,11 @@ export class AgenticVaultChatView extends ItemView {
 						this.personaIndicatorEl.setText(`Speaking to: ${this.activePersona}`);
 					}
 					this.plugin.logger.log('DEBUG_TRACE_SAVE_BTN', { step: 'done' });
-				} catch (e: any) {
+				} catch (e: unknown) {
 					console.error("CRASH IN SAVE BTN:", e);
-					new Notice("Save Btn CRASH: " + e.message, 10000);
-					this.plugin.logger.log('FATAL_CRASH_SAVE_BTN', { error: e.message, stack: e.stack });
+					const errMsg = e instanceof Error ? e.message : String(e);
+					new Notice("Save Btn CRASH: " + errMsg, 10000);
+					this.plugin.logger.log('FATAL_CRASH_SAVE_BTN', { error: errMsg, stack: e instanceof Error ? e.stack : undefined });
 				}
 			});
 	}
@@ -282,17 +289,19 @@ export class AgenticVaultChatView extends ItemView {
 						this.plugin.logger.log('DEBUG_TRACE_ONBOARDING_SUCCESS', { message: "Message sent successfully" });
 						new Notice("Concierge response received.");
 					}
-				} catch (e: any) {
-					this.plugin.logger.log('DEBUG_TRACE_ONBOARDING_CRASH', { error: e.message });
-					new Notice("Error sending onboarding prompt: " + e.message);
+				} catch (e: unknown) {
+					const errMsg = e instanceof Error ? e.message : String(e);
+					this.plugin.logger.log('DEBUG_TRACE_ONBOARDING_CRASH', { error: errMsg });
+					new Notice("Error sending onboarding prompt: " + errMsg);
 					console.error(e);
 				}
 			}, 1000);
 		}
-		} catch (error: any) {
+		} catch (error: unknown) {
 			console.error("FATAL CRASH in renderChatInterface:", error);
-			new Notice(`renderChatInterface CRASH: ${error.message}`, 10000);
-			this.plugin.logger.log('FATAL_CRASH_RENDER', { error: error.message, stack: error.stack });
+			const errMsg = error instanceof Error ? error.message : String(error);
+			new Notice(`renderChatInterface CRASH: ${errMsg}`, 10000);
+			this.plugin.logger.log('FATAL_CRASH_RENDER', { error: errMsg, stack: error instanceof Error ? error.stack : undefined });
 		}
 	}
 
@@ -387,8 +396,33 @@ export class AgenticVaultChatView extends ItemView {
 		this.personaIndicatorEl.style.fontWeight = 'bold';
 		this.personaIndicatorEl.style.textTransform = 'uppercase';
 		this.personaIndicatorEl.setText(`Speaking to: ${this.activePersona}`);
+		
+		const topBarControls = topBar.createDiv();
+		topBarControls.style.display = 'flex';
+		topBarControls.style.alignItems = 'center';
+		topBarControls.style.gap = '8px';
 
-		const clearBtn = topBar.createEl('button');
+		// Model Override Dropdown
+		const modelSelect = topBarControls.createEl('select');
+		modelSelect.style.fontSize = '0.8em';
+		modelSelect.style.padding = '2px 4px';
+		modelSelect.style.backgroundColor = 'var(--background-modifier-form-field)';
+		modelSelect.style.border = '1px solid var(--background-modifier-border)';
+		modelSelect.style.color = 'var(--text-normal)';
+		modelSelect.style.borderRadius = '4px';
+		
+		const defaultOpt = modelSelect.createEl('option', { text: 'Default Model', value: '' });
+		if (this.plugin.settings.availableModels) {
+			this.plugin.settings.availableModels.forEach(m => {
+				modelSelect.createEl('option', { text: m, value: m });
+			});
+		}
+		
+		modelSelect.onchange = () => {
+			this.selectedModelOverride = modelSelect.value || undefined;
+		};
+
+		const clearBtn = topBarControls.createEl('button');
 		clearBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>`;
 		clearBtn.setAttribute('aria-label', 'Clear and archive chat session');
 		clearBtn.style.padding = '6px';
@@ -637,12 +671,6 @@ export class AgenticVaultChatView extends ItemView {
 				return;
 			}
 			
-			if (!this.plugin.settings.llmModel || this.plugin.settings.llmModel.trim() === '') {
-				this.plugin.chatService.unifiedTimeline.push({ role: 'assistant', content: '⚠️ **Missing LLM Model:** You must select a model before chatting. Please go to **Settings → Community plugins → Agentic Vault** to set it up.', persona: 'System' });
-				this.renderHistory();
-				return;
-			}
-			
 			this.plugin.logger.log('USER_MESSAGE_SUBMITTED', { text, persona: this.activePersona, isBackground });
 			
 			inputEl.value = '';
@@ -664,9 +692,10 @@ export class AgenticVaultChatView extends ItemView {
 				this.renderHistory();
 				
 				// Fire and forget
-				this.plugin.chatService.sendMessage(text, this.activePersona, undefined, taskId).catch(e => {
+				this.plugin.chatService.sendMessage(text, this.activePersona, undefined, taskId, false, undefined, this.selectedModelOverride).catch((e: unknown) => {
 					console.error("Background Chat error:", e);
-					this.plugin.chatService.unifiedTimeline.push({ role: 'assistant', content: `⚠️ **[Background Spawn Failed]**\n\n${e.message}`, persona: 'System' });
+					const errMsg = e instanceof Error ? e.message : String(e);
+					this.plugin.chatService.unifiedTimeline.push({ role: 'assistant', content: `⚠️ **[Background Spawn Failed]**\n\n${errMsg}`, persona: 'System' });
 					this.renderHistory();
 				});
 				
@@ -679,11 +708,11 @@ export class AgenticVaultChatView extends ItemView {
 
 			// Send to service (synchronously adds user message to timeline)
 			try {
-				const sendPromise = this.plugin.chatService.sendMessage(text, this.activePersona);
+				const sendPromise = this.plugin.chatService.sendMessage(text, this.activePersona, undefined, undefined, false, undefined, this.selectedModelOverride);
 				await sendPromise;
-			} catch (e: any) {
+			} catch (e: unknown) {
 				console.error("Chat error:", e);
-				new Notice(e.message || "An error occurred during chat processing.");
+				new Notice((e instanceof Error ? e.message : String(e)) || "An error occurred during chat processing.");
 			} finally {
 				inputEl.disabled = false;
 				sendBtn.disabled = false;
@@ -759,7 +788,7 @@ export class AgenticVaultChatView extends ItemView {
 		msgEl.style.border = '1px solid var(--background-modifier-border)';
 		msgEl.style.boxShadow = '0 2px 5px rgba(0,0,0,0.05)';
 		
-		if (msg.role === 'tool-progress') {
+		if ((msg.role as string) === 'tool-progress') {
 			msgEl.style.backgroundColor = 'var(--background-secondary)';
 			msgEl.style.color = 'var(--text-accent)';
 			msgEl.style.fontStyle = 'italic';
@@ -799,7 +828,7 @@ export class AgenticVaultChatView extends ItemView {
 		if (msg.role === 'assistant') {
 			for (let j = this.plugin.chatService.unifiedTimeline.indexOf(msg); j >= 0; j--) {
 				const prevMsg = this.plugin.chatService.unifiedTimeline[j];
-				if (prevMsg.role === 'user') {
+				if (prevMsg && prevMsg.role === 'user') {
 					if (prevMsg.persona === 'System') initiatedBySystem = true;
 					break;
 				}
@@ -819,7 +848,9 @@ export class AgenticVaultChatView extends ItemView {
 		} else {
 			msgEl.style.borderLeft = '4px solid var(--text-muted)';
 			const headerDiv = msgEl.createDiv({ attr: { style: 'display: flex; justify-content: space-between; align-items: center;' } });
-			headerDiv.createEl('strong', { text: msg.persona, cls: 'message-persona' });
+			const personaObj = this.plugin.personaEngine.getPersonaByName(msg.persona || '');
+			const prefix = personaObj && personaObj.emoji ? personaObj.emoji + ' ' : '';
+			headerDiv.createEl('strong', { text: prefix + (msg.persona || 'Assistant'), cls: 'message-persona' });
 			if (initiatedBySystem) {
 				const badge = headerDiv.createSpan({ text: '⚙️ Routine', attr: { title: 'Executing as part of an automated routine' } });
 				badge.style.fontSize = '0.75em';
@@ -840,15 +871,31 @@ export class AgenticVaultChatView extends ItemView {
 		// Action buttons
 		const actionsDiv = msgEl.createEl('div', { cls: 'message-actions' });
 		actionsDiv.style.display = 'flex';
-		actionsDiv.style.justifyContent = 'flex-end';
-		actionsDiv.style.gap = '8px';
+		actionsDiv.style.justifyContent = 'space-between';
+		actionsDiv.style.alignItems = 'center';
 		actionsDiv.style.marginTop = '8px';
 		actionsDiv.style.borderTop = '1px solid var(--background-modifier-border)';
 		actionsDiv.style.paddingTop = '8px';
 		actionsDiv.style.opacity = '0.6';
 
+		const statsDiv = actionsDiv.createDiv();
+		statsDiv.style.fontSize = '0.75em';
+		statsDiv.style.color = 'var(--text-muted)';
+		statsDiv.style.fontFamily = 'monospace';
+		if (msg.role === 'assistant' && msg.modelUsed) {
+			let statsText = `Model: ${msg.modelUsed}`;
+			if (msg.executionTimeMs) {
+				statsText += ` | Time: ${(msg.executionTimeMs / 1000).toFixed(1)}s`;
+			}
+			statsDiv.textContent = statsText;
+		}
+
+		const btnContainer = actionsDiv.createDiv();
+		btnContainer.style.display = 'flex';
+		btnContainer.style.gap = '8px';
+
 		if (msg.role === 'user') {
-			const resendBtn = actionsDiv.createEl('button', { text: '🔄 Resend' });
+			const resendBtn = btnContainer.createEl('button', { text: '🔄 Resend' });
 			resendBtn.style.padding = '4px 8px';
 			resendBtn.style.fontSize = '0.8em';
 			resendBtn.style.cursor = 'pointer';
@@ -859,6 +906,53 @@ export class AgenticVaultChatView extends ItemView {
 				if (inputEl) {
 					inputEl.value = msg.content;
 					inputEl.focus();
+				}
+			};
+		}
+
+		if (msg.isError) {
+			const retryBtn = btnContainer.createEl('button', { text: '🔄 Auto-Retry' });
+			retryBtn.style.padding = '4px 8px';
+			retryBtn.style.fontSize = '0.8em';
+			retryBtn.style.cursor = 'pointer';
+			retryBtn.style.backgroundColor = 'var(--interactive-accent)';
+			retryBtn.style.color = 'var(--text-on-accent)';
+			retryBtn.style.border = 'none';
+			retryBtn.style.borderRadius = '4px';
+			retryBtn.onclick = async () => {
+				const index = this.plugin.chatService.unifiedTimeline.indexOf(msg);
+				if (index > 0) {
+					let userMsgIndex = -1;
+					for (let i = index - 1; i >= 0; i--) {
+						const pastMsg = this.plugin.chatService.unifiedTimeline[i];
+						if (pastMsg && pastMsg.role === 'user') {
+							userMsgIndex = i;
+							break;
+						}
+					}
+					
+					if (userMsgIndex !== -1) {
+						const prev = this.plugin.chatService.unifiedTimeline[userMsgIndex];
+						
+						// Pop error msg
+						this.plugin.chatService.unifiedTimeline.splice(index, 1);
+						const agentHistory = this.plugin.chatService.getAgentHistory(msg.persona || this.activePersona);
+						const agentIdx = agentHistory.indexOf(msg);
+						if (agentIdx > -1) agentHistory.splice(agentIdx, 1);
+						
+						// Pop user msg
+						this.plugin.chatService.unifiedTimeline.splice(userMsgIndex, 1);
+						if (prev) {
+							const prevAgentIdx = agentHistory.indexOf(prev);
+							if (prevAgentIdx > -1) agentHistory.splice(prevAgentIdx, 1);
+						}
+						
+						this.plugin.chatService.persistState();
+						this.renderHistory();
+						if (prev) {
+							this.plugin.chatService.sendMessage(prev.content, this.activePersona, undefined, undefined, false, undefined, this.selectedModelOverride);
+						}
+					}
 				}
 			};
 		}
@@ -1071,7 +1165,7 @@ export class AgenticVaultChatView extends ItemView {
 				const msgIndex = this.plugin.chatService.unifiedTimeline.indexOf(msg);
 				if (msgIndex > 0) {
 					const prevMsg = this.plugin.chatService.unifiedTimeline[msgIndex - 1];
-					if (prevMsg.uiOptions && prevMsg.uiOptions.options.length > 0) {
+					if (prevMsg && prevMsg.uiOptions && prevMsg.uiOptions.options.length > 0) {
 						const opts = prevMsg.uiOptions;
 						const selectedOptions = opts.options.filter(opt => msg.content.includes(opt));
 						
@@ -1133,11 +1227,11 @@ export class AgenticVaultChatView extends ItemView {
 
 					const inputs: { label: string, el: HTMLInputElement | HTMLTextAreaElement }[] = [];
 
-					(formData.fields || []).forEach((field: any) => {
+					(formData.fields || []).forEach((field: { label: string, type?: string, placeholder?: string }) => {
 						const fieldContainer = formContainer.createDiv();
 						fieldContainer.style.marginBottom = '15px';
 
-						const label = fieldContainer.createEl('strong', { text: field.label });
+						const label = fieldContainer.createEl('strong', { text: field.label || 'Field' });
 						label.style.display = 'block';
 						label.style.marginBottom = '5px';
 
@@ -1161,13 +1255,36 @@ export class AgenticVaultChatView extends ItemView {
 						inputs.push({ label: field.label, el: inputEl });
 					});
 
-					const submitBtn = formContainer.createEl('button', { text: 'Submit' });
+					const actionsRow = formContainer.createDiv();
+					actionsRow.style.display = 'flex';
+					actionsRow.style.gap = '10px';
+					actionsRow.style.marginTop = '10px';
+
+					const submitBtn = actionsRow.createEl('button', { text: 'Submit' });
 					submitBtn.style.backgroundColor = 'var(--interactive-accent)';
 					submitBtn.style.color = 'var(--text-on-accent)';
 					submitBtn.style.border = 'none';
 					submitBtn.style.padding = '8px 16px';
 					submitBtn.style.borderRadius = '4px';
 					submitBtn.style.cursor = 'pointer';
+
+					const suggestBtn = actionsRow.createEl('button', { text: '✨ Suggest Answers' });
+					suggestBtn.style.backgroundColor = 'transparent';
+					suggestBtn.style.color = 'var(--text-muted)';
+					suggestBtn.style.border = '1px solid var(--background-modifier-border)';
+					suggestBtn.style.padding = '8px 16px';
+					suggestBtn.style.borderRadius = '4px';
+					suggestBtn.style.cursor = 'pointer';
+
+					suggestBtn.onclick = () => {
+						const inputEl = this.containerEl.querySelector('textarea.chat-input') as HTMLTextAreaElement;
+						if (inputEl) {
+							inputEl.value = "Please suggest answers to this form based on our context.";
+							inputEl.dispatchEvent(new Event('input'));
+							const enterEvent = new KeyboardEvent('keydown', { key: 'Enter', code: 'Enter', bubbles: true });
+							inputEl.dispatchEvent(enterEvent);
+						}
+					};
 
 					submitBtn.onclick = async () => {
 						let responseText = "";
@@ -1197,16 +1314,27 @@ export class AgenticVaultChatView extends ItemView {
 						submitBtn.disabled = true;
 
 						try {
-							await this.plugin.chatService.sendMessage(responseText.trim(), this.activePersona);
+							await this.plugin.chatService.sendMessage(responseText.trim(), this.activePersona, undefined, undefined, false, undefined, this.selectedModelOverride);
 						} catch (error) {
 							console.error(error);
 						} finally {
 							if (chatSubmitBtn) chatSubmitBtn.disabled = false;
 							submitBtn.disabled = false;
+							suggestBtn.disabled = false;
 						}
 					};
 
-					pre.replaceWith(formContainer);
+					if (isLatest && this.optionsContainerEl && this.inputRow) {
+						this.optionsContainerEl.empty();
+						this.optionsContainerEl.style.display = 'flex';
+						this.inputRow.style.display = 'flex';
+						this.optionsContainerEl.appendChild(formContainer);
+						pre.style.display = 'none';
+					} else {
+						pre.replaceWith(formContainer);
+						const formsInHistory = formContainer.querySelectorAll('input, textarea, button');
+						formsInHistory.forEach(f => (f as HTMLInputElement).disabled = true);
+					}
 				} catch (e) {
 					console.error("Failed to parse JSON form", e);
 				}

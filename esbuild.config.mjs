@@ -14,16 +14,25 @@ const prod = (process.argv[2] === "production");
 import fs from "fs";
 import path from "path";
 
-const outdir = "test-vault/.obsidian/plugins/obsidian-agentic-vault";
+const outdirs = [
+	"test-vault/.obsidian/plugins/obsidian-agentic-vault",
+	"test-vaults/test-vault-empty/.obsidian/plugins/obsidian-agentic-vault"
+];
 const copyPlugin = {
 	name: "copy-plugin",
 	setup(build) {
 		build.onEnd(() => {
-			fs.mkdirSync(outdir, { recursive: true });
-			fs.copyFileSync("main.js", path.join(outdir, "main.js"));
-			fs.copyFileSync("manifest.json", path.join(outdir, "manifest.json"));
-			if (fs.existsSync("styles.css")) {
-				fs.copyFileSync("styles.css", path.join(outdir, "styles.css"));
+			for (const dir of outdirs) {
+				try {
+					fs.mkdirSync(dir, { recursive: true });
+					fs.copyFileSync("main.js", path.join(dir, "main.js"));
+					fs.copyFileSync("manifest.json", path.join(dir, "manifest.json"));
+					if (fs.existsSync("styles.css")) {
+						fs.copyFileSync("styles.css", path.join(dir, "styles.css"));
+					}
+				} catch (e) {
+					console.warn("Failed to copy to " + dir, e);
+				}
 			}
 		});
 	},

@@ -1,4 +1,5 @@
-import { LLMMessage, LLMProvider, LLMResponse } from './LLMProvider';
+import { LLMMessage, LLMProvider, LLMResponse, ToolCall } from './LLMProvider';
+import { getErrorMessage } from '../utils/ErrorUtils';
 import { ToolDefinition } from '../sandbox/ToolRegistry';
 import type { INetwork } from '../core/interfaces/Environment';
 
@@ -24,18 +25,19 @@ export class OpenAIProvider implements LLMProvider {
 		const res = await network.request({ url, method: 'GET', headers });
 		if (res.status !== 200) throw new Error(`API Error: ${res.status}`);
 		
-		const data = res.json;
+		const data = res.json as { data?: { id: string }[] };
 		if (!data.data) return [];
 		
-		return data.data.map((m: unknown) => m.id);
+		return data.data.map((m: { id: string }) => m.id);
 	}
 
-	async generateResponse(messages: LLMMessage[], tools: ToolDefinition[], signal?: AbortSignal): Promise<LLMResponse> {
+	async generateResponse(messages: LLMMessage[], tools: ToolDefinition[], options?: import('./LLMProvider').LLMProviderOptions): Promise<LLMResponse> {
+		const signal = options?.signal;
 		const base = this.baseUrl.endsWith('/') ? this.baseUrl.slice(0, -1) : this.baseUrl;
 		const url = `${base}/chat/completions`;
 		
 		const openaiMessages = messages.map(msg => {
-			const m: unknown = { role: msg.role, content: msg.content };
+			const m: Record<string, unknown> = { role: msg.role, content: msg.content };
 			if (msg.role === 'assistant' && msg.toolCalls) {
 				m.tool_calls = msg.toolCalls.map(tc => ({
 					id: tc.id,
@@ -66,7 +68,8 @@ export class OpenAIProvider implements LLMProvider {
 			// Otherwise, it's our legacy local sandbox array format
 			const properties: Record<string, unknown> = {};
 			const required: string[] = [];
-			for (const param of (t.parameters || [])) {
+			for (const p of (t.parameters as Record<string, unknown>[] || [])) {
+				const param = p as { name: string, type?: string, description?: string, required?: boolean };
 				properties[param.name] = { type: param.type || 'string', description: param.description || '' };
 				if (param.required) required.push(param.name);
 			}
@@ -80,7 +83,7 @@ export class OpenAIProvider implements LLMProvider {
 			};
 		}) : undefined;
 
-		const body: unknown = {
+		const body: Record<string, unknown> = {
 			model: this.model,
 			messages: openaiMessages
 		};
@@ -110,28 +113,28 @@ export class OpenAIProvider implements LLMProvider {
 				}
 			});
 
-			const res = await Promise.race([fetchPromise, timeoutPromise, abortPromise]) as any;
+			const res = await Promise.race([fetchPromise, timeoutPromise, abortPromise]);
 
 			if (res.status !== 200) {
 				throw new Error(`OpenAI API Error: ${res.text}`);
 			}
 
-			const data = res.json;
+			const data = res.json as { choices?: { message?: { content?: string, tool_calls?: { id: string, function: { name: string, arguments: string } }[] } }[] };
 			const message = data.choices?.[0]?.message;
 			if (!message) throw new Error('No message returned from OpenAI provider');
 
-			let toolCalls: unknown[] | undefined = undefined;
+			let toolCalls: ToolCall[] | undefined = undefined;
 			if (message.tool_calls) {
-				toolCalls = message.tool_calls.map((tc: unknown) => ({
+				toolCalls = message.tool_calls.map((tc: { id: string, function: { name: string, arguments: string } }) => ({
 					id: tc.id,
 					name: tc.function.name,
-					arguments: JSON.parse(tc.function.arguments)
+					arguments: JSON.parse(tc.function.arguments) as Record<string, unknown>
 				}));
 			}
 
 			return { content: message.content || '', toolCalls };
 		} catch (error: unknown) {
-			throw new Error(`OpenAI Provider Error: ${error.message}`);
+			throw new Error(`OpenAI Provider Error: ${getErrorMessage(error)}`);
 		}
 	}
 }

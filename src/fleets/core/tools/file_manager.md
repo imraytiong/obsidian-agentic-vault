@@ -1,6 +1,6 @@
 ---
 name: file_manager
-description: Autonomously scaffolds new folders, generates templated notes, or writes Markdown content directly to the file system using semantic zones.
+description: Autonomously scaffolds new folders, generates templated notes, or writes Markdown content directly to the file system using semantic zones. Upon successful creation or modification, you MUST explicitly tell the user the exact location and output an Obsidian wiki-link (e.g. [[File Name]]) in your response.
 parameters:
   - name: action
     type: string
@@ -46,7 +46,7 @@ try {
     }
 
     const vaultRoot = args.__VAULT_ROOT__;
-    const zonePath = zones[zoneId].path;
+    const zonePath = zones[zoneId].path || zones[zoneId];
     
     // Prevent directory traversal attacks
     if (relativeFilename.includes('../')) {

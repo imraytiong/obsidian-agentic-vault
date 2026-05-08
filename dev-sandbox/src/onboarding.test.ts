@@ -112,7 +112,7 @@ describe('AntiGravity Headless Engine: Onboarding Flow', () => {
 					for (const f of list) {
 						const childPath = path.join(p, f);
 						if (fs.statSync(path.join(fullPath, f)).isDirectory()) {
-							const cFolder = new TFolder(); cFolder.path = childPath; cFolder.name = f; folder.children.push(cFolder);
+							const cFolder = new TFolder(); cFolder.path = childPath; cFolder.name = f; cFolder.children = []; folder.children.push(cFolder);
 						} else {
 							const cFile = new TFile(); 
 							cFile.path = childPath; 
@@ -135,6 +135,26 @@ describe('AntiGravity Headless Engine: Onboarding Flow', () => {
 			return null;
 		};
 
+		mockApp.vault.create = async (p: string, c: string) => {
+			fs.mkdirSync(path.dirname(path.join(vaultPath, p)), { recursive: true });
+			await context.fs.writeText(p, c);
+			const file = new TFile(); file.path = p; return file;
+		};
+		mockApp.vault.append = async (file: any, text: string) => {
+			const current = await context.fs.readText(file.path);
+			await context.fs.writeText(file.path, current + text);
+		};
+		mockApp.vault.createFolder = async (p: string) => {
+			fs.mkdirSync(path.join(vaultPath, p), { recursive: true });
+		};
+		mockApp.vault.copy = async (file: any, destPath: string) => {
+			const destFull = path.join(vaultPath, destPath);
+			const srcFull = path.join(vaultPath, file.path);
+			fs.mkdirSync(path.dirname(destFull), { recursive: true });
+			fs.cpSync(srcFull, destFull);
+			return mockApp.vault.getAbstractFileByPath(destPath);
+		};
+
 		const logger = new LoggerService(mockApp, settings.agenticVaultPath);
 		const personaEngine = new PersonaEngine(mockApp, settings.agenticVaultPath);
 		const toolRegistry = new ToolRegistry(mockApp, settings);
@@ -145,18 +165,9 @@ describe('AntiGravity Headless Engine: Onboarding Flow', () => {
 		const skillsEngine = new SkillsEngine(mockApp, settings.agenticVaultPath);
 
 		const pluginMock: any = {
-			settings,
-			app: mockApp,
-			logger,
-			personaEngine,
-			toolRegistry,
-			executionSandbox,
-			routineManager,
-			approvalQueue,
-			mcpEngine,
-			skillsEngine,
-			context,
-			saveData: async () => {}
+			settings, app: mockApp, logger, personaEngine, toolRegistry,
+			executionSandbox, routineManager, approvalQueue, mcpEngine, skillsEngine,
+			context, saveData: async () => {}, saveSettings: async () => {}
 		};
 
 		provider = new MockLLMProvider();

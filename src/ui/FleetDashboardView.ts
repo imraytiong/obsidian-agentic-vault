@@ -5,6 +5,7 @@ export const VIEW_TYPE_FLEET_DASHBOARD = "fleet-dashboard-view";
 
 export class FleetDashboardView extends ItemView {
 	plugin: AgenticVaultPlugin;
+	private _lastError: string | null = null;
 
 	constructor(leaf: WorkspaceLeaf, plugin: AgenticVaultPlugin) {
 		super(leaf);
@@ -109,7 +110,7 @@ export class FleetDashboardView extends ItemView {
 					const headerDiv = card.createDiv('routine-card-header');
 					const titleSpan = headerDiv.createEl("h4", { text: routine.name || routine.id });
 					
-					const actionDiv = headerDiv.createDiv({ style: 'display: flex; gap: 8px;' });
+					const actionDiv = headerDiv.createDiv({ attr: { style: 'display: flex; gap: 8px;' } });
 
 					const runBtn = new ButtonComponent(actionDiv)
 						.setButtonText("▶️ Run Now")
@@ -155,9 +156,9 @@ export class FleetDashboardView extends ItemView {
 						
 						if (cronExpression === '* * * * *') currentTriggerType = 'minute';
 						else if (cronExpression === '0 * * * *') currentTriggerType = 'hourly';
-						else if (dailyMatch) {
+						if (dailyMatch) {
 							currentTriggerType = 'daily';
-							dailyTime = `${dailyMatch[2].padStart(2, '0')}:${dailyMatch[1].padStart(2, '0')}`;
+							dailyTime = `${(dailyMatch[2] || '0').padStart(2, '0')}:${(dailyMatch[1] || '0').padStart(2, '0')}`;
 						} else {
 							currentTriggerType = 'custom';
 						}
@@ -190,7 +191,7 @@ export class FleetDashboardView extends ItemView {
 							timeInput.onchange = () => {
 								const parts = timeInput.value.split(':');
 								if (parts.length === 2) {
-									updateTrigger(`cron(${parseInt(parts[1])} ${parseInt(parts[0])} * * *)`);
+									updateTrigger(`cron(${parseInt(parts[1] || '0')} ${parseInt(parts[0] || '0')} * * *)`);
 								}
 							};
 						} else if (typeSelect.value === 'custom') {
@@ -272,7 +273,7 @@ export class FleetDashboardView extends ItemView {
 			const telemetrySection = root.createDiv('dashboard-section');
 			telemetrySection.createEl("h3", { text: "Routine Telemetry" });
 			
-			let logs: any[] = [];
+			let logs: unknown[] = [];
 			try {
 				const rootFolder = this.plugin.settings.rootFolder ? `${this.plugin.settings.rootFolder}/` : '';
 				const vaultPath = `${rootFolder}${this.plugin.settings.agenticVaultPath}`;
@@ -297,7 +298,7 @@ export class FleetDashboardView extends ItemView {
 				header.createEl("th", { text: "Status" });
 				header.createEl("th", { text: "Spawn Time" });
 
-				for (const log of logs) {
+				for (const log of logs as { id?: string, routineName?: string, status?: string, spawnTime?: number }[]) {
 					const row = table.createEl("tr");
 					
 					const idTd = row.createEl("td");
@@ -320,7 +321,7 @@ export class FleetDashboardView extends ItemView {
 						abortBtn.onclick = async () => {
 							abortBtn.disabled = true;
 							abortBtn.innerText = '...';
-							await this.plugin.routineManager.abortTask(log.id);
+							await this.plugin.routineManager.abortTask(log.id || '');
 							this.onOpen();
 						};
 					}
@@ -358,10 +359,10 @@ export class FleetDashboardView extends ItemView {
 			`;
 			root.appendChild(style);
 			this._lastError = null;
-		} catch (error) {
-			this._lastError = error.stack || String(error);
+		} catch (error: unknown) {
+			this._lastError = error instanceof Error ? error.stack || error.message : String(error);
 			container.createEl('h3', { text: '🚨 Dashboard Render Error' });
-			container.createEl('pre', { text: this._lastError, cls: 'error-log' });
+			container.createEl('pre', { text: this._lastError || '', cls: 'error-log' });
 			
 			const debugBtn = new ButtonComponent(container)
 				.setButtonText("🐞 Save Debug Dump")

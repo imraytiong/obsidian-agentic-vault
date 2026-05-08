@@ -94,11 +94,13 @@ export class SkillsEngine {
 	}
 
 	getSkillBody(id: string, executionFleet?: string): string | null {
-		if (executionFleet && this.skills[`${executionFleet}.${id}`]) {
-			return this.skills[`${executionFleet}.${id}`].body;
+		if (executionFleet) {
+			const localSkill = this.skills[`${executionFleet}.${id}`];
+			if (localSkill) return localSkill.body;
 		}
-		if (this.skills[`core.${id}`]) {
-			return this.skills[`core.${id}`].body;
+		const coreSkill = this.skills[`core.${id}`];
+		if (coreSkill) {
+			return coreSkill.body;
 		}
 		return null;
 	}
